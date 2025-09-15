@@ -379,30 +379,30 @@ def hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0):
 
 #Example
 
-
-# Parameters
-seed1 = 1
-seed2 = 2
-n0 = 3000
-n1 = 3000
-
-# Dataset 1
-mu0 = [0, 0]
-sigma0 = [[1, 0], [0, 1]]
-mu1 = [3, 3]
-sigma1 = [[1, 0], [0, 1]]
-
-X, y = normal_generator2(mu0, sigma0, n0, mu1, sigma1, n1, seed1, seed2)
-
-sigma = 5
-delta = 0.5
-seed = 0
-k_min = 0
-host_instance_by_layer_df, data_clusters, centroids_dict, results, k_auto = hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0)
-# host_instance_by_layer_df me devuelve la hostilidad de cada punto en cada capa
-# con esto puedo sacar (mediante binarización) la hostilidad de cada clase en cada mini cluster
-# para ir trackeando la evolución
-# con eso, debo estudiar cómo cambia la complejidad al moverse cada cluster
+#
+# # Parameters
+# seed1 = 1
+# seed2 = 2
+# n0 = 3000
+# n1 = 3000
+#
+# # Dataset 1
+# mu0 = [0, 0]
+# sigma0 = [[1, 0], [0, 1]]
+# mu1 = [3, 3]
+# sigma1 = [[1, 0], [0, 1]]
+#
+# X, y = normal_generator2(mu0, sigma0, n0, mu1, sigma1, n1, seed1, seed2)
+#
+# sigma = 5
+# delta = 0.5
+# seed = 0
+# k_min = 0
+# host_instance_by_layer_df, data_clusters, centroids_dict, results, k_auto = hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0)
+# # host_instance_by_layer_df me devuelve la hostilidad de cada punto en cada capa
+# # con esto puedo sacar (mediante binarización) la hostilidad de cada clase en cada mini cluster
+# # para ir trackeando la evolución
+# # con eso, debo estudiar cómo cambia la complejidad al moverse cada cluster
 
 
 ###############################################################################################
@@ -531,12 +531,12 @@ def plot_hierarchical_quivers_with_complexity(df,
     plt.show()
 
 
-plot_hierarchical_quivers_with_complexity(
-    data_clusters,
-    centroids_dict,
-    host_instance_by_layer_df,
-    delta=0.5,
-    k_auto=k_auto)
+# plot_hierarchical_quivers_with_complexity(
+#     data_clusters,
+#     centroids_dict,
+#     host_instance_by_layer_df,
+#     delta=0.5,
+#     k_auto=k_auto)
 
 ###############################################################################################
 ###########                  RANKING EN FUNCIÓN DEL MOV. CENTROIDES                 ###########
@@ -671,12 +671,12 @@ def rank_features_by_centroid_complexity(
 
     return all_results
 
-resultados = rank_features_by_centroid_complexity(
-    data_clusters,
-    centroids_dict,
-    host_instance_by_layer_df,
-    delta=0.5,
-    cluster_prefix='cluster_',
-    k_auto=k_auto)
-aa = resultados['details']
-
+# resultados = rank_features_by_centroid_complexity(
+#     data_clusters,
+#     centroids_dict,
+#     host_instance_by_layer_df,
+#     delta=0.5,
+#     cluster_prefix='cluster_',
+#     k_auto=k_auto)
+# aa = resultados['details']
+#
