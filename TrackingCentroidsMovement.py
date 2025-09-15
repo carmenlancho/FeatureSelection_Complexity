@@ -11,7 +11,7 @@
 import copy
 import numpy as np
 import pandas as pd
-from pandas.conftest import all_reductions
+# from pandas.conftest import all_reductions
 from sklearn.cluster import KMeans
 # from scipy.stats import multivariate_normal
 from Normal_dataset_generator import *
