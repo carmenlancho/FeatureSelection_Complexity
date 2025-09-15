@@ -548,6 +548,15 @@ def normalize(vec):
     norm_vec = vec / denom if denom > 0 else vec
     return norm_vec
 
+def normalize_by_movement(vec, mov):
+    norm_mov_vec = vec / mov if np.any(mov > 0) else vec
+    return norm_mov_vec
+
+# Salida con formato adecuado
+def to_dict(vec,feature_cols):
+    dict_format = {f: float(v) for f, v in zip(feature_cols, vec)}
+    return dict_format
+
 
 
 def rank_features_by_centroid_complexity(
@@ -599,6 +608,8 @@ def rank_features_by_centroid_complexity(
     # Scores para guardar resultados
     scores_raw = np.zeros(n_features_df)
     scores_robust = np.zeros(n_features_df)
+    movement_raw = np.zeros(n_features_df)
+    movement_robust = np.zeros(n_features_df)
 
     # Guardar detalle paso a paso
     records = []
@@ -628,46 +639,50 @@ def rank_features_by_centroid_complexity(
             c_new = comp_by_cluster[l + 1].get(new_label, 0.0)
             change_comp = float(c_new - c_old)  # >0 --> aumenta complejidad en la nueva capa
 
-            # acumular score por feature
+            # Acumulamos score por feature
             scores_raw += change_cent * change_comp
             scores_robust += change_cent * change_comp * n_points
+            # Acumulamos magnitudes de movimiento
+            movement_raw += np.abs(change_cent)
+            movement_robust += np.abs(change_cent) * n_points
 
             # guardar detalle
-            rec = {
-                "layer_from": l,
+            rec = {"layer_from": l,
                 "cluster_from": old_label,
                 "cluster_to": int(new_label),
                 "n_points": int(n_points),
                 "comp_old": c_old,
                 "comp_new": c_new,
-                "delta_comp": change_comp,
-            }
+                "change_comp": change_comp}
             for f, dval in zip(feature_cols, change_cent):
                 rec[f"change_{f}"] = dval
             records.append(rec)
 
     # Normalización
     scores_normalized = normalize(scores_raw)
+    scores_norm_by_movement = normalize_by_movement(scores_raw, movement_raw)
+    scores_robust_norm_by_movement = normalize_by_movement(scores_robust, movement_robust)
 
     # Outputs legibles
-    scores_raw_dict = {f: float(v) for f, v in zip(feature_cols, scores_raw)}
-    scores_norm_dict = {f: float(v) for f, v in zip(feature_cols, scores_normalized)}
-    scores_robust_dict = {f: float(v) for f, v in zip(feature_cols, scores_robust)}
+    scores_dicts = {
+        "raw": to_dict(scores_raw,feature_cols),
+        "normalized_simple": to_dict(scores_normalized,feature_cols),
+        "robust": to_dict(scores_robust,feature_cols),
+        "norm_by_movement": to_dict(scores_norm_by_movement,feature_cols),
+        "robust_norm_by_movement": to_dict(scores_robust_norm_by_movement,feature_cols),
+    }
 
-    ranking_raw = sorted(feature_cols, key=lambda f: scores_raw_dict[f])
-    ranking_norm = sorted(feature_cols, key=lambda f: scores_norm_dict[f])
-    ranking_robust = sorted(feature_cols, key=lambda f: scores_robust_dict[f])
+    rankings = {
+        name: sorted(feature_cols, key=lambda f: scores_dicts[name][f])
+        for name in scores_dicts}
 
     details_df = pd.DataFrame(records)
 
     all_results = {
-        "scores_raw": scores_raw_dict,
-        "scores_normalized": scores_norm_dict,
-        "scores_robust": scores_robust_dict,
-        "ranking_raw": ranking_raw,
-        "ranking_normalized": ranking_norm,
-        "ranking_robust": ranking_robust,
-        "details": details_df}
+        "scores": scores_dicts,
+        "rankings": rankings,
+        "details": details_df,
+    }
 
     return all_results
 
