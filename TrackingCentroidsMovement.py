@@ -695,3 +695,45 @@ def rank_features_by_centroid_complexity(
 #     k_auto=k_auto)
 # aa = resultados['details']
 #
+
+
+
+# ## Realmente este gráfico no aporta nada porque lo que nos interesaría
+# ## es cambio en complejidad por variable, pero eso no lo podemos lograr
+# ## El ranking que hacemos es lo más parecido
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+#
+# def plot_boxplots(details_df, feature_cols):
+#     """
+#     Muestra:
+#       1) Boxplot de los cambios de complejidad (delta_comp).
+#       2) Boxplot de la magnitud de movimiento por feature.
+#     """
+#
+#     # --- Boxplot 1: cambios de complejidad
+#     plt.figure(figsize=(6,4))
+#     sns.boxplot(y=details_df["change_comp"])
+#     plt.axhline(0, color="red", linestyle="--", alpha=0.7)
+#     plt.title("Distribución de cambios de complejidad (Δcomp)")
+#     plt.ylabel("Δcomp")
+#     plt.show()
+#
+#     # --- Boxplot 2: magnitudes por feature
+#     df_magnitudes = details_df.copy()
+#     for f in feature_cols:
+#         df_magnitudes[f"abs_{f}"] = df_magnitudes[f"change_{f}"].abs()
+#
+#     melted = df_magnitudes.melt(
+#         value_vars=[f"abs_{f}" for f in feature_cols],
+#         var_name="feature",
+#         value_name="|Δcent|"
+#     )
+#     melted["feature"] = melted["feature"].str.replace("abs_", "")
+#
+#     plt.figure(figsize=(8,5))
+#     sns.boxplot(x="feature", y="|Δcent|", data=melted)
+#     plt.title("Distribución de magnitudes de movimiento por feature")
+#     plt.ylabel("|Δcent|")
+#     plt.xlabel("Feature")
+#     plt.show()
