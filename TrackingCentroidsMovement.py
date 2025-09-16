@@ -764,7 +764,7 @@ def plot_scores_by_layer(list_scores, feature_cols, title="Score by feature and 
     n_layers = len(list_scores)
     layers = np.arange(1, n_layers+1)  # capas en el eje X
 
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(4,3))
 
     # Para cada feature, extraemos los valores por capa
     for i, f in enumerate(feature_cols):
