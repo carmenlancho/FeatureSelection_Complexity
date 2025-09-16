@@ -754,3 +754,30 @@ def rank_features_by_centroid_complexity(
 #     plt.ylabel("|Δcent|")
 #     plt.xlabel("Feature")
 #     plt.show()
+
+
+def plot_scores_by_layer(list_scores, feature_cols, title="Score by feature and layer"):
+    """
+    list_scores : lista de arrays, uno por capa, cada array con un valor por feature
+    feature_cols : lista de nombres de features
+    """
+    n_layers = len(list_scores)
+    layers = np.arange(1, n_layers+1)  # capas en el eje X
+
+    plt.figure(figsize=(8,5))
+
+    # Para cada feature, extraemos los valores por capa
+    for i, f in enumerate(feature_cols):
+        scores_f = [arr[i] for arr in list_scores]
+        plt.plot(layers, scores_f, marker='o', label=f)
+
+    plt.axhline(0, color='k', linestyle='--', linewidth=0.8)
+    plt.xlabel("Layer")
+    plt.ylabel("Feature score")
+    plt.title(title)
+    plt.xticks(layers)
+    plt.legend()
+    plt.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
