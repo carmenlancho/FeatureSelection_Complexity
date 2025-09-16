@@ -613,13 +613,18 @@ def rank_features_by_centroid_complexity(
 
     # Guardar detalle paso a paso
     records = []
-    list_scores_raw = []
-    list_scores_robust = []
+    # listas finales por capa
+    list_scores_raw_by_layer = []
+    list_scores_robust_by_layer = []
 
     # Recorremos transiciones entre capas
     for l in range(1, n_layers):
         col_l = f"{cluster_prefix}{l}"
         col_next = f"{cluster_prefix}{l + 1}"
+
+        # listas temporales por capa
+        layer_scores_raw = []
+        layer_scores_robust = []
 
         unique_old = np.unique(df[col_l].dropna())
         for old_label in unique_old:
@@ -644,6 +649,9 @@ def rank_features_by_centroid_complexity(
             # Acumulamos score por feature
             scores_raw += change_cent * change_comp
             scores_robust += change_cent * change_comp * n_points
+            # Para guardar la evoluación por capa
+            layer_scores_raw.append(change_cent * change_comp)
+            layer_scores_robust.append(change_cent * change_comp * n_points)
             # Acumulamos magnitudes de movimiento
             movement_raw += np.abs(change_cent)
             movement_robust += np.abs(change_cent) * n_points
@@ -659,10 +667,12 @@ def rank_features_by_centroid_complexity(
             for f, dval in zip(feature_cols, change_cent):
                 rec[f"change_{f}"] = dval
             records.append(rec)
-        list_scores_raw.append(scores_raw)
-        list_scores_robust.append(scores_robust)
+        # al final de la capa, hacemos la suma de todos los clusters de esa capa
+        list_scores_raw_by_layer.append(np.sum(layer_scores_raw, axis=0))  # vector único por feature
+        list_scores_robust_by_layer.append(np.sum(layer_scores_robust, axis=0))
 
-    # Normalización
+
+        # Normalización
     scores_normalized = normalize(scores_raw)
     scores_norm_by_movement = normalize_by_movement(scores_raw, movement_raw)
     scores_robust_norm_by_movement = normalize_by_movement(scores_robust, movement_robust)
@@ -685,8 +695,8 @@ def rank_features_by_centroid_complexity(
     all_results = {
         "scores": scores_dicts,
         "rankings": rankings,
-        'list_scores_raw': list_scores_raw,
-        'list_scores_robust': list_scores_robust,
+        'list_scores_raw': list_scores_raw_by_layer,
+        'list_scores_robust': list_scores_robust_by_layer,
         "details": details_df,
     }
 
