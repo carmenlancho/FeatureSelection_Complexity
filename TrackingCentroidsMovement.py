@@ -18,6 +18,7 @@ from Normal_dataset_generator import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+from Notebooks.TrackingCentroides_Hostility import data_clusters
 
 
 # Hostility measure algorithm for multiclass classification problems
@@ -376,9 +377,9 @@ def hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0):
 
 
 
-
-#Example
-
+#
+# #Example
+#
 #
 # # Parameters
 # seed1 = 1
@@ -644,8 +645,6 @@ def rank_features_by_centroid_complexity(
             # Acumulamos score por feature
             scores_raw += change_cent * change_comp
             scores_robust += change_cent * change_comp * n_points
-            list_scores_raw.append(change_cent * change_comp)
-            list_scores_robust.append(change_cent * change_comp * n_points)
             # Acumulamos magnitudes de movimiento
             movement_raw += np.abs(change_cent)
             movement_robust += np.abs(change_cent) * n_points
@@ -661,6 +660,8 @@ def rank_features_by_centroid_complexity(
             for f, dval in zip(feature_cols, change_cent):
                 rec[f"change_{f}"] = dval
             records.append(rec)
+        list_scores_raw.append(scores_raw)
+        list_scores_robust.append(scores_robust)
 
     # Normalización
     scores_normalized = normalize(scores_raw)
@@ -692,6 +693,7 @@ def rank_features_by_centroid_complexity(
 
     return all_results
 
+# df = data_clusters
 # resultados = rank_features_by_centroid_complexity(
 #     data_clusters,
 #     centroids_dict,
