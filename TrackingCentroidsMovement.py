@@ -644,8 +644,8 @@ def rank_features_by_centroid_complexity(
             # Acumulamos score por feature
             scores_raw += change_cent * change_comp
             scores_robust += change_cent * change_comp * n_points
-            list_scores_raw = list_scores_raw.append(change_cent * change_comp)
-            list_scores_robust = list_scores_robust.append(change_cent * change_comp * n_points)
+            list_scores_raw.append(change_cent * change_comp)
+            list_scores_robust.append(change_cent * change_comp * n_points)
             # Acumulamos magnitudes de movimiento
             movement_raw += np.abs(change_cent)
             movement_robust += np.abs(change_cent) * n_points
