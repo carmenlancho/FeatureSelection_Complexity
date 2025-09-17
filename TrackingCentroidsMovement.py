@@ -723,7 +723,7 @@ def rank_features_by_centroid_complexity(
         list_scores_centroid_sum.append(np.sum(layer_scores_cent, axis=0))
 
     # Totales
-    totals = {
+    totals_centroids = {
         "cent_mean_range": np.sum(list_scores_centroid_mean_range, axis=0),
         "cent_sum_range": np.sum(list_scores_centroid_sum_range, axis=0),
         "cent_mean_iqr": np.sum(list_scores_centroid_mean_iqr, axis=0),
@@ -751,26 +751,43 @@ def rank_features_by_centroid_complexity(
         "robust_norm_by_movement": to_dict(scores_robust_norm_by_movement,feature_cols)
     }
 
-    for k, arr in totals.items():
-        scores_dicts[k] = to_dict(arr, feature_cols)
-
     rankings = {
-        name: sorted(feature_cols, key=lambda f: scores_dicts[name][f])
+        name: sorted(feature_cols, key=lambda f: scores_dicts[name][f]) # cuanto más minimice la complejidad, mejor
         for name in scores_dicts}
+
+
+    # Rankings por movimiento de centroides (mayor -> mejor)
+    rankings_centroid = {
+        name: sorted(feature_cols, key=lambda f: totals_centroids[name][f], reverse=True)
+        for name in totals_centroids
+    }
 
     details_df = pd.DataFrame(records)
 
     all_results = {
-        "scores": scores_dicts,
-        "rankings": rankings,
+        # 1. Scores de complejidad
+        "scores": scores_dicts,  # raw, normalized_simple, robust, etc.
+        "rankings": rankings,  # min→mejor
+
+        # 2. Scores por capa (complejidad)
         "list_scores_raw": list_scores_raw_by_layer,
         "list_scores_robust": list_scores_robust_by_layer,
+
+        # 3. Movimiento de centroides
         "list_scores_centroid_mean_range": list_scores_centroid_mean_range,
         "list_scores_centroid_sum_range": list_scores_centroid_sum_range,
         "list_scores_centroid_mean_iqr": list_scores_centroid_mean_iqr,
         "list_scores_centroid_sum_iqr": list_scores_centroid_sum_iqr,
         "list_scores_centroid_mean_z": list_scores_centroid_mean_z,
         "list_scores_centroid_sum_z": list_scores_centroid_sum_z,
+
+        # 4. Totales de movimiento de centroides
+        "totals_centroids": totals_centroids,  # suma por feature sobre capas
+
+        # 5. Ranking de movimiento de centroides (mayor→mejor)
+        "rankings_centroid": rankings_centroid,
+
+        # 6. Detalle paso a paso
         "details": details_df
     }
 
