@@ -710,6 +710,8 @@ def rank_features_by_centroid_complexity(
         "rankings": rankings,
         'list_scores_raw': list_scores_raw_by_layer,
         'list_scores_robust': list_scores_robust_by_layer,
+        'list_scores_centroid_mean': list_scores_centroid_mean,
+        'list_scores_centroid_sum': list_scores_centroid_sum,
         "details": details_df,
     }
 
