@@ -377,32 +377,32 @@ def hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0):
 
 
 #
-# #Example
-#
-#
-# # Parameters
-# seed1 = 1
-# seed2 = 2
-# n0 = 3000
-# n1 = 3000
-#
-# # Dataset 1
-# mu0 = [0, 0]
-# sigma0 = [[1, 0], [0, 1]]
-# mu1 = [3, 3]
-# sigma1 = [[1, 0], [0, 1]]
-#
-# X, y = normal_generator2(mu0, sigma0, n0, mu1, sigma1, n1, seed1, seed2)
-#
-# sigma = 5
-# delta = 0.5
-# seed = 0
-# k_min = 0
-# host_instance_by_layer_df, data_clusters, centroids_dict, results, k_auto = hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0)
-# # host_instance_by_layer_df me devuelve la hostilidad de cada punto en cada capa
-# # con esto puedo sacar (mediante binarización) la hostilidad de cada clase en cada mini cluster
-# # para ir trackeando la evolución
-# # con eso, debo estudiar cómo cambia la complejidad al moverse cada cluster
+#Example
+
+
+# Parameters
+seed1 = 1
+seed2 = 2
+n0 = 3000
+n1 = 3000
+
+# Dataset 1
+mu0 = [0, 0]
+sigma0 = [[1, 0], [0, 1]]
+mu1 = [3, 3]
+sigma1 = [[1, 0], [0, 1]]
+
+X, y = normal_generator2(mu0, sigma0, n0, mu1, sigma1, n1, seed1, seed2)
+
+sigma = 5
+delta = 0.5
+seed = 0
+k_min = 0
+host_instance_by_layer_df, data_clusters, centroids_dict, results, k_auto = hostility_measure_Centroids(sigma, X, y, delta, k_min, seed=0)
+# host_instance_by_layer_df me devuelve la hostilidad de cada punto en cada capa
+# con esto puedo sacar (mediante binarización) la hostilidad de cada clase en cada mini cluster
+# para ir trackeando la evolución
+# con eso, debo estudiar cómo cambia la complejidad al moverse cada cluster
 
 
 ###############################################################################################
@@ -558,6 +558,25 @@ def to_dict(vec,feature_cols):
     return dict_format
 
 
+# funciones de escalado
+def scale_range(x):
+    rng = np.ptp(x, axis=0) # en NumPy calcula el rango a lo largo de las columnas de la matriz x
+    x_scaled = x / np.where(rng == 0, 1, rng) # si el rango es 0 (por ejemplo, una cte), que divida entre 1
+    return x_scaled
+
+def scale_iqr(x):
+    q75, q25 = np.percentile(x, [75, 25], axis=0)
+    iqr = q75 - q25
+    x_scaled = x / np.where(iqr == 0, 1, iqr) # si el rango es 0 (por ejemplo, una cte), que divida entre 1
+    return x_scaled
+
+def scale_z(x):
+    mu = np.mean(x, axis=0)
+    sigma = np.std(x, axis=0)
+    x_scaled = (x - mu) / np.where(sigma == 0, 1, sigma) # si el rango es 0 (por ejemplo, una cte), que divida entre 1
+    return x_scaled
+
+
 
 def rank_features_by_centroid_complexity(
     df,
@@ -611,13 +630,21 @@ def rank_features_by_centroid_complexity(
     movement_raw = np.zeros(n_features_df)
     movement_robust = np.zeros(n_features_df)
 
-    # Guardar detalle paso a paso
+    # Guardar detalle paso a paso (evolución)
     records = []
     # listas finales por capa
     list_scores_raw_by_layer = [] # cambio de complejidad
     list_scores_robust_by_layer = []
+    # Movimientos centroides
     list_scores_centroid_mean = []  # movimiento de centroides agregado como media
     list_scores_centroid_sum = []  # movimiento de centroides agregado como suma
+    # Versión escalada del movimiento de centroides
+    list_scores_centroid_mean_range = []
+    list_scores_centroid_sum_range = []
+    list_scores_centroid_mean_iqr = []
+    list_scores_centroid_sum_iqr = []
+    list_scores_centroid_mean_z = []
+    list_scores_centroid_sum_z = []
 
     # Recorremos transiciones entre capas
     for l in range(1, n_layers):
@@ -652,8 +679,9 @@ def rank_features_by_centroid_complexity(
             # Acumulamos score por feature
             scores_raw += change_cent * change_comp
             scores_robust += change_cent * change_comp * n_points
-            # Para guardar la evoluación por capa
+            # Para guardar la evolución por capa
             layer_scores_raw.append(change_cent * change_comp)
+            layer_scores_robust.append(change_cent * change_comp * n_points)
             layer_scores_robust.append(change_cent * change_comp * n_points)
             # Acumulamos magnitudes de movimiento
             movement_raw += np.abs(change_cent)
@@ -672,11 +700,37 @@ def rank_features_by_centroid_complexity(
             for f, dval in zip(feature_cols, change_cent):
                 rec[f"change_{f}"] = dval
             records.append(rec)
+
+        # convertir lista en matriz
+        layer_scores_cent = np.array(layer_scores_cent)
+
+        # escalado + agregación
+        for scale_fn, mean_list, sum_list in [
+            (scale_range, list_scores_centroid_mean_range, list_scores_centroid_sum_range),
+            (scale_iqr, list_scores_centroid_mean_iqr, list_scores_centroid_sum_iqr),
+            (scale_z, list_scores_centroid_mean_z, list_scores_centroid_sum_z)
+        ]:
+            scaled = scale_fn(layer_scores_cent)
+            mean_list.append(np.mean(scaled, axis=0))
+            sum_list.append(np.sum(scaled, axis=0))
+
+
         # al final de la capa, hacemos la suma de todos los clusters de esa capa
         list_scores_raw_by_layer.append(np.sum(layer_scores_raw, axis=0))  # vector único por feature
         list_scores_robust_by_layer.append(np.sum(layer_scores_robust, axis=0))
+        # guardamos también sin escalar por si acaso
         list_scores_centroid_mean.append(np.mean(layer_scores_cent, axis=0))
         list_scores_centroid_sum.append(np.sum(layer_scores_cent, axis=0))
+
+    # Totales
+    totals = {
+        "cent_mean_range": np.sum(list_scores_centroid_mean_range, axis=0),
+        "cent_sum_range": np.sum(list_scores_centroid_sum_range, axis=0),
+        "cent_mean_iqr": np.sum(list_scores_centroid_mean_iqr, axis=0),
+        "cent_sum_iqr": np.sum(list_scores_centroid_sum_iqr, axis=0),
+        "cent_mean_z": np.sum(list_scores_centroid_mean_z, axis=0),
+        "cent_sum_z": np.sum(list_scores_centroid_sum_z, axis=0),
+    }
 
 
     # Normalización
@@ -694,10 +748,11 @@ def rank_features_by_centroid_complexity(
         "normalized_simple": to_dict(scores_normalized,feature_cols),
         "robust": to_dict(scores_robust,feature_cols),
         "norm_by_movement": to_dict(scores_norm_by_movement,feature_cols),
-        "robust_norm_by_movement": to_dict(scores_robust_norm_by_movement,feature_cols),
-        "cent_movement_mean": to_dict(score_cent_mean_total, feature_cols),
-        "cent_movement_sum": to_dict(score_cent_sum_total, feature_cols),
+        "robust_norm_by_movement": to_dict(scores_robust_norm_by_movement,feature_cols)
     }
+
+    for k, arr in totals.items():
+        scores_dicts[k] = to_dict(arr, feature_cols)
 
     rankings = {
         name: sorted(feature_cols, key=lambda f: scores_dicts[name][f])
@@ -708,11 +763,15 @@ def rank_features_by_centroid_complexity(
     all_results = {
         "scores": scores_dicts,
         "rankings": rankings,
-        'list_scores_raw': list_scores_raw_by_layer,
-        'list_scores_robust': list_scores_robust_by_layer,
-        'list_scores_centroid_mean': list_scores_centroid_mean,
-        'list_scores_centroid_sum': list_scores_centroid_sum,
-        "details": details_df,
+        "list_scores_raw": list_scores_raw_by_layer,
+        "list_scores_robust": list_scores_robust_by_layer,
+        "list_scores_centroid_mean_range": list_scores_centroid_mean_range,
+        "list_scores_centroid_sum_range": list_scores_centroid_sum_range,
+        "list_scores_centroid_mean_iqr": list_scores_centroid_mean_iqr,
+        "list_scores_centroid_sum_iqr": list_scores_centroid_sum_iqr,
+        "list_scores_centroid_mean_z": list_scores_centroid_mean_z,
+        "list_scores_centroid_sum_z": list_scores_centroid_sum_z,
+        "details": details_df
     }
 
     return all_results
