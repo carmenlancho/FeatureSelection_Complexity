@@ -614,8 +614,10 @@ def rank_features_by_centroid_complexity(
     # Guardar detalle paso a paso
     records = []
     # listas finales por capa
-    list_scores_raw_by_layer = []
+    list_scores_raw_by_layer = [] # cambio de complejidad
     list_scores_robust_by_layer = []
+    list_scores_centroid_mean = []  # movimiento de centroides agregado como media
+    list_scores_centroid_sum = []  # movimiento de centroides agregado como suma
 
     # Recorremos transiciones entre capas
     for l in range(1, n_layers):
@@ -623,8 +625,9 @@ def rank_features_by_centroid_complexity(
         col_next = f"{cluster_prefix}{l + 1}"
 
         # listas temporales por capa
-        layer_scores_raw = []
+        layer_scores_raw = [] # cambio de complejidad
         layer_scores_robust = []
+        layer_scores_cent = [] # movimiento de centroides
 
         unique_old = np.unique(df[col_l].dropna())
         for old_label in unique_old:
@@ -655,6 +658,8 @@ def rank_features_by_centroid_complexity(
             # Acumulamos magnitudes de movimiento
             movement_raw += np.abs(change_cent)
             movement_robust += np.abs(change_cent) * n_points
+            # Movimiento centroides
+            layer_scores_cent.append(change_cent)
 
             # guardar detalle
             rec = {"layer_from": l,
@@ -670,12 +675,18 @@ def rank_features_by_centroid_complexity(
         # al final de la capa, hacemos la suma de todos los clusters de esa capa
         list_scores_raw_by_layer.append(np.sum(layer_scores_raw, axis=0))  # vector único por feature
         list_scores_robust_by_layer.append(np.sum(layer_scores_robust, axis=0))
+        list_scores_centroid_mean.append(np.mean(layer_scores_cent, axis=0))
+        list_scores_centroid_sum.append(np.sum(layer_scores_cent, axis=0))
 
 
-        # Normalización
+    # Normalización
     scores_normalized = normalize(scores_raw)
     scores_norm_by_movement = normalize_by_movement(scores_raw, movement_raw)
     scores_robust_norm_by_movement = normalize_by_movement(scores_robust, movement_robust)
+
+    # score movimiento centroides acumulado por feature
+    score_cent_mean_total = np.sum(list_scores_centroid_mean, axis=0)
+    score_cent_sum_total = np.sum(list_scores_centroid_sum, axis=0)
 
     # Outputs legibles
     scores_dicts = {
@@ -684,6 +695,8 @@ def rank_features_by_centroid_complexity(
         "robust": to_dict(scores_robust,feature_cols),
         "norm_by_movement": to_dict(scores_norm_by_movement,feature_cols),
         "robust_norm_by_movement": to_dict(scores_robust_norm_by_movement,feature_cols),
+        "cent_movement_mean": to_dict(score_cent_mean_total, feature_cols),
+        "cent_movement_sum": to_dict(score_cent_sum_total, feature_cols),
     }
 
     rankings = {
@@ -718,8 +731,6 @@ def rank_features_by_centroid_complexity(
 # ## Realmente este gráfico no aporta nada porque lo que nos interesaría
 # ## es cambio en complejidad por variable, pero eso no lo podemos lograr
 # ## El ranking que hacemos es lo más parecido
-# import matplotlib.pyplot as plt
-# import seaborn as sns
 #
 # def plot_boxplots(details_df, feature_cols):
 #     """
