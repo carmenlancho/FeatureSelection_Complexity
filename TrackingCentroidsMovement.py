@@ -902,4 +902,33 @@ def plot_scores_by_layer(
     plt.show()
 
 
+### Tabla resumen conteniendo la misma información que el gráfico de arriba
+
+def scores_tables_by_layer(list_scores_complexity, list_scores_centroids, feature_cols):
+    """
+    Devuelve dos DataFrames:
+    - formato largo (layer, feature, complexity_score, centroid_movement)
+    - formato ancho (features como filas, capas como columnas)
+    """
+    n_layers = len(list_scores_complexity)
+    records = []
+
+    for l in range(n_layers):
+        for i, f in enumerate(feature_cols):
+            rec = {
+                "layer": l + 1,
+                "feature": f,
+                "complexity_score": list_scores_complexity[l][i],
+                "centroid_movement": list_scores_centroids[l][i]
+            }
+            records.append(rec)
+
+    # Formato long
+    df_long = pd.DataFrame(records)
+
+    # Formato wide (pivot)
+    df_complexity_wide = df_long.pivot(index="feature", columns="layer", values="complexity_score")
+    df_centroids_wide = df_long.pivot(index="feature", columns="layer", values="centroid_movement")
+
+    return df_long, df_complexity_wide, df_centroids_wide
 
