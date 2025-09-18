@@ -845,28 +845,61 @@ def rank_features_by_centroid_complexity(
 #     plt.show()
 
 
-def plot_scores_by_layer(list_scores, feature_cols, title="Score by feature and layer"):
+def plot_scores_by_layer(
+    list_scores_complexity,
+    list_scores_centroids,
+    feature_cols,
+    title1="Score by feature and layer (Complexity)",
+    title2="Centroid movement by feature and layer"
+):
     """
-    list_scores : lista de arrays, uno por capa, cada array con un valor por feature
-    feature_cols : lista de nombres de features
+    Dibuja dos gráficos lado a lado:
+    - Score de complejidad por feature y capa
+    - Movimiento de centroides por feature y capa
+
+    Params
+    ------
+    list_scores_complexity : list of np.array
+        Lista de arrays, uno por capa, cada array con un valor por feature (complejidad).
+    list_scores_centroids : list of np.array
+        Lista de arrays, uno por capa, cada array con un valor por feature (movimiento centroides).
+    feature_cols : list of str
+        Nombres de las features.
     """
-    n_layers = len(list_scores)
+    n_layers = len(list_scores_complexity)
     layers = np.arange(1, n_layers+1)  # capas en el eje X
 
-    plt.figure(figsize=(3,2))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharex=True)
 
+    # Scores complejidad
+    ax = axes[0]
     # Para cada feature, extraemos los valores por capa
     for i, f in enumerate(feature_cols):
-        scores_f = [arr[i] for arr in list_scores]
-        plt.plot(layers, scores_f, marker='o', label=f)
+        scores_f = [arr[i] for arr in list_scores_complexity]
+        ax.plot(layers, scores_f, marker='o', label=f)
+    ax.axhline(0, color='k', linestyle='--', linewidth=0.8)
+    ax.set_xlabel("Layer")
+    ax.set_ylabel("Feature score")
+    ax.set_title(title1)
+    ax.set_xticks(layers)
+    ax.grid(alpha=0.3)
+    ax.legend()
 
-    plt.axhline(0, color='k', linestyle='--', linewidth=0.8)
-    plt.xlabel("Layer")
-    plt.ylabel("Feature score")
-    plt.title(title)
-    plt.xticks(layers)
-    plt.legend()
-    plt.grid(alpha=0.3)
+    # Movimiento centroides
+    ax = axes[1]
+    for i, f in enumerate(feature_cols):
+        scores_f = [arr[i] for arr in list_scores_centroids]
+        ax.plot(layers, scores_f, marker='o', label=f)
+    ax.axhline(0, color='k', linestyle='--', linewidth=0.8)
+    ax.set_xlabel("Layer")
+    ax.set_ylabel("Centroid movement")
+    ax.set_title(title2)
+    ax.set_xticks(layers)
+    ax.grid(alpha=0.3)
+    ax.legend()
+
     plt.tight_layout()
     plt.show()
+
+
 
