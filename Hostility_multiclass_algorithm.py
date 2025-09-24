@@ -16,6 +16,28 @@ from sklearn.cluster import KMeans
 from Normal_dataset_generator import *
 
 
+# Code to ensure y has the correct format
+def format_labels(y):
+    """
+    Ensure labels y are integers starting at 0: 0,1,...,n_classes-1.
+    Works with categorical (str) or numeric labels.
+    """
+    y = pd.Series(y)  # ensure consistent type
+
+    # Case 1: non-numeric labels (strings, categories, mixed)
+    if not np.issubdtype(y.dtype, np.number):
+        categories = sorted(y.unique())  # alphabetic order
+        mapping = {cat: i for i, cat in enumerate(categories)}
+        y = y.map(mapping)
+
+    # Case 2: numeric but not starting at 0
+    else:
+        unique_vals = sorted(y.unique())
+        if unique_vals[0] != 0 or unique_vals != list(range(len(unique_vals))):
+            mapping = {val: i for i, val in enumerate(unique_vals)}
+            y = y.map(mapping)
+
+    return y.to_numpy()
 
 
 
@@ -42,6 +64,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
     # k_auto:
 
     np.random.seed(seed)
+
+    y = format_labels(y)
 
     n = len(X)
     n_classes = len(np.unique(y))
@@ -80,7 +104,7 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
 
         data_clusters = pd.DataFrame(X)  # to save to which cluster every original point belongs to at any layer
         # prob_bomb = np.zeros(len(X))  # to save the probability, for every original point, of its class in its cluster
-        df_bomb = pd.DataFrame(0,columns=list_classes, index=data_clusters.index)
+        df_bomb = pd.DataFrame(0.0,columns=list_classes, index=data_clusters.index)
 
         h = 1  # to identify the layer
         for k in k_list:
@@ -221,30 +245,30 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
 #
 #
 #
-# seed0 = 1
-# seed1 = 2
-# seed2 = 3
-# n0 = 1000
-# n1 = 1000
-# n2 = 1000
-#
-#
-# ## Dataset multiclass 1
-# mu0 = [0, 0]
-# sigma0 = [[1, 0], [0, 1]]
-# mu1 = [3, 3]
-# sigma1 = [[1, 0], [0, 1]]
-# mu2 = [2, -1]
-# sigma2 = [[3, 1], [1, 1]]
-#
-# X, y = normal_generator3(mu0, sigma0, n0, mu1, sigma1, n1, mu2, sigma2, n2, seed0, seed1, seed2)
-#
-#
-# sigma = 5
-# delta = 0.5
-# seed = 0
-# k_min = 0
-# host_instance_by_layer_df, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(sigma, X, y, k_min, seed=0)
+seed0 = 1
+seed1 = 2
+seed2 = 3
+n0 = 1000
+n1 = 1000
+n2 = 1000
+
+
+## Dataset multiclass 1
+mu0 = [0, 0]
+sigma0 = [[1, 0], [0, 1]]
+mu1 = [3, 3]
+sigma1 = [[1, 0], [0, 1]]
+mu2 = [2, -1]
+sigma2 = [[3, 1], [1, 1]]
+
+X, y = normal_generator3(mu0, sigma0, n0, mu1, sigma1, n1, mu2, sigma2, n2, seed0, seed1, seed2)
+
+
+sigma = 5
+delta = 0.5
+seed = 0
+k_min = 0
+host_instance_by_layer_df, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(sigma, X, y, k_min, seed=0)
 
 
 
