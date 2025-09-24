@@ -20,6 +20,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from skrebate import ReliefF
+# https://epistasislab.github.io/scikit-rebate/using/
 # Para pymrmr hace falta instalar antes pip install numpy Cython
 import pymrmr
 
@@ -76,7 +77,7 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,
 
 
 
-df, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
                                          n_redundant_linear=4,random_state=0,noise_std=0.01)
 
 print("Informativas:", dict_info_feature["informative"])
@@ -85,3 +86,80 @@ print("Redundantes lineales:", dict_info_feature["redundant_linear"])
 print("Fórmulas:")
 for k, v in dict_info_feature["formulas"].items():
     print(f"  {k} = {v}")
+
+
+
+## Función para ejecutar diversos métodos de FS tipo filtro del SOTA
+def select_features_by_filters(X, y, feature_names,k=None,methods=None,random_state=0):
+    """
+    Aplica varios métodos de filtro y devuelve:
+        selections: dict {method_name: {"scores": pd.Series(index=feature_names), "selected": [names...] }}
+
+    - X: np.ndarray or DataFrame
+    - y: array-like
+    - feature_names: list of names (length = X.shape[1])
+    - k: número de features a seleccionar (si None -> k = n_informative_guess ~ sqrt(n_features) fallback)
+    - methods: lista de strings entre {"mutual_info","f_classif","rf","relief"}
+    """
+    if methods is None:
+        methods = ["mutual_info", "f_classif", "rf", "relief"]
+
+    Xarr = X.values if isinstance(X, pd.DataFrame) else np.asarray(X)
+    n_features = Xarr.shape[1]
+    if k is None:
+        k = max(1, int(np.sqrt(n_features)))  # heuristic fallback
+
+    results = {}
+
+    # standardize for methods that need it
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(Xarr)
+
+    # mutual information
+    if "mutual_info" in methods:
+        mi = mutual_info_classif(Xs, y, random_state=random_state)
+        s = pd.Series(mi, index=feature_names).sort_values(ascending=False)
+        results["mutual_info"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # ANOVA F (f_classif)
+    if "f_classif" in methods:
+        F, p = f_classif(Xs, y)
+        s = pd.Series(F, index=feature_names).sort_values(ascending=False)
+        results["f_classif"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # Random Forest importance
+    if "rf" in methods:
+        rf = RandomForestClassifier(n_estimators=200, random_state=random_state)
+        rf.fit(Xs, y)
+        imp = rf.feature_importances_
+        s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
+        results["rf"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # ReliefF
+    if "relief" in methods:
+        rf_sel = ReliefF(n_features_to_select=Xs.shape[1]) # n_neighbors usamos el valor por defecto de la librería
+        rf_sel.fit(Xs, y)
+        scores = rf_sel.feature_importances_
+        s = pd.Series(scores, index=feature_names).sort_values(ascending=False)
+        results["relief"] = {"scores": s, "selected": list(s.index[:k])}
+
+
+    return results
+# Para estas primeras pruebas, para no tener que elegir manualmente el k, podemos
+# escoger k como el número de features realmente informativas
+
+
+
+# Número de features informativas como k
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters(X, y, feature_names, k=k)
+
+# Mostrar resultados
+for method, info in fs_results.items():
+    print(f"\n=== Método: {method} ===")
+    print("Top-k seleccionadas:", info["selected"])
+    print("Scores (top 10):")
+    print(info["scores"].head(10))
