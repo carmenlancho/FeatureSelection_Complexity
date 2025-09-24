@@ -133,7 +133,7 @@ def gower_distance(X: pd.DataFrame) -> np.ndarray:
 
     for i in range(n_feat):
         feature = X.iloc[:, [i]]
-        if feature.dtypes[0] == object:
+        if feature.dtypes.iloc[0] == object:
             feature_dist = DistanceMetric.get_metric('dice').pairwise(pd.get_dummies(feature))
         else:
             feature_dist = DistanceMetric.get_metric('manhattan').pairwise(feature)
