@@ -159,7 +159,52 @@ fs_results = select_features_by_filters(X, y, feature_names, k=k)
 
 # Mostrar resultados
 for method, info in fs_results.items():
-    print(f"\n=== Método: {method} ===")
+    print(f"\n--------- Método: {method} ---------")
     print("Top-k seleccionadas:", info["selected"])
     print("Scores (top 10):")
     print(info["scores"].head(10))
+
+
+# Función para generar los subconjuntos de interés para cada dataset
+def build_subsets_for_complexity(feature_names, feature_types, fs_selections,
+        k_random=3, random_state=0):
+    rng = np.random.RandomState(random_state)
+    subsets = {}
+
+    subsets['all'] = list(feature_names)
+    inform = [f for f, t in feature_types.items() if t == 'informative']
+    noise = [f for f, t in feature_types.items() if t == 'noise']
+    redun = [f for f, t in feature_types.items() if 'redundant' in t]
+
+    subsets['informative'] = inform
+    subsets['informative+redundant'] = inform + redun
+    subsets['informative+noise'] = inform + noise
+
+    # selección aleatoria (informativas + ruido/redundantes al azar)
+    pool_extra = noise + redun
+    if pool_extra and k_random > 0:
+        ksel = min(k_random, len(pool_extra))
+        rand_pick = rng.choice(pool_extra, size=ksel, replace=False).tolist()
+        subsets['informative+rand_extra'] = inform + rand_pick
+
+    # subsets según métodos de FS
+    for method, info in fs_selections.items():
+        if 'selected' in info:
+            sel = info['selected']
+            name = f"{method}_top{len(sel)}"
+            subsets[name] = sel
+
+    return subsets
+
+
+# mapeo a tipos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+
+# construir subconjuntos
+subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+for name, feats in subsets.items():
+    print(name, "->", feats)
