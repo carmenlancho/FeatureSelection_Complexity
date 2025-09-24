@@ -10,7 +10,6 @@ from L1 import L1_HD
 from measures import ClassificationMeasures
 from sklearn import preprocessing
 
-# from old.ComplexityAnalysis import cols_name
 
 
 # root_path = os.getcwd()
@@ -18,6 +17,8 @@ from sklearn import preprocessing
 
 def all_measures(data,save_csv,path_to_save, name_data):
 
+    y_format = format_labels(data['y'])
+    data['y'] = y_format
     # Hostility measure
     y = data['y'].to_numpy()
     X = data.iloc[:, 0:-1].to_numpy()
@@ -35,8 +36,7 @@ def all_measures(data,save_csv,path_to_save, name_data):
 
     L1 = L1_HD(X, y)
 
-    y_format = format_labels(data['y'])
-    data['y'] = y_format
+
     p = ClassificationMeasures(data)
     kdn = p.k_disagreeing_neighbors()
 
@@ -161,6 +161,6 @@ def all_measures(data,save_csv,path_to_save, name_data):
 # path_to_save = 'ccc'
 # name_data = 'drop'
 # df_measures, df_classes_dataset, extra_results_host = all_measures(data, save_csv, path_to_save, name_data)
-
-
+#
+#
 
