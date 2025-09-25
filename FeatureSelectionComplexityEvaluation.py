@@ -244,7 +244,7 @@ def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_sa
     results_total = []
     results_classes = {}
     extras_host = {}
-    selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TDU", "DCP", "F1", "L1"]
+    selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TD_U", "DCP", "F1", "L1"]
 
     for subset_name, features in subsets.items():
         Xsub = preprocessing.scale(X[features])
@@ -277,11 +277,7 @@ df, y, dict_info = generate_synthetic_dataset(n_samples=500, n_informative=10, n
                                               n_redundant_nonlinear=2)
 
 # 2. Mapear tipos
-feature_types = {}
-for f in dict_info["informative"]: feature_types[f] = "informative"
-for f in dict_info["noise"]: feature_types[f] = "noise"
-for f in dict_info["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+
 
 # 3. FS clásico
 # fs_results = select_features_by_filters(df, y, df.columns.tolist())
@@ -482,12 +478,25 @@ feature_names = X.columns.tolist()
 fs_results = select_features_by_filters(X, y, feature_names, k=k)
 
 # construir subconjuntos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
 subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
 
-selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TDU", "DCP", "F1", "L1"]
 
 results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
 
 
-def complexity_FS_experiment():
+# Para un dataset
+plot_complexity_totals(results_total, "Dataset1")
+# Para ver detalle de un subset concreto (ej. "informative")
+plot_class_complexity(results_classes["informative"], "informative", "Dataset1")
+# Para una medida concreta
+plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
+
+# Comparación
+results_all = {"Dataset1": results_total}
+comparison_table = build_comparison_table(results_all)
 
