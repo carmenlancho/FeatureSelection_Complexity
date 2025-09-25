@@ -20,6 +20,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from skrebate import ReliefF
+from All_measures import *
 # https://epistasislab.github.io/scikit-rebate/using/
 # Para pymrmr hace falta instalar antes pip install numpy Cython
 import pymrmr
@@ -208,3 +209,89 @@ subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
 
 for name, feats in subsets.items():
     print(name, "->", feats)
+
+
+
+def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None):
+    """
+    Aplica all_measures a cada subset de features y organiza los resultados.
+
+    Parameters
+    ----------
+    X : DataFrame
+        Dataset completo con todas las features.
+    y : array-like
+        Etiquetas.
+    subsets : dict
+        Diccionario {subset_name: list_of_features}.
+    save_csv, path_to_save : para pasar a all_measures.
+
+    Returns
+    -------
+    results_total : DataFrame
+        Filas = subset_name, Columnas = medidas de complejidad (dataset total).
+    results_classes : dict
+        {subset_name: df_classes_dataset} (una fila por clase + dataset).
+    extras_host : dict
+        {subset_name: extra_results_host}.
+    """
+    results_total = []
+    results_classes = {}
+    extras_host = {}
+
+    for subset_name, features in subsets.items():
+        Xsub = preprocessing.scale(X[features])
+        datos = pd.DataFrame(Xsub, columns=features)
+        datos['y'] = y
+        df_measures, df_classes, extra_results = all_measures(datos, save_csv, path_to_save, subset_name)
+
+        # Guardar fila resumen (total del dataset)
+        total_row = df_classes.loc["dataset"].copy()
+        total_row.name = subset_name
+        total_row["n_features"] = len(features)  # extra info
+        results_total.append(total_row)
+
+        results_classes[subset_name] = df_classes
+        extras_host[subset_name] = extra_results
+
+    results_total = pd.DataFrame(results_total)
+
+    return results_total, results_classes, extras_host
+
+
+
+
+
+# 1. Dataset sintético
+df, y, dict_info = generate_synthetic_dataset(n_samples=5000, n_informative=10, n_noise=4, n_redundant_linear=5)
+
+# 2. Mapear tipos
+feature_types = {}
+for f in dict_info["informative"]: feature_types[f] = "informative"
+for f in dict_info["noise"]: feature_types[f] = "noise"
+for f in dict_info["redundant_linear"]: feature_types[f] = "redundant_linear"
+
+# 3. FS clásico
+# fs_results = select_features_by_filters(df, y, df.columns.tolist())
+
+# Número de features informativas como k
+k = len(dict_info_feature["informative"])
+feature_names = df.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters(df, y, feature_names, k=k)
+
+# 4. Subsets
+subsets = build_subsets_for_complexity(df.columns, feature_types, fs_results)
+
+# 5. Evaluación de complejidad
+results_total, results_classes, extras_host = evaluate_complexity_across_subsets(df, y, subsets)
+
+print("=== Complejidad total por subset ===")
+print(results_total)
+
+print("\n=== Complejidad por clases en subset 'informative' ===")
+print(results_classes["informative"])
+
+
+
