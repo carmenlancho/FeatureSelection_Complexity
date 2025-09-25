@@ -339,9 +339,12 @@ def plot_complexity_totals(results_total, dataset_name):
     results_total: DataFrame con filas=subsets, columnas=medidas (ej. output[0] de evaluate_complexity_across_subsets)
     dataset_name: str
     """
+
+    results_total = results_total.iloc[:, :-1] #  quitamos n_features
     df = results_total.reset_index().melt(
         id_vars=["index"], var_name="Measure", value_name="Value"
     )
+
     plt.figure(figsize=(10,6))
     sns.barplot(data=df, x="index", y="Value", hue="Measure")
     plt.title(f"Complejidad total por subset – {dataset_name}")
