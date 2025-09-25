@@ -82,11 +82,11 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redun
     return df, y, dict_info_feature
 
 
-
-
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                                     random_state=0,noise_std=0.01)
+#
+#
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                                      random_state=0,noise_std=0.01)
 
 
 
@@ -153,21 +153,6 @@ def select_features_by_filters(X, y, feature_names,k=None,methods=None,random_st
 
 
 
-# Número de features informativas como k
-k = len(dict_info_feature["informative"])
-feature_names = X.columns.tolist()
-
-# Ejecutamos los métodos de FS
-fs_results = select_features_by_filters(X, y, feature_names, k=k)
-
-# Mostrar resultados
-for method, info in fs_results.items():
-    print(f"\n--------- Método: {method} ---------")
-    print("Top-k seleccionadas:", info["selected"])
-    print("Scores (top 10):")
-    print(info["scores"].head(10))
-
-
 # Función para generar los subconjuntos de interés para cada dataset
 def build_subsets_for_complexity(feature_names, feature_types, fs_selections,
         k_random=3, random_state=0):
@@ -200,21 +185,6 @@ def build_subsets_for_complexity(feature_names, feature_types, fs_selections,
             subsets[name] = sel
 
     return subsets
-
-
-# mapeo a tipos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-
-# construir subconjuntos
-subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
-
-for name, feats in subsets.items():
-    print(name, "->", feats)
-
 
 
 
@@ -272,37 +242,6 @@ def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_sa
 
 
 
-# 1. Dataset sintético
-df, y, dict_info = generate_synthetic_dataset(n_samples=500, n_informative=10, n_noise=4, n_redundant_linear=5,
-                                              n_redundant_nonlinear=2)
-
-# 2. Mapear tipos
-
-
-# 3. FS clásico
-# fs_results = select_features_by_filters(df, y, df.columns.tolist())
-
-# Número de features informativas como k
-k = len(dict_info_feature["informative"])
-feature_names = df.columns.tolist()
-
-# Ejecutamos los métodos de FS
-fs_results = select_features_by_filters(df, y, feature_names, k=k)
-
-# 4. Subsets
-subsets = build_subsets_for_complexity(df.columns, feature_types, fs_results)
-
-# 5. Evaluación de complejidad
-results_total, results_classes, extras_host = evaluate_complexity_across_subsets(df, y, subsets)
-
-print("=== Complejidad total por subset ===")
-print(results_total)
-
-print("\n=== Complejidad por clases en subset 'informative' ===")
-print(results_classes["informative"])
-
-
-
 def build_comparison_table(results_per_dataset):
     """
     results_per_dataset: dict
@@ -322,13 +261,6 @@ def build_comparison_table(results_per_dataset):
     return combined
 
 
-results_all = {
-    "dataset1": results_total}
-
-
-from IPython.display import display
-comparison_table = build_comparison_table(results_all)
-display(comparison_table.style.background_gradient(cmap="viridis"))
 
 
 
@@ -425,45 +357,45 @@ def plot_across_datasets(results_total, results_classes, measure, dataset_name="
     plt.show()
 
 
-# -----------------------------
-# Ejemplo con 2 datasets
-# -----------------------------
-# Dataset 1
-X1, y1 = make_classification(n_samples=200, n_features=10, n_informative=5, n_redundant=2, random_state=0)
-X1 = pd.DataFrame(X1, columns=[f"f{i}" for i in range(10)])
-subsets1 = {
-    "all": list(X1.columns),
-    "informative": [f"f{i}" for i in range(5)],
-    "random3": np.random.choice(X1.columns, 3, replace=False).tolist()
-}
-res1, res1_classes, _ = evaluate_complexity_across_subsets(X1, y1, subsets1)
-
-# Dataset 2
-X2, y2 = make_classification(n_samples=300, n_features=12, n_informative=4, n_redundant=4, random_state=1)
-X2 = pd.DataFrame(X2, columns=[f"f{i}" for i in range(12)])
-subsets2 = {
-    "all": list(X2.columns),
-    "informative": [f"f{i}" for i in range(4)],
-    "random4": np.random.choice(X2.columns, 4, replace=False).tolist()
-}
-res2, res2_classes, _ = evaluate_complexity_across_subsets(X2, y2, subsets2)
-
-# Comparación
-results_all = {"Dataset1": res1, "Dataset2": res2}
-comparison_table = build_comparison_table(results_all)
-
-# Mostrar tabla coloreada
-comparison_table.style.background_gradient(cmap="viridis")
-
-
-# Para un dataset
-plot_complexity_totals(res1, "Dataset1")
-
-# Para ver detalle de un subset concreto (ej. "informative")
-plot_class_complexity(res1_classes["informative"], "informative", "Dataset1")
-
-# Comparar entre datasets en una medida concreta (ej. "Hostility")
-plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
+# # -----------------------------
+# # Ejemplo con 2 datasets
+# # -----------------------------
+# # Dataset 1
+# X1, y1 = make_classification(n_samples=200, n_features=10, n_informative=5, n_redundant=2, random_state=0)
+# X1 = pd.DataFrame(X1, columns=[f"f{i}" for i in range(10)])
+# subsets1 = {
+#     "all": list(X1.columns),
+#     "informative": [f"f{i}" for i in range(5)],
+#     "random3": np.random.choice(X1.columns, 3, replace=False).tolist()
+# }
+# res1, res1_classes, _ = evaluate_complexity_across_subsets(X1, y1, subsets1)
+#
+# # Dataset 2
+# X2, y2 = make_classification(n_samples=300, n_features=12, n_informative=4, n_redundant=4, random_state=1)
+# X2 = pd.DataFrame(X2, columns=[f"f{i}" for i in range(12)])
+# subsets2 = {
+#     "all": list(X2.columns),
+#     "informative": [f"f{i}" for i in range(4)],
+#     "random4": np.random.choice(X2.columns, 4, replace=False).tolist()
+# }
+# res2, res2_classes, _ = evaluate_complexity_across_subsets(X2, y2, subsets2)
+#
+# # Comparación
+# results_all = {"Dataset1": res1, "Dataset2": res2}
+# comparison_table = build_comparison_table(results_all)
+#
+# # Mostrar tabla coloreada
+# comparison_table.style.background_gradient(cmap="viridis")
+#
+#
+# # Para un dataset
+# plot_complexity_totals(res1, "Dataset1")
+#
+# # Para ver detalle de un subset concreto (ej. "informative")
+# plot_class_complexity(res1_classes["informative"], "informative", "Dataset1")
+#
+# # Comparar entre datasets en una medida concreta (ej. "Hostility")
+# plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
 
 #########################################################################################################3
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
@@ -499,4 +431,14 @@ plot_across_datasets(results_total, results_classes, measure="Hostility", datase
 # Comparación
 results_all = {"Dataset1": results_total}
 comparison_table = build_comparison_table(results_all)
+
+
+results_all = {
+    "dataset1": results_total}
+
+
+from IPython.display import display
+comparison_table = build_comparison_table(results_all)
+display(comparison_table.style.background_gradient(cmap="viridis"))
+
 
