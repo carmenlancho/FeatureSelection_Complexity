@@ -370,18 +370,59 @@ def plot_class_complexity(df_classes, subset_name, dataset_name):
 # -----------------------------
 # Plot 3: comparación entre datasets para una medida
 # -----------------------------
-def plot_across_datasets(comparison_table, measure):
+# def plot_across_datasets(comparison_table, measure):
+#     """
+#     comparison_table: DataFrame con índice (Dataset, Subset), columnas=medidas
+#     measure: str, nombre de la medida a comparar
+#     """
+#     df = comparison_table.reset_index()
+#     plt.figure(figsize=(10,6))
+#     sns.barplot(data=df, x="Subset", y=measure, hue="Dataset")
+#     plt.title(f"Comparación de {measure} entre datasets")
+#     plt.xticks(rotation=45)
+#     plt.tight_layout()
+#     plt.show()
+
+
+
+def plot_across_datasets(results_total, results_classes, measure, dataset_name="Dataset"):
     """
-    comparison_table: DataFrame con índice (Dataset, Subset), columnas=medidas
-    measure: str, nombre de la medida a comparar
+    results_total: DataFrame (índice = subsets, columnas = medidas)
+    results_classes: dict {subset: df_classes}
+    measure: str, nombre de la medida
+    dataset_name: nombre del dataset (para el título)
     """
-    df = comparison_table.reset_index()
-    plt.figure(figsize=(10,6))
-    sns.barplot(data=df, x="Subset", y=measure, hue="Dataset")
-    plt.title(f"Comparación de {measure} entre datasets")
+
+    # --- Unificar dataset y clases ---
+    rows = []
+    for subset in results_total.index:
+        # valor total
+        rows.append({
+            "Subset": subset,
+            "Grupo": "dataset",
+            measure: results_total.loc[subset, measure]
+        })
+
+        # valores por clase
+        df_cls = results_classes[subset]
+        for cls in df_cls.index:
+            if cls != "dataset":
+                rows.append({
+                    "Subset": subset,
+                    "Grupo": f"Clase {cls}",
+                    measure: df_cls.loc[cls, measure]
+                })
+
+    df_long = pd.DataFrame(rows)
+
+    # --- Plot ---
+    plt.figure(figsize=(12, 6))
+    sns.barplot(data=df_long, x="Subset", y=measure, hue="Grupo")
+    plt.title(f"{measure} por subset y clase ({dataset_name})")
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
+
 
 # -----------------------------
 # Ejemplo con 2 datasets
@@ -421,4 +462,4 @@ plot_complexity_totals(res1, "Dataset1")
 plot_class_complexity(res1_classes["informative"], "informative", "Dataset1")
 
 # Comparar entre datasets en una medida concreta (ej. "Hostility")
-plot_across_datasets(comparison_table, "Hostility")
+plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
