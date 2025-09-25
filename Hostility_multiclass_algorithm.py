@@ -245,30 +245,30 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
 #
 #
 #
-seed0 = 1
-seed1 = 2
-seed2 = 3
-n0 = 1000
-n1 = 1000
-n2 = 1000
-
-
-## Dataset multiclass 1
-mu0 = [0, 0]
-sigma0 = [[1, 0], [0, 1]]
-mu1 = [3, 3]
-sigma1 = [[1, 0], [0, 1]]
-mu2 = [2, -1]
-sigma2 = [[3, 1], [1, 1]]
-
-X, y = normal_generator3(mu0, sigma0, n0, mu1, sigma1, n1, mu2, sigma2, n2, seed0, seed1, seed2)
-
-
-sigma = 5
-delta = 0.5
-seed = 0
-k_min = 0
-host_instance_by_layer_df, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(sigma, X, y, k_min, seed=0)
-
-
+# seed0 = 1
+# seed1 = 2
+# seed2 = 3
+# n0 = 1000
+# n1 = 1000
+# n2 = 1000
+#
+#
+# ## Dataset multiclass 1
+# mu0 = [0, 0]
+# sigma0 = [[1, 0], [0, 1]]
+# mu1 = [3, 3]
+# sigma1 = [[1, 0], [0, 1]]
+# mu2 = [2, -1]
+# sigma2 = [[3, 1], [1, 1]]
+#
+# X, y = normal_generator3(mu0, sigma0, n0, mu1, sigma1, n1, mu2, sigma2, n2, seed0, seed1, seed2)
+#
+#
+# sigma = 5
+# delta = 0.5
+# seed = 0
+# k_min = 0
+# host_instance_by_layer_df, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(sigma, X, y, k_min, seed=0)
+#
+#
 
