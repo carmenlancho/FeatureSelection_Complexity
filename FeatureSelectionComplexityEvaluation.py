@@ -220,10 +220,9 @@ for name, feats in subsets.items():
     print(name, "->", feats)
 
 
-selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TDU", "DCP", "F1", "L1"]
 
-def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None,
-                                       selected_measures=selected_measures):
+
+def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None):
     """
     Aplica all_measures a cada subset de features y organiza los resultados.
 
@@ -249,6 +248,7 @@ def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_sa
     results_total = []
     results_classes = {}
     extras_host = {}
+    selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TDU", "DCP", "F1", "L1"]
 
     for subset_name, features in subsets.items():
         Xsub = preprocessing.scale(X[features])
@@ -485,6 +485,10 @@ fs_results = select_features_by_filters(X, y, feature_names, k=k)
 
 # construir subconjuntos
 subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TDU", "DCP", "F1", "L1"]
+
+results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
 
 
 def complexity_FS_experiment():
