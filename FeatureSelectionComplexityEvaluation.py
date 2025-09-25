@@ -21,6 +21,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from skrebate import ReliefF
 from All_measures import *
+import matplotlib.pyplot as plt
+import seaborn as sns
 # https://epistasislab.github.io/scikit-rebate/using/
 # Para pymrmr hace falta instalar antes pip install numpy Cython
 import pymrmr
@@ -295,3 +297,120 @@ print(results_classes["informative"])
 
 
 
+def build_comparison_table(results_per_dataset):
+    """
+    results_per_dataset: dict
+        {dataset_name: results_total (DataFrame con subsets x medidas)}
+
+    Devuelve un DataFrame multi-índice (dataset, subset).
+    """
+    df_list = []
+    for dname, res in results_per_dataset.items():
+        res = res.copy()
+        res["dataset_name"] = dname
+        df_list.append(res)
+
+    combined = pd.concat(df_list)
+    combined = combined.set_index(["dataset_name", combined.index])
+    combined.index.names = ["Dataset", "Subset"]
+    return combined
+
+
+results_all = {
+    "dataset1": results_total}
+
+
+from IPython.display import display
+comparison_table = build_comparison_table(results_all)
+display(comparison_table.style.background_gradient(cmap="viridis"))
+
+
+
+# -----------------------------
+# Plot 1: complejidad total por subset de un dataset
+# -----------------------------
+def plot_complexity_totals(results_total, dataset_name):
+    """
+    results_total: DataFrame con filas=subsets, columnas=medidas (ej. output[0] de evaluate_complexity_across_subsets)
+    dataset_name: str
+    """
+    df = results_total.reset_index().melt(
+        id_vars=["index"], var_name="Measure", value_name="Value"
+    )
+    plt.figure(figsize=(10,6))
+    sns.barplot(data=df, x="index", y="Value", hue="Measure")
+    plt.title(f"Complejidad total por subset – {dataset_name}")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+# -----------------------------
+# Plot 2: complejidad por clase para un subset concreto
+# -----------------------------
+def plot_class_complexity(df_classes, subset_name, dataset_name):
+    """
+    df_classes: DataFrame con filas=clases+dataset, columnas=medidas (ej. results_classes[subset_name])
+    subset_name: str
+    dataset_name: str
+    """
+    plt.figure(figsize=(8,5))
+    sns.heatmap(df_classes, annot=True, fmt=".2f", cmap="mako")
+    plt.title(f"Complejidad por clase – {dataset_name}, subset {subset_name}")
+    plt.tight_layout()
+    plt.show()
+
+# -----------------------------
+# Plot 3: comparación entre datasets para una medida
+# -----------------------------
+def plot_across_datasets(comparison_table, measure):
+    """
+    comparison_table: DataFrame con índice (Dataset, Subset), columnas=medidas
+    measure: str, nombre de la medida a comparar
+    """
+    df = comparison_table.reset_index()
+    plt.figure(figsize=(10,6))
+    sns.barplot(data=df, x="Subset", y=measure, hue="Dataset")
+    plt.title(f"Comparación de {measure} entre datasets")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+# -----------------------------
+# Ejemplo con 2 datasets
+# -----------------------------
+# Dataset 1
+X1, y1 = make_classification(n_samples=200, n_features=10, n_informative=5, n_redundant=2, random_state=0)
+X1 = pd.DataFrame(X1, columns=[f"f{i}" for i in range(10)])
+subsets1 = {
+    "all": list(X1.columns),
+    "informative": [f"f{i}" for i in range(5)],
+    "random3": np.random.choice(X1.columns, 3, replace=False).tolist()
+}
+res1, res1_classes, _ = evaluate_complexity_across_subsets(X1, y1, subsets1)
+
+# Dataset 2
+X2, y2 = make_classification(n_samples=300, n_features=12, n_informative=4, n_redundant=4, random_state=1)
+X2 = pd.DataFrame(X2, columns=[f"f{i}" for i in range(12)])
+subsets2 = {
+    "all": list(X2.columns),
+    "informative": [f"f{i}" for i in range(4)],
+    "random4": np.random.choice(X2.columns, 4, replace=False).tolist()
+}
+res2, res2_classes, _ = evaluate_complexity_across_subsets(X2, y2, subsets2)
+
+# Comparación
+results_all = {"Dataset1": res1, "Dataset2": res2}
+comparison_table = build_comparison_table(results_all)
+
+# Mostrar tabla coloreada
+comparison_table.style.background_gradient(cmap="viridis")
+
+
+# Para un dataset
+plot_complexity_totals(res1, "Dataset1")
+
+# Para ver detalle de un subset concreto (ej. "informative")
+plot_class_complexity(res1_classes["informative"], "informative", "Dataset1")
+
+# Comparar entre datasets en una medida concreta (ej. "Hostility")
+plot_across_datasets(comparison_table, "Hostility")
