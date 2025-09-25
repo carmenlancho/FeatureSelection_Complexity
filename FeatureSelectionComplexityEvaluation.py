@@ -62,7 +62,7 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redun
     # Redundantes no lineales
     for j in range(n_redundant_nonlinear):
         idx = rng.choice(n_informative, size=2, replace=False)
-        func = rng.choice([np.sin, np.cos, np.square, np.exp, np.log1p])
+        func = rng.choice([np.sin, np.cos, np.square, np.exp])
         new_name = f"f{df.shape[1]}"
         new_feature = func(df[f"f{idx[0]}"]) + df[f"f{idx[1]}"]
         if noise_std > 0:
@@ -85,7 +85,8 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redun
 
 
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,random_state=0,noise_std=0.01)
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                                     random_state=0,noise_std=0.01)
 
 print("Informativas:", dict_info_feature["informative"])
 print("Ruidosas:", dict_info_feature["noise"])
@@ -181,14 +182,16 @@ def build_subsets_for_complexity(feature_names, feature_types, fs_selections,
     subsets['all'] = list(feature_names)
     inform = [f for f, t in feature_types.items() if t == 'informative']
     noise = [f for f, t in feature_types.items() if t == 'noise']
-    redun = [f for f, t in feature_types.items() if 'redundant' in t]
+    redun = [f for f, t in feature_types.items() if t == 'redundant_linear']
+    redun_nonlineal = [f for f, t in feature_types.items() if t == 'redundant_nonlinear']
 
     subsets['informative'] = inform
     subsets['informative+redundant'] = inform + redun
+    subsets['informative+redundant_nonLinear'] = inform + redun_nonlineal
     subsets['informative+noise'] = inform + noise
 
     # selección aleatoria (informativas + ruido/redundantes al azar)
-    pool_extra = noise + redun
+    pool_extra = noise + redun + redun_nonlineal
     if pool_extra and k_random > 0:
         ksel = min(k_random, len(pool_extra))
         rand_pick = rng.choice(pool_extra, size=ksel, replace=False).tolist()
@@ -467,3 +470,22 @@ plot_class_complexity(res1_classes["informative"], "informative", "Dataset1")
 
 # Comparar entre datasets en una medida concreta (ej. "Hostility")
 plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
+
+#########################################################################################################3
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                                     random_state=0,noise_std=0.01)
+
+# Número de features informativas como k
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters(X, y, feature_names, k=k)
+
+# construir subconjuntos
+subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+
+def complexity_FS_experiment():
+
