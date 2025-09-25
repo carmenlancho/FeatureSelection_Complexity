@@ -28,9 +28,9 @@ import seaborn as sns
 import pymrmr
 
 
-# Función para generar datos sintéticos a nuestro gusto
-def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,
-                        n_redundant_linear=2, random_state=42, noise_std=0.05):
+# Función para generar datos sintéticos
+def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redundant_linear=2, n_redundant_nonlinear=2,
+    random_state=42, noise_std=0.05):
     rng = np.random.RandomState(random_state)
 
     # Generamos solo informativas + ruido
@@ -38,7 +38,7 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,
         n_samples=n_samples,
         n_features=n_informative + n_noise,
         n_informative=n_informative,
-        n_redundant=0,   # no usamos sklearn redundantes
+        n_redundant=0,
         n_repeated=0,
         shuffle=False,
         random_state=random_state
@@ -46,37 +46,41 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,
 
     df = pd.DataFrame(X, columns=[f"f{i}" for i in range(X.shape[1])])
     formulas = {}
+    formulas_nonlinear = {}
 
-    # Añadimos redundantes lineales a mano para controlar cómo se han creado
+    # Redundantes lineales
     for j in range(n_redundant_linear):
-        # elijo al azar 2 features informativas para combinarlas
         idx1, idx2 = rng.choice(n_informative, size=2, replace=False)
         coef1, coef2 = rng.uniform(-2, 2, size=2)
+        new_name = f"f{df.shape[1]}"
+        new_feature = coef1*df[f"f{idx1}"] + coef2*df[f"f{idx2}"]
+        if noise_std > 0:
+            new_feature += rng.normal(0, noise_std, size=n_samples)
+        df[new_name] = new_feature
+        formulas[new_name] = f"{coef1:.2f}*f{idx1} + {coef2:.2f}*f{idx2}" + ("" if noise_std==0 else " + ruido")
 
-        if (noise_std==0):
-            new_feature = (coef1 * df[f"f{idx1}"] +
-                           coef2 * df[f"f{idx2}"])
-            new_name = f"f{df.shape[1]}"
-            df[new_name] = new_feature
-
-            formulas[new_name] = f"{coef1:.2f}*f{idx1} + {coef2:.2f}*f{idx2}"
-        else:
-            new_feature = (coef1 * df[f"f{idx1}"] +
-                           coef2 * df[f"f{idx2}"] +
-                           rng.normal(0, noise_std, size=n_samples))
-            new_name = f"f{df.shape[1]}"
-            df[new_name] = new_feature
-
-            formulas[new_name] = f"{coef1:.2f}*f{idx1} + {coef2:.2f}*f{idx2} + ruido"
+    # Redundantes no lineales
+    for j in range(n_redundant_nonlinear):
+        idx = rng.choice(n_informative, size=2, replace=False)
+        func = rng.choice([np.sin, np.cos, np.square, np.exp, np.log1p])
+        new_name = f"f{df.shape[1]}"
+        new_feature = func(df[f"f{idx[0]}"]) + df[f"f{idx[1]}"]
+        if noise_std > 0:
+            new_feature += rng.normal(0, noise_std, size=n_samples)
+        df[new_name] = new_feature
+        formulas_nonlinear[new_name] = f"{func.__name__}(f{idx[0]}) + f{idx[1]}" + ("" if noise_std==0 else " + ruido")
 
     dict_info_feature = {
         "informative": [f"f{i}" for i in range(n_informative)],
         "noise": [f"f{i}" for i in range(n_informative, n_informative + n_noise)],
         "redundant_linear": list(formulas.keys()),
-        "formulas": formulas
+        "redundant_nonlinear": list(formulas_nonlinear.keys()),
+        "formulas_linear": formulas,
+        "formulas_nonlinear": formulas_nonlinear
     }
 
     return df, y, dict_info_feature
+
 
 
 
