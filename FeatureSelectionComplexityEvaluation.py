@@ -213,8 +213,10 @@ for name, feats in subsets.items():
     print(name, "->", feats)
 
 
+selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TDU", "DCP", "F1", "L1"]
 
-def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None):
+def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None,
+                                       selected_measures=selected_measures):
     """
     Aplica all_measures a cada subset de features y organiza los resultados.
 
@@ -246,6 +248,9 @@ def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_sa
         datos = pd.DataFrame(Xsub, columns=features)
         datos['y'] = y
         df_measures, df_classes, extra_results = all_measures(datos, save_csv, path_to_save, subset_name)
+
+        # Nos quedamos solo con las medidas seleccionadas
+        df_classes = df_classes.loc[:, df_classes.columns.intersection(selected_measures)]
 
         # Guardar fila resumen (total del dataset)
         total_row = df_classes.loc["dataset"].copy()
