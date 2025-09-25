@@ -88,12 +88,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=4,n_redundant_nonlinear=2,
                                                      random_state=0,noise_std=0.01)
 
-print("Informativas:", dict_info_feature["informative"])
-print("Ruidosas:", dict_info_feature["noise"])
-print("Redundantes lineales:", dict_info_feature["redundant_linear"])
-print("Fórmulas:")
-for k, v in dict_info_feature["formulas"].items():
-    print(f"  {k} = {v}")
+
 
 
 
@@ -212,6 +207,7 @@ feature_types = {}
 for f in dict_info_feature["informative"]: feature_types[f] = "informative"
 for f in dict_info_feature["noise"]: feature_types[f] = "noise"
 for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
 
 # construir subconjuntos
 subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
@@ -277,13 +273,15 @@ def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_sa
 
 
 # 1. Dataset sintético
-df, y, dict_info = generate_synthetic_dataset(n_samples=5000, n_informative=10, n_noise=4, n_redundant_linear=5)
+df, y, dict_info = generate_synthetic_dataset(n_samples=500, n_informative=10, n_noise=4, n_redundant_linear=5,
+                                              n_redundant_nonlinear=2)
 
 # 2. Mapear tipos
 feature_types = {}
 for f in dict_info["informative"]: feature_types[f] = "informative"
 for f in dict_info["noise"]: feature_types[f] = "noise"
 for f in dict_info["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
 
 # 3. FS clásico
 # fs_results = select_features_by_filters(df, y, df.columns.tolist())
