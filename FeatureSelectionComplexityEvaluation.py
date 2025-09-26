@@ -256,7 +256,10 @@ def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_sa
         results_total.append(total_row)
 
         results_classes[subset_name] = df_classes
-        extras_host[subset_name] = extra_results
+        extras_host[subset_name] = {
+            "extra_results": extra_results,
+            "instance_measures": df_measures[selected_measures + ["y"]].copy()  # incluye etiquetas
+        }
 
     results_total = pd.DataFrame(results_total)
 
@@ -615,7 +618,7 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,output_dir="R
     # Guardamos resultados de cada subset
     for subset_name in subsets.keys():
         complex_classes_total = results_classes[subset_name]
-        complex_instance = extras_host[subset_name]  # viene de all_measures
+        complex_instance = extras_host[subset_name]["instance_measures"]
         models_results = detailed_models[subset_name]
         best_model = results_models.loc[subset_name, "best_model"]
 
