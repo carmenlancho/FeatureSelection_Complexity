@@ -590,7 +590,7 @@ def save_subset_results_to_csv(dataset_name, subset_name,
 
 
 
-def FS_complexity_experiment(X, y, dict_info_feature, dataset_name):
+def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,output_dir="Results_FS_ComplexityEvaluation"):
     # Número de features informativas como k
     k = len(dict_info_feature["informative"])
     feature_names = X.columns.tolist()
@@ -611,6 +611,18 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name):
 
     # Evaluación de modelos
     results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
+
+    # Guardamos resultados de cada subset
+    for subset_name in subsets.keys():
+        complex_classes_total = results_classes[subset_name]
+        complex_instance = extras_host[subset_name]  # viene de all_measures
+        models_results = detailed_models[subset_name]
+        best_model = results_models.loc[subset_name, "best_model"]
+
+        save_subset_results_to_csv(dataset_name, subset_name,
+                                   complex_classes_total, complex_instance,
+                                   models_results, best_model,
+                                   output_dir=output_dir)
 
     # Juntamos en una sola tabla
     results_all = results_total.join(results_models, how="left")
