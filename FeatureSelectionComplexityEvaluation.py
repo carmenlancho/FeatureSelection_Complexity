@@ -420,84 +420,6 @@ def plot_across_datasets(results_total, results_classes, measure, dataset_name="
 # # Comparar entre datasets en una medida concreta (ej. "Hostility")
 # plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
 
-#########################################################################################################3
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                                     random_state=0,noise_std=0.01)
-generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4, n_redundant_nonlinear=2,
-                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=0.5, random_state=0, noise_std=0.01)
-
-# Número de features informativas como k
-k = len(dict_info_feature["informative"])
-feature_names = X.columns.tolist()
-
-# Ejecutamos los métodos de FS
-fs_results = select_features_by_filters(X, y, feature_names, k=k)
-
-# construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
-
-
-results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
-
-
-# Para un dataset
-plot_complexity_totals(results_total, "Dataset1")
-# Para ver detalle de un subset concreto (ej. "informative")
-plot_class_complexity(results_classes["informative"], "informative", "Dataset1")
-# Para una medida concreta
-plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
-
-results_all = {
-    "dataset1": results_total}
-
-# Comparación
-results_all = {"Dataset1": results_total}
-comparison_table = build_comparison_table(results_all)
-#
-#
-
-
-
-
-# comparison_table = build_comparison_table(results_all)
-# display(comparison_table.style.background_gradient(cmap="viridis"))
-
-def FS_complexity_experiment(X, y, dict_info_feature):
-    # Número de features informativas como k
-    k = len(dict_info_feature["informative"])
-    feature_names = X.columns.tolist()
-
-    # Ejecutamos los métodos de FS
-    fs_results = select_features_by_filters(X, y, feature_names, k=k)
-
-    # construir subconjuntos
-    feature_types = {}
-    for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-    for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-    for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-    for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-    subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
-
-    results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
-
-    # # Para un dataset
-    # plot_complexity_totals(results_total, "Dataset1")
-    # # Para ver detalle de un subset concreto (ej. "informative")
-    # plot_class_complexity(results_classes["informative"], "informative", "Dataset1")
-    # # Para una medida concreta
-    # plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
-
-    # Comparación
-    results_all = {"Dataset1": results_total}
-    comparison_table = build_comparison_table(results_all)
-
-    return comparison_table
 
 
 #### Vamos a obtener resultados de performance de modelos también
@@ -638,12 +560,65 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name):
 
     return comparison_table, results_classes, detailed_models
 
+
+
+
+
+#########################################################################################################3
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=15,n_noise=2,
                                          n_redundant_linear=2,n_redundant_nonlinear=2,
                                                      random_state=86785,noise_std=0.1)
-dataset_name = 'dataset_prueba'
-comparison_table = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
-comparison_table
+generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4, n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=0.5, random_state=0, noise_std=0.01)
 
+# Número de features informativas como k
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters(X, y, feature_names, k=k)
+
+# construir subconjuntos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+
+results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
+
+
+# Para un dataset
+plot_complexity_totals(results_total, "Dataset1")
+# Para ver detalle de un subset concreto (ej. "informative")
+plot_class_complexity(results_classes["informative"], "informative", "Dataset1")
+# Para una medida concreta
+plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
+
+results_all = {
+    "dataset1": results_total}
+
+# Comparación
+results_all = {"Dataset1": results_total}
+comparison_table = build_comparison_table(results_all)
+#
+#
+
+
+
+
+# comparison_table = build_comparison_table(results_all)
+# display(comparison_table.style.background_gradient(cmap="viridis"))
+
+
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=15,n_noise=2,
+                                         n_redundant_linear=2,n_redundant_nonlinear=2,
+                                                     random_state=86785,noise_std=0.1)
+
+dataset_name = 'dataset_prueba'
+comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+comparison_table
 
 
