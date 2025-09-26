@@ -40,10 +40,16 @@ from sklearn.metrics import accuracy_score
 # Para pymrmr hace falta instalar antes pip install numpy Cython
 import pymrmr
 
+# flip_y Proporción de etiquetas que se invierte aleatoriamente
+# class_sep  separación entre clases en el espacio de características, 1 es el máximo de separabilidad
+# n_clusters_per_class  Número de clusters gausianos por clase. Más clusters → más difícil.
+#  weights controla desbalance de clases.
+# More than n_samples samples may be returned if the sum of weights exceeds 1.
+# Note that the actual class proportions will not exactly match weights when flip_y isn’t 0
 
 # Función para generar datos sintéticos
 def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redundant_linear=2, n_redundant_nonlinear=2,
-    random_state=42, noise_std=0.05):
+                                flip_y, class_sep, n_clusters_per_class, weights, random_state=42, noise_std=0.05):
     rng = np.random.RandomState(random_state)
 
     # Generamos solo informativas + ruido
@@ -53,6 +59,10 @@ def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redun
         n_informative=n_informative,
         n_redundant=0,
         n_repeated=0,
+        flip_y = flip_y,
+        class_sep = class_sep,
+        n_clusters_per_class = n_clusters_per_class,
+        weights =weights,
         shuffle=False,
         random_state=random_state
     )
@@ -410,43 +420,45 @@ def plot_across_datasets(results_total, results_classes, measure, dataset_name="
 # # Comparar entre datasets en una medida concreta (ej. "Hostility")
 # plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
 
-# #########################################################################################################3
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                                      random_state=0,noise_std=0.01)
-#
-# # Número de features informativas como k
-# k = len(dict_info_feature["informative"])
-# feature_names = X.columns.tolist()
-#
-# # Ejecutamos los métodos de FS
-# fs_results = select_features_by_filters(X, y, feature_names, k=k)
-#
-# # construir subconjuntos
-# feature_types = {}
-# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-# subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
-#
-#
-# results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
-#
-#
-# # Para un dataset
-# plot_complexity_totals(results_total, "Dataset1")
-# # Para ver detalle de un subset concreto (ej. "informative")
-# plot_class_complexity(results_classes["informative"], "informative", "Dataset1")
-# # Para una medida concreta
-# plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
-#
-# results_all = {
-#     "dataset1": results_total}
-#
-# # Comparación
-# results_all = {"Dataset1": results_total}
-# comparison_table = build_comparison_table(results_all)
+#########################################################################################################3
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                                     random_state=0,noise_std=0.01)
+generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4, n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=0.5, random_state=0, noise_std=0.01)
+
+# Número de features informativas como k
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters(X, y, feature_names, k=k)
+
+# construir subconjuntos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+
+results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
+
+
+# Para un dataset
+plot_complexity_totals(results_total, "Dataset1")
+# Para ver detalle de un subset concreto (ej. "informative")
+plot_class_complexity(results_classes["informative"], "informative", "Dataset1")
+# Para una medida concreta
+plot_across_datasets(results_total, results_classes, measure="Hostility", dataset_name="synthetic1")
+
+results_all = {
+    "dataset1": results_total}
+
+# Comparación
+results_all = {"Dataset1": results_total}
+comparison_table = build_comparison_table(results_all)
 #
 #
 
@@ -535,7 +547,7 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
         "KNN": KNeighborsClassifier(),
         "NaiveBayes": GaussianNB(),
         "DecisionTree": DecisionTreeClassifier(random_state=random_state),
-        "XGBoost": xgb.XGBClassifier(use_label_encoder=False, eval_metric="logloss", random_state=random_state)
+        "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=random_state)
     }
 
     skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
@@ -570,3 +582,16 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
     results_df = pd.DataFrame(results_summary).set_index("subset")
 
     return results_df, detailed_results
+
+
+
+results_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
+
+print(results_df)
+
+# Resultados detallados para un subset
+print(detailed_results["informative"])
+
+
+
+
