@@ -33,6 +33,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 import xgboost as xgb
 from sklearn.metrics import accuracy_score
+import os
 
 
 
@@ -521,10 +522,71 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
 
 
 
-results_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
+# results_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
+#
+# results_df
+# detailed_results
 
-results_df
-detailed_results
+
+# Para guardar los resultados en csv
+def save_subset_results_to_csv(dataset_name, subset_name,
+                               complex_classes_total, complex_instance,
+                               models_results, best_model,
+                               output_dir="Results_FS_ComplexityEvaluation"):
+    """
+    CSV con toda la información de un subset:
+    - Complejidad por clase + total
+    - Complejidad a nivel instancia
+    - Resultados de todos los modelos (acc, gps, acc_per_class)
+    - Indica mejor modelo
+
+    Parameters
+    ----------
+    dataset_name : str
+    subset_name : str
+    complex_classes_total : DataFrame (complexity por clase y total)
+    complex_instance : DataFrame (complexity por instancia)
+    models_results : dict {model_name: {"acc", "gps", "acc_per_class": {...}}}
+    best_model : str (nombre del modelo ganador)
+    output_dir : str, carpeta donde guardar los CSVs
+    """
+
+    os.makedirs(output_dir, exist_ok=True)
+    filename = f"ComplexityEvaluation_FS_{dataset_name}_{subset_name}.csv"
+    filepath = os.path.join(output_dir, filename)
+
+    # Parte 1: complejidad por clase y dataset
+    part1 = complex_classes_total.copy()
+    part1["type"] = "complexity_class_total"
+
+    # Parte 2: complejidad a nivel instancia
+    part2 = complex_instance.copy()
+    part2["type"] = "complexity_instance"
+
+    # Parte 3: resultados de modelos
+    rows = []
+    for model, res in models_results.items():
+        row = {
+            "model": model,
+            "acc": res["acc"],
+            "gps": res["gps"],
+            "is_best": (model == best_model),
+            "type": "model"
+        }
+        # accuracy por clase
+        for c, acc_c in res["acc_per_class"].items():
+            row[f"acc_class_{c}"] = acc_c
+        rows.append(row)
+
+    part3 = pd.DataFrame(rows)
+
+    # Unir tod
+    final = pd.concat([part1.reset_index(), part2.reset_index(), part3],
+                      axis=0, ignore_index=True)
+
+    # Guardar CSV
+    final.to_csv(filepath, index=False)
+    return final
 
 
 
@@ -559,6 +621,7 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name):
     comparison_table.index.names = ["Dataset", "Subset"]
 
     return comparison_table, results_classes, detailed_models
+
 
 
 
