@@ -24,6 +24,18 @@ from All_measures import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+import xgboost as xgb
+from sklearn.metrics import accuracy_score
+
+
+
 # https://epistasislab.github.io/scikit-rebate/using/
 # Para pymrmr hace falta instalar antes pip install numpy Cython
 import pymrmr
@@ -503,5 +515,58 @@ def compute_gps(y_true, y_pred):
     return GPS
 
 
+def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
+    """
+    Evalúa modelos en los subsets de features.
 
+    Modelos: Logistic Regression, SVM linear, SVM rbf, Random Forest,
+             KNN, Naive Bayes, Decision Tree, XGBoost.
 
+    Returns:
+    --------
+    results : DataFrame con [subset, best_model, best_acc, best_gps]
+    detailed_results : dict {subset: {model_name: {"acc":..., "gps":...}}}
+    """
+    models = {
+        "LogReg": LogisticRegression(max_iter=1000, random_state=random_state),
+        "SVM-linear": SVC(kernel="linear", probability=True, random_state=random_state),
+        "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=random_state),
+        "RandomForest": RandomForestClassifier(random_state=random_state),
+        "KNN": KNeighborsClassifier(),
+        "NaiveBayes": GaussianNB(),
+        "DecisionTree": DecisionTreeClassifier(random_state=random_state),
+        "XGBoost": xgb.XGBClassifier(use_label_encoder=False, eval_metric="logloss", random_state=random_state)
+    }
+
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+    results_summary = []
+    detailed_results = {}
+
+    for subset_name, features in subsets.items():
+        Xsub = X[features].values
+        subset_scores = {}
+
+        for model_name, model in models.items():
+            y_pred = cross_val_predict(model, Xsub, y, cv=skf)
+
+            acc = accuracy_score(y, y_pred)
+            gps = compute_gps(y, y_pred)
+
+            subset_scores[model_name] = {"acc": acc, "gps": gps}
+
+        # elegir mejor modelo en base a GPS (puedes cambiar a acc si prefieres)
+        best_model = max(subset_scores.items(), key=lambda x: x[1]["gps"])
+        best_model_name, best_scores = best_model
+
+        results_summary.append({
+            "subset": subset_name,
+            "best_model": best_model_name,
+            "best_acc": best_scores["acc"],
+            "best_gps": best_scores["gps"]
+        })
+
+        detailed_results[subset_name] = subset_scores
+
+    results_df = pd.DataFrame(results_summary).set_index("subset")
+
+    return results_df, detailed_results
