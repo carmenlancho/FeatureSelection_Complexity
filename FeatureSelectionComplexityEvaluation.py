@@ -527,6 +527,8 @@ def compute_gps(y_true, y_pred):
     return GPS
 
 
+
+
 def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
     """
     Evalúa modelos en los subsets de features.
@@ -536,8 +538,8 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
 
     Returns:
     --------
-    results : DataFrame con [subset, best_model, best_acc, best_gps]
-    detailed_results : dict {subset: {model_name: {"acc":..., "gps":...}}}
+    results_df : DataFrame con [subset, best_model, best_acc, best_gps]
+    detailed_results : dict {subset: {model_name: {"acc":..., "gps":..., "acc_per_class": {...}}}}
     """
     models = {
         "LogReg": LogisticRegression(max_iter=1000, random_state=random_state),
@@ -554,6 +556,8 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
     results_summary = []
     detailed_results = {}
 
+    classes = np.unique(y)
+
     for subset_name, features in subsets.items():
         Xsub = X[features].values
         subset_scores = {}
@@ -564,9 +568,19 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
             acc = accuracy_score(y, y_pred)
             gps = compute_gps(y, y_pred)
 
-            subset_scores[model_name] = {"acc": acc, "gps": gps}
+            # Accuracy por clase
+            acc_per_class = {}
+            for c in classes:
+                idx = (y == c)
+                acc_per_class[int(c)] = accuracy_score(y[idx], y_pred[idx])
 
-        # elegir mejor modelo en base a GPS (puedes cambiar a acc si prefieres)
+            subset_scores[model_name] = {
+                "acc": acc,
+                "gps": gps,
+                "acc_per_class": acc_per_class
+            }
+
+        # Mejor modelo por GPS (puedes cambiar a "acc" si prefieres)
         best_model = max(subset_scores.items(), key=lambda x: x[1]["gps"])
         best_model_name, best_scores = best_model
 
@@ -587,10 +601,11 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
 
 results_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
 
-print(results_df)
+results_df
+detailed_results
 
-# Resultados detallados para un subset
-print(detailed_results["informative"])
+
+
 
 
 
