@@ -23,6 +23,7 @@ from skrebate import ReliefF
 from All_measures import *
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import confusion_matrix
 # https://epistasislab.github.io/scikit-rebate/using/
 # Para pymrmr hace falta instalar antes pip install numpy Cython
 import pymrmr
@@ -473,6 +474,33 @@ def FS_complexity_experiment(X, y, dict_info_feature):
     comparison_table = build_comparison_table(results_all)
 
     return comparison_table
+
+
+#### Vamos a obtener resultados de performance de modelos también
+## Los evaluamos con accuracy y con GPS
+
+
+def compute_gps(y_true, y_pred):
+    """
+    Calcula GPS para un problema binario.
+    """
+    cm = confusion_matrix(y_true, y_pred, labels=np.unique(y_true))
+
+    TN, FP, FN, TP = cm.ravel()
+
+    # métricas base
+    PPV = TP / (TP + FP) if (TP + FP) > 0 else 0
+    TPR = TP / (TP + FN) if (TP + FN) > 0 else 0
+    NPV = TN / (TN + FN) if (TN + FN) > 0 else 0
+    TNR = TN / (TN + FP) if (TN + FP) > 0 else 0
+
+    # F1+ y F1-
+    F1_pos = 2 * (PPV * TPR) / (PPV + TPR) if (PPV + TPR) > 0 else 0
+    F1_neg = 2 * (NPV * TNR) / (NPV + TNR) if (NPV + TNR) > 0 else 0
+
+    # GPS
+    GPS = 2 * (F1_pos * F1_neg) / (F1_pos + F1_neg) if (F1_pos + F1_neg) > 0 else 0
+    return GPS
 
 
 
