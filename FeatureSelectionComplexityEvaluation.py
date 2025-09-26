@@ -606,7 +606,44 @@ detailed_results
 
 
 
+def FS_complexity_experiment(X, y, dict_info_feature, dataset_name):
+    # Número de features informativas como k
+    k = len(dict_info_feature["informative"])
+    feature_names = X.columns.tolist()
 
+    # Ejecutamos los métodos de FS
+    fs_results = select_features_by_filters(X, y, feature_names, k=k)
+
+    # Construir subconjuntos
+    feature_types = {}
+    for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+    for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+    for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+    for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+    subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+    # Evaluación de complejidad
+    results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
+
+    # Evaluación de modelos
+    results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
+
+    # Juntamos en una sola tabla
+    results_all = results_total.join(results_models, how="left")
+
+    # Para comparación multi-dataset
+    results_all["dataset_name"] = dataset_name
+    comparison_table = results_all.set_index(["dataset_name", results_all.index])
+    comparison_table.index.names = ["Dataset", "Subset"]
+
+    return comparison_table, results_classes, detailed_models
+
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=15,n_noise=2,
+                                         n_redundant_linear=2,n_redundant_nonlinear=2,
+                                                     random_state=86785,noise_std=0.1)
+dataset_name = 'dataset_prueba'
+comparison_table = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+comparison_table
 
 
 
