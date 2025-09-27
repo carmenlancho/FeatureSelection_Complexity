@@ -531,69 +531,58 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
 # detailed_results
 
 
-# Para guardar los resultados en csv
-def save_subset_results_to_csv(dataset_name, subset_name,
-                               complex_classes_total, complex_instance,
-                               models_results, best_model,
-                               output_dir="Results_FS_ComplexityEvaluation"):
-    """
-    CSV con toda la información de un subset:
-    - Complejidad por clase + total
-    - Complejidad a nivel instancia
-    - Resultados de todos los modelos (acc, gps, acc_per_class)
-    - Indica mejor modelo
 
-    Parameters
-    ----------
-    dataset_name : str
-    subset_name : str
-    complex_classes_total : DataFrame (complexity por clase y total)
-    complex_instance : DataFrame (complexity por instancia)
-    models_results : dict {model_name: {"acc", "gps", "acc_per_class": {...}}}
-    best_model : str (nombre del modelo ganador)
-    output_dir : str, carpeta donde guardar los CSVs
-    """
 
-    os.makedirs(output_dir, exist_ok=True)
-    filename = f"ComplexityEvaluation_FS_{dataset_name}_{subset_name}.csv"
-    filepath = os.path.join(output_dir, filename)
+def save_complexity_csv(dataset_name, subset_name, results_classes, extras_host,
+                        path="Results_FS_ComplexityEvaluation"):
+    inst = extras_host[subset_name]["instance_measures"].reset_index(drop=True)
+    classes = results_classes[subset_name].reset_index()
 
-    # Parte 1: complejidad por clase y dataset
-    part1 = complex_classes_total.copy()
-    part1["type"] = "complexity_class_total"
+    # Añadimos columnas auxiliares
+    inst["level"] = "instance"
+    classes["level"] = "class"
 
-    # Parte 2: complejidad a nivel instancia
-    part2 = complex_instance.copy()
-    part2["type"] = "complexity_instance"
+    inst["subset"] = subset_name
+    classes["subset"] = subset_name
 
-    # Parte 3: resultados de modelos
+    # Unimos
+    final = pd.concat([classes, inst], axis=0, ignore_index=True)
+    fname = f"{path}/{dataset_name}_{subset_name}_complexity.csv"
+    final.to_csv(fname, index=False)
+
+    return final
+
+
+def save_models_csv(dataset_name, results_models, detailed_models, path="Results_FS_ComplexityEvaluation"):
     rows = []
-    for model, res in models_results.items():
-        row = {
-            "model": model,
-            "acc": res["acc"],
-            "gps": res["gps"],
-            "is_best": (model == best_model),
-            "type": "model"
-        }
-        # accuracy por clase
-        for c, acc_c in res["acc_per_class"].items():
-            row[f"acc_class_{c}"] = acc_c
-        rows.append(row)
+    for subset, models_scores in detailed_models.items():
+        # identificamos cuál fue el mejor modelo según results_df
+        best_model_name = results_models.loc[subset, "best_model"]
 
-    part3 = pd.DataFrame(rows)
+        for model_name, scores in models_scores.items():
+            row = {
+                "dataset": dataset_name,
+                "subset": subset,
+                "model": model_name,
+                "acc": scores["acc"],
+                "gps": scores["gps"],
+                "is_best": int(model_name == best_model_name)  # 1 si es el mejor, 0 si no
+            }
+            # accuracy por clase
+            for c, v in scores.get("acc_per_class", {}).items():
+                row[f"acc_class_{c}"] = v
+            rows.append(row)
 
-    # Unir tod
-    final = pd.concat([part1.reset_index(), part2.reset_index(), part3],
-                      axis=0, ignore_index=True)
-
-    # Guardar CSV
-    final.to_csv(filepath, index=False)
+    final = pd.DataFrame(rows)
+    fname = f"{path}/{dataset_name}_modelsPerformance.csv"
+    final.to_csv(fname, index=False)
     return final
 
 
 
-def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,output_dir="Results_FS_ComplexityEvaluation"):
+path_to_save = "Results_FS_ComplexityEvaluation"
+# dataset_name = 'prueba'
+def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save="Results_FS_ComplexityEvaluation"):
     # Número de features informativas como k
     k = len(dict_info_feature["informative"])
     feature_names = X.columns.tolist()
@@ -615,25 +604,23 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,output_dir="R
     # Evaluación de modelos
     results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
 
-    # Guardamos resultados de cada subset
+    # Guardar csvs de complejidad por subset
     for subset_name in subsets.keys():
-        complex_classes_total = results_classes[subset_name]
-        complex_instance = extras_host[subset_name]["instance_measures"]
-        models_results = detailed_models[subset_name]
-        best_model = results_models.loc[subset_name, "best_model"]
+        save_complexity_csv(dataset_name, subset_name, results_classes, extras_host, path_to_save)
 
-        save_subset_results_to_csv(dataset_name, subset_name,
-                                   complex_classes_total, complex_instance,
-                                   models_results, best_model,
-                                   output_dir=output_dir)
+    # Guardar csv de modelos por dataset
+    save_models_csv(dataset_name, results_models, detailed_models, path_to_save)
 
     # Juntamos en una sola tabla
     results_all = results_total.join(results_models, how="left")
 
-    # Para comparación multi-dataset
+    # TABLA DE COMPARACIÓN
     results_all["dataset_name"] = dataset_name
     comparison_table = results_all.set_index(["dataset_name", results_all.index])
     comparison_table.index.names = ["Dataset", "Subset"]
+
+    fname = f"{path_to_save}/{dataset_name}_comparisonTable.csv"
+    comparison_table.to_csv(fname)
 
     return comparison_table, results_classes, detailed_models
 
@@ -643,11 +630,9 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,output_dir="R
 
 
 #########################################################################################################3
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=15,n_noise=2,
-                                         n_redundant_linear=2,n_redundant_nonlinear=2,
-                                                     random_state=86785,noise_std=0.1)
-generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4, n_redundant_nonlinear=2,
-                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=0.5, random_state=0, noise_std=0.01)
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+                                                     n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
 
 # Número de features informativas como k
 k = len(dict_info_feature["informative"])
