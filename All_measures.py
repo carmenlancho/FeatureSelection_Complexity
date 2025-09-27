@@ -36,33 +36,37 @@ def all_measures(data,save_csv,path_to_save, name_data):
 
     L1 = L1_HD(X, y)
 
-
     p = ClassificationMeasures(data)
     kdn = p.k_disagreeing_neighbors()
 
-    DS = p.disjunct_size()
+    # DS = p.disjunct_size()
     DCP = p.disjunct_class_percentage()
     TD_U = p.tree_depth_unpruned()
-    TD_P = p.tree_depth_pruned()
-    MV = p.minority_value()
-    CB = p.class_balance()
+    # TD_P = p.tree_depth_pruned()
+    # MV = p.minority_value()
+    # CB = p.class_balance()
     CLD = p.class_likeliood_diff()
     N1 = p.borderline_points()  # N1
     N2 = p.intra_extra_ratio()  # N2
     LSC = p.local_set_cardinality()
-    LSradius = p.ls_radius()
-    H = p.harmfulness()
-    U = p.usefulness()
+    # LSradius = p.ls_radius()
+    # H = p.harmfulness()
+    # U = p.usefulness()
     F1 = p.f1()
-    F2 = p.f2()
-    F3 = p.f3()
-    F4 = p.f4()
+    # F2 = p.f2()
+    # F3 = p.f3()
+    # F4 = p.f4()
 
-
-    dict_measures = {'Hostility': host_instances, 'kDN': kdn, 'DS': DS, 'DCP': DCP,
-                     'TD_U': TD_U, 'TD_P': TD_P, 'MV': MV, 'CB': CB, 'CLD': CLD, 'N1': N1, 'N2': N2,
-                     'LSC': LSC, 'LSradius': LSradius, 'H': H, 'U': U, 'F1': F1, 'F2': F2, 'F3': F3, 'F4': F4,
+    dict_measures = {'Hostility': host_instances, 'kDN': kdn,  'DCP': DCP,
+                     'TD_U': TD_U,'CLD': CLD, 'N1': N1, 'N2': N2,
+                     'LSC': LSC, 'F1': F1,
                      'L1':L1, 'y':y}
+
+
+    # dict_measures = {'Hostility': host_instances, 'kDN': kdn, 'DS': DS, 'DCP': DCP,
+    #                  'TD_U': TD_U, 'TD_P': TD_P, 'MV': MV, 'CB': CB, 'CLD': CLD, 'N1': N1, 'N2': N2,
+    #                  'LSC': LSC, 'LSradius': LSradius, 'H': H, 'U': U, 'F1': F1, 'F2': F2, 'F3': F3, 'F4': F4,
+    #                  'L1':L1, 'y':y}
 
     df_measures = pd.DataFrame(dict_measures)
 
