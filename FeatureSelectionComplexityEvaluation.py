@@ -49,7 +49,7 @@ import pymrmr
 # Note that the actual class proportions will not exactly match weights when flip_y isn’t 0
 
 # Función para generar datos sintéticos
-def generate_synthetic_dataset(n_samples=200, n_informative=5, n_noise=5,n_redundant_linear=2, n_redundant_nonlinear=2,
+def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_linear, n_redundant_nonlinear,
                                 flip_y, class_sep, n_clusters_per_class, weights, random_state=42, noise_std=0.05):
     rng = np.random.RandomState(random_state)
 
