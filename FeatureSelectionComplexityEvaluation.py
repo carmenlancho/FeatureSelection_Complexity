@@ -646,10 +646,17 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
     # Guardar csv de modelos por dataset
     save_models_csv(dataset_name, results_models, path_to_save)
 
-    # Juntamos en una sola tabla
-    results_all = results_total.join(results_models, how="left")
+    # --- TABLA DE COMPARACIÓN ---
+    # results_models tiene MultiIndex (subset, model),
+    # hacemos un resumen (medias por subset)
+    summary_models = results_models.groupby(level="subset")[["acc", "gps"]].mean()
+    # OJO: SE PUEDE AGREGAR DE OTROS MODOS O ESCOGER UN ÚNICO MODELO,
+    # PARA SIMIPLIFICAR VAMOS A EMPEZAR CON LA MEDIA
 
-    # TABLA DE COMPARACIÓN
+    # Juntamos en una sola tabla
+    results_all = results_total.join(summary_models, how="left")
+
+    # Nombres y tal
     results_all["dataset_name"] = dataset_name
     comparison_table = results_all.set_index(["dataset_name", results_all.index])
     comparison_table.index.names = ["Dataset", "Subset"]
