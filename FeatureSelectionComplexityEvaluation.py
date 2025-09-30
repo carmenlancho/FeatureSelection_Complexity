@@ -574,32 +574,45 @@ def save_complexity_csv(dataset_name, subset_name, results_classes, extras_host,
 
     return final
 
+# Cuando guardábamos el mejor modelo:
+# def save_models_csv(dataset_name, results_models, detailed_models, path="Results_FS_ComplexityEvaluation"):
+#     rows = []
+#     for subset, models_scores in detailed_models.items():
+#         # identificamos cuál fue el mejor modelo según results_df
+#         best_model_name = results_models.loc[subset, "best_model"]
+#
+#         for model_name, scores in models_scores.items():
+#             row = {
+#                 "dataset": dataset_name,
+#                 "subset": subset,
+#                 "model": model_name,
+#                 "acc": scores["acc"],
+#                 "gps": scores["gps"],
+#                 "is_best": int(model_name == best_model_name)  # 1 si es el mejor, 0 si no
+#             }
+#             # accuracy por clase
+#             for c, v in scores.get("acc_per_class", {}).items():
+#                 row[f"acc_class_{c}"] = v
+#             rows.append(row)
+#
+#     final = pd.DataFrame(rows)
+#     fname = f"{path}/{dataset_name}_modelsPerformance.csv"
+#     final.to_csv(fname, index=False)
+#     return final
 
-def save_models_csv(dataset_name, results_models, detailed_models, path="Results_FS_ComplexityEvaluation"):
-    rows = []
-    for subset, models_scores in detailed_models.items():
-        # identificamos cuál fue el mejor modelo según results_df
-        best_model_name = results_models.loc[subset, "best_model"]
 
-        for model_name, scores in models_scores.items():
-            row = {
-                "dataset": dataset_name,
-                "subset": subset,
-                "model": model_name,
-                "acc": scores["acc"],
-                "gps": scores["gps"],
-                "is_best": int(model_name == best_model_name)  # 1 si es el mejor, 0 si no
-            }
-            # accuracy por clase
-            for c, v in scores.get("acc_per_class", {}).items():
-                row[f"acc_class_{c}"] = v
-            rows.append(row)
+def save_models_csv(dataset_name, results_models, path="Results_FS_ComplexityEvaluation"):
+    """
+    Guarda en CSV el rendimiento de TODOS los modelos en TODOS los subsets para un dataset.
+    results_models debe ser un DataFrame con índices [subset, model] y columnas [acc, gps, acc_class_*].
+    """
+    # Reset index para que subset y model queden como columnas normales
+    final = results_models.reset_index()
+    final.insert(0, "dataset", dataset_name)  # añadimos dataset como primera columna
 
-    final = pd.DataFrame(rows)
     fname = f"{path}/{dataset_name}_modelsPerformance.csv"
     final.to_csv(fname, index=False)
     return final
-
 
 
 
@@ -631,7 +644,7 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
         save_complexity_csv(dataset_name, subset_name, results_classes, extras_host, path_to_save)
 
     # Guardar csv de modelos por dataset
-    save_models_csv(dataset_name, results_models, detailed_models, path_to_save)
+    save_models_csv(dataset_name, results_models, path_to_save)
 
     # Juntamos en una sola tabla
     results_all = results_total.join(results_models, how="left")
@@ -652,28 +665,31 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
 #
 #
 # #########################################################################################################3
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
-#                                                      n_redundant_nonlinear=2,
-#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
-#
-# # Número de features informativas como k
-# k = len(dict_info_feature["informative"])
-# feature_names = X.columns.tolist()
-#
-# # Ejecutamos los métodos de FS
-# fs_results = select_features_by_filters(X, y, feature_names, k=k)
-#
-# # construir subconjuntos
-# feature_types = {}
-# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-# subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
-#
-#
-# results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
-#
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+                                                     n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+
+# Número de features informativas como k
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters(X, y, feature_names, k=k)
+
+# construir subconjuntos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+
+results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
+
+# Evaluación de modelos
+results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
+
 #
 # # Para un dataset
 # plot_complexity_totals(results_total, "Dataset1")
