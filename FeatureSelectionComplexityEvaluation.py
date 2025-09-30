@@ -516,20 +516,32 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
                 "acc_per_class": acc_per_class
             }
 
-        # Mejor modelo por GPS (puedes cambiar a "acc" si prefieres)
-        best_model = max(subset_scores.items(), key=lambda x: x[1]["gps"])
-        best_model_name, best_scores = best_model
+            ## ---------------- PARA GUARDAR TODOS LOS MODELOS ---------------##
 
-        results_summary.append({
-            "subset": subset_name,
-            "best_model": best_model_name,
-            "best_acc": best_scores["acc"],
-            "best_gps": best_scores["gps"]
-        })
+            registro = {"subset": subset_name,"model": model_name,"acc": acc,"gps": gps}
+            for cls, val in acc_per_class.items():
+                registro[f"acc_class_{cls}"] = val # accuracy por clase
+            results_summary.append(registro)
+
+
+        ## ---------------- PARA GUARDAR EL MEJOR MODELO EN FUNCIÓN DE PERFORMANCE ---------------##
+        # # Mejor modelo por GPS (se puede cambiar a "acc")
+        # best_model = max(subset_scores.items(), key=lambda x: x[1]["gps"])
+        # best_model_name, best_scores = best_model
+
+        # results_summary.append({
+        #     "subset": subset_name,
+        #     "best_model": best_model_name,
+        #     "best_acc": best_scores["acc"],
+        #     "best_gps": best_scores["gps"]
+        # })
+        ## ---------------------------------------------------------------------------------------##
+
 
         detailed_results[subset_name] = subset_scores
 
-    results_df = pd.DataFrame(results_summary).set_index("subset")
+    # results_df = pd.DataFrame(results_summary).set_index("subset")
+    results_df = pd.DataFrame(results_summary).set_index(["subset", "model"])
 
     return results_df, detailed_results
 
