@@ -127,10 +127,10 @@ def select_features_by_filters(X, y, feature_names,k=None,methods=None,random_st
     - y: array-like
     - feature_names: list of names (length = X.shape[1])
     - k: número de features a seleccionar (si None -> k = n_informative_guess ~ sqrt(n_features) fallback)
-    - methods: lista de strings entre {"mutual_info","f_classif","rf","relief"}
+    - methods: lista de strings entre {"mutual_info","f_classif","rf","relief",'xgboost'}
     """
     if methods is None:
-        methods = ["mutual_info", "f_classif", "rf", "relief"]
+        methods = ["mutual_info", "f_classif", "rf", "relief","xgboost"]
 
     Xarr = X.values if isinstance(X, pd.DataFrame) else np.asarray(X)
     n_features = Xarr.shape[1]
@@ -170,6 +170,14 @@ def select_features_by_filters(X, y, feature_names,k=None,methods=None,random_st
         scores = rf_sel.feature_importances_
         s = pd.Series(scores, index=feature_names).sort_values(ascending=False)
         results["relief"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # XGBoost
+    if "xgboost" in methods:
+        xgb_clf = xgb.XGBClassifier(use_label_encoder=False,eval_metric="logloss",random_state=random_state)
+        xgb_clf.fit(Xs, y)
+        imp = xgb_clf.feature_importances_
+        s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
+        results["xgb"] = {"scores": s, "selected": list(s.index[:k])}
 
 
     return results
