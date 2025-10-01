@@ -173,7 +173,7 @@ def select_features_by_filters(X, y, feature_names,k=None,methods=None,random_st
 
     # XGBoost
     if "xgboost" in methods:
-        xgb_clf = xgb.XGBClassifier(use_label_encoder=False,eval_metric="logloss",random_state=random_state)
+        xgb_clf = xgb.XGBClassifier(eval_metric="logloss",random_state=random_state)
         xgb_clf.fit(Xs, y)
         imp = xgb_clf.feature_importances_
         s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
