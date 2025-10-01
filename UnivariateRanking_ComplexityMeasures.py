@@ -14,6 +14,7 @@
 
 import numpy as np
 import pandas as pd
+import re
 
 from sklearn.datasets import make_classification
 from sklearn.preprocessing import StandardScaler
@@ -133,6 +134,26 @@ def univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"], save_csv=Fa
         df_results.to_csv(fname)
 
     return df_results, dataset_vals
+
+
+# Relaciones redundantes entre variables
+def get_redundant_feature_relation(dict_info_feature):
+    """
+    Construye un diccionario {redundante: [informativas de origen]} a partir de las fórmulas.
+    """
+    redundant_sources = {}
+
+    # lineales
+    for r, formula in dict_info_feature.get("formulas_linear", {}).items():
+        parents = re.findall(r"f\d+", formula)
+        redundant_sources[r] = parents
+
+    # no lineales
+    for r, formula in dict_info_feature.get("formulas_nonlinear", {}).items():
+        parents = re.findall(r"f\d+", formula)
+        redundant_sources[r] = parents
+
+    return redundant_sources
 
 
 
