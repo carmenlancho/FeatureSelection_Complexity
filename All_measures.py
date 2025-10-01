@@ -53,13 +53,13 @@ def all_measures(data,save_csv,path_to_save, name_data):
     # H = p.harmfulness()
     # U = p.usefulness()
     F1 = p.f1()
-    # F2 = p.f2()
-    # F3 = p.f3()
-    # F4 = p.f4()
+    F2 = p.f2()
+    F3 = p.f3()
+    F4 = p.f4()
 
     dict_measures = {'Hostility': host_instances, 'kDN': kdn,  'DCP': DCP,
                      'TD_U': TD_U,'CLD': CLD, 'N1': N1, 'N2': N2,
-                     'LSC': LSC, 'F1': F1,
+                     'LSC': LSC, 'F1': F1,'F2': F2, 'F3': F3, 'F4': F4,
                      'L1':L1, 'y':y}
 
 
