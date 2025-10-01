@@ -22,7 +22,6 @@ from sklearn.feature_selection import mutual_info_classif, f_classif
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from skrebate import ReliefF
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
@@ -31,6 +30,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 import xgboost as xgb
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.linear_model import LogisticRegression
 
 from All_measures import *
 import matplotlib.pyplot as plt
@@ -351,6 +353,302 @@ def select_features_by_filters_and_complexity(X, y, feature_names,k=None,methods
 
 
 
+
+# Función para generar los subconjuntos de interés para cada dataset
+# Copiada de FeatureSelectionComplexityEvaluation
+def build_subsets_for_complexity(feature_names, feature_types, fs_selections,
+        k_random=3, random_state=0):
+    rng = np.random.RandomState(random_state)
+    subsets = {}
+
+    subsets['all'] = list(feature_names)
+    inform = [f for f, t in feature_types.items() if t == 'informative']
+    noise = [f for f, t in feature_types.items() if t == 'noise']
+    redun = [f for f, t in feature_types.items() if t == 'redundant_linear']
+    redun_nonlineal = [f for f, t in feature_types.items() if t == 'redundant_nonlinear']
+
+    subsets['informative'] = inform
+    subsets['informative+redundant'] = inform + redun
+    subsets['informative+redundant_nonLinear'] = inform + redun_nonlineal
+    subsets['informative+noise'] = inform + noise
+
+    # selección aleatoria (informativas + ruido/redundantes al azar)
+    pool_extra = noise + redun + redun_nonlineal
+    if pool_extra and k_random > 0:
+        ksel = min(k_random, len(pool_extra))
+        rand_pick = rng.choice(pool_extra, size=ksel, replace=False).tolist()
+        subsets['informative+rand_extra'] = inform + rand_pick
+
+    # subsets según métodos de FS
+    for method, info in fs_selections.items():
+        if 'selected' in info:
+            sel = info['selected']
+            name = f"{method}_top{len(sel)}"
+            subsets[name] = sel
+
+    return subsets
+
+
+
+
+def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None):
+    """
+    Aplica all_measures a cada subset de features y organiza los resultados.
+
+    Parameters
+    ----------
+    X : DataFrame
+        Dataset completo con todas las features.
+    y : array-like
+        Etiquetas.
+    subsets : dict
+        Diccionario {subset_name: list_of_features}.
+    save_csv, path_to_save : para pasar a all_measures.
+
+    Returns
+    -------
+    results_total : DataFrame
+        Filas = subset_name, Columnas = medidas de complejidad (dataset total).
+    results_classes : dict
+        {subset_name: df_classes_dataset} (una fila por clase + dataset).
+    extras_host : dict
+        {subset_name: extra_results_host}.
+    """
+    results_total = []
+    results_classes = {}
+    extras_host = {}
+    selected_measures = ["Hostility", "N1", "N2", "kDN", "LSC", "CLD", "TD_U", "DCP", "F1","F2","F3","F4", "L1"]
+
+    for subset_name, features in subsets.items():
+        # Xsub = preprocessing.scale(X[features])
+        Xsub = X[features]
+        datos = pd.DataFrame(Xsub, columns=features)
+        datos['y'] = y
+        df_measures, df_classes, extra_results = all_measures(datos, save_csv, path_to_save, subset_name)
+
+        # Nos quedamos solo con las medidas seleccionadas
+        df_classes = df_classes.loc[:, df_classes.columns.intersection(selected_measures)]
+
+        # Guardar fila resumen (total del dataset)
+        total_row = df_classes.loc["dataset"].copy()
+        total_row.name = subset_name
+        total_row["n_features"] = len(features)  # extra info
+        results_total.append(total_row)
+
+        results_classes[subset_name] = df_classes
+        extras_host[subset_name] = {
+            "extra_results": extra_results,
+            "instance_measures": df_measures[selected_measures + ["y"]].copy()  # incluye etiquetas
+        }
+
+    results_total = pd.DataFrame(results_total)
+
+    return results_total, results_classes, extras_host
+
+
+
+def build_comparison_table(results_per_dataset):
+    """
+    results_per_dataset: dict
+        {dataset_name: results_total (DataFrame con subsets x medidas)}
+
+    Devuelve un DataFrame multi-índice (dataset, subset).
+    """
+    df_list = []
+    for dname, res in results_per_dataset.items():
+        res = res.copy()
+        res["dataset_name"] = dname
+        df_list.append(res)
+
+    combined = pd.concat(df_list)
+    combined = combined.set_index(["dataset_name", combined.index])
+    combined.index.names = ["Dataset", "Subset"]
+    return combined
+
+
+
+def compute_gps(y_true, y_pred):
+    """
+    Calcula GPS para un problema binario.
+    """
+    cm = confusion_matrix(y_true, y_pred, labels=np.unique(y_true))
+
+    TN, FP, FN, TP = cm.ravel()
+
+    # métricas base
+    PPV = TP / (TP + FP) if (TP + FP) > 0 else 0
+    TPR = TP / (TP + FN) if (TP + FN) > 0 else 0
+    NPV = TN / (TN + FN) if (TN + FN) > 0 else 0
+    TNR = TN / (TN + FP) if (TN + FP) > 0 else 0
+
+    # F1+ y F1-
+    F1_pos = 2 * (PPV * TPR) / (PPV + TPR) if (PPV + TPR) > 0 else 0
+    F1_neg = 2 * (NPV * TNR) / (NPV + TNR) if (NPV + TNR) > 0 else 0
+
+    # GPS
+    GPS = 2 * (F1_pos * F1_neg) / (F1_pos + F1_neg) if (F1_pos + F1_neg) > 0 else 0
+    return GPS
+
+
+
+
+def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
+    """
+    Evalúa modelos en los subsets de features.
+
+    Modelos: Logistic Regression, SVM linear, SVM rbf, Random Forest,
+             KNN, Naive Bayes, Decision Tree, XGBoost.
+
+    Returns:
+    --------
+    results_df : DataFrame con [subset, best_model, best_acc, best_gps]
+    detailed_results : dict {subset: {model_name: {"acc":..., "gps":..., "acc_per_class": {...}}}}
+    """
+    models = {
+        "LogReg": LogisticRegression(max_iter=1000, random_state=random_state),
+        "SVM-linear": SVC(kernel="linear", probability=True, random_state=random_state),
+        "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=random_state),
+        "RandomForest": RandomForestClassifier(random_state=random_state),
+        "KNN": KNeighborsClassifier(),
+        "NaiveBayes": GaussianNB(),
+        "DecisionTree": DecisionTreeClassifier(random_state=random_state),
+        "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=random_state)
+    }
+
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+    results_summary = []
+    detailed_results = {}
+
+    classes = np.unique(y)
+
+    for subset_name, features in subsets.items():
+        Xsub = X[features].values
+        subset_scores = {}
+
+        for model_name, model in models.items():
+            y_pred = cross_val_predict(model, Xsub, y, cv=skf)
+
+            acc = accuracy_score(y, y_pred)
+            gps = compute_gps(y, y_pred)
+
+            # Accuracy por clase
+            acc_per_class = {}
+            for c in classes:
+                idx = (y == c)
+                acc_per_class[int(c)] = accuracy_score(y[idx], y_pred[idx])
+
+            subset_scores[model_name] = {
+                "acc": acc,
+                "gps": gps,
+                "acc_per_class": acc_per_class
+            }
+
+            registro = {"subset": subset_name,"model": model_name,"acc": acc,"gps": gps}
+            for cls, val in acc_per_class.items():
+                registro[f"acc_class_{cls}"] = val # accuracy por clase
+            results_summary.append(registro)
+
+        detailed_results[subset_name] = subset_scores
+
+    results_df = pd.DataFrame(results_summary).set_index(["subset", "model"])
+
+    return results_df, detailed_results
+
+
+
+
+def save_complexity_csv(dataset_name, subset_name, results_classes, extras_host,
+                        path="Results_FS_ComplexityEvaluation_WithUnivariate"):
+    inst = extras_host[subset_name]["instance_measures"].reset_index(drop=True)
+    classes = results_classes[subset_name].reset_index()
+
+    # Añadimos columnas auxiliares
+    inst["level"] = "instance"
+    classes["level"] = "class"
+
+    inst["subset"] = subset_name
+    classes["subset"] = subset_name
+
+    # Unimos
+    final = pd.concat([classes, inst], axis=0, ignore_index=True)
+    fname = f"{path}/{dataset_name}_{subset_name}_complexity.csv"
+    final.to_csv(fname, index=False)
+
+    return final
+
+
+
+
+def save_models_csv(dataset_name, results_models, path="Results_FS_ComplexityEvaluation_WithUnivariate"):
+    """
+    Guarda en CSV el rendimiento de TODOS los modelos en TODOS los subsets para un dataset.
+    results_models debe ser un DataFrame con índices [subset, model] y columnas [acc, gps, acc_class_*].
+    """
+    # Reset index para que subset y model queden como columnas normales
+    final = results_models.reset_index()
+    final.insert(0, "dataset", dataset_name)  # añadimos dataset como primera columna
+
+    fname = f"{path}/{dataset_name}_modelsPerformance.csv"
+    final.to_csv(fname, index=False)
+    return final
+
+
+
+# dataset_name = 'prueba'
+def FS_complexity_experiment_uni(X, y, dict_info_feature, dataset_name,path_to_save="Results_FS_ComplexityEvaluation_WithUnivariate"):
+    # Número de features informativas como k
+    k = len(dict_info_feature["informative"])
+    feature_names = X.columns.tolist()
+
+    # Ejecutamos los métodos de FS
+    fs_results = select_features_by_filters_and_complexity(X, y, feature_names, k=k)
+
+    # Construir subconjuntos
+    feature_types = {}
+    for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+    for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+    for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+    for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+    subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+
+    # Evaluación de complejidad
+    results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
+
+    # Evaluación de modelos
+    results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
+
+    # Guardar csvs de complejidad por subset
+    for subset_name in subsets.keys():
+        save_complexity_csv(dataset_name, subset_name, results_classes, extras_host, path_to_save)
+
+    # Guardar csv de modelos por dataset
+    save_models_csv(dataset_name, results_models, path_to_save)
+
+    # --- TABLA DE COMPARACIÓN ---
+    # results_models tiene MultiIndex (subset, model),
+    # hacemos un resumen (medias por subset)
+    summary_models = results_models.groupby(level="subset")[["acc", "gps"]].agg(["mean", "max", "std"])
+    # Formato nombres columnas
+    summary_models.columns = [f"{m}_{stat}" for m, stat in summary_models.columns]
+
+
+    # Juntamos en una sola tabla
+    results_all = results_total.join(summary_models, how="left")
+
+    # Nombres y tal
+    results_all["dataset_name"] = dataset_name
+    comparison_table = results_all.set_index(["dataset_name", results_all.index])
+    comparison_table.index.names = ["Dataset", "Subset"]
+
+    fname = f"{path_to_save}/{dataset_name}_comparisonTable.csv"
+    comparison_table.to_csv(fname)
+
+    return comparison_table, results_classes, detailed_models
+
+
+
+
+
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
                                                      n_redundant_nonlinear=2,
                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
@@ -365,4 +663,14 @@ fs_results = select_features_by_filters_and_complexity(X, y, feature_names,k=k,
 
 # fs_results["complexity_Hostility"]
 # fs_results["complexity_N1"]
+
+
+
+# Construir subconjuntos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
 
