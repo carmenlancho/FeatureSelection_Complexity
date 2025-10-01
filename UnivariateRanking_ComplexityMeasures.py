@@ -102,7 +102,7 @@ def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_lin
 
 # dataset_name = 'rpueba'
 # save_csv = True
-def univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"], save_csv=False, path="Results_UnivariateComplexity", dataset_name=None):
+def univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"], save_csv=False, path="Results_UnivariateRanking_CM", dataset_name=None):
     """
     Calcula la complejidad de forma univariante para cada feature
 
@@ -341,7 +341,7 @@ def select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,d
     if 'complexity' in methods:
         # complexity_measures = ["Hostility", "N1", "kDN"]
         df_results, dataset_vals = univariate_complexity(X, y, measures=complexity_measures,save_csv = True,
-                                                         path = "Results_UnivariateComplexity", dataset_name = dataset_name)
+                                                         path = "Results_UnivariateRanking_CM", dataset_name = dataset_name)
 
         # info de las redundantes
         redundant_sources = get_redundant_feature_relation(dict_info_feature)
