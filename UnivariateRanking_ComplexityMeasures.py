@@ -18,6 +18,19 @@ import re
 
 from sklearn.datasets import make_classification
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import mutual_info_classif, f_classif
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_predict, StratifiedKFold
+from skrebate import ReliefF
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+import xgboost as xgb
+from sklearn.metrics import accuracy_score
 
 from All_measures import *
 import matplotlib.pyplot as plt
@@ -250,4 +263,106 @@ df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N
 redundant_sources = get_redundant_feature_relation(dict_info_feature)
 # Obtener ranking de informativas
 summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
+
+
+
+
+
+
+## Función para ejecutar diversos métodos de FS tipo filtro del SOTA y tb los nuestros
+def select_features_by_filters_and_complexity(X, y, feature_names,k=None,methods=None,
+                                              complexity_measures = ["Hostility", "N1", "kDN"],
+                                              random_state=0):
+    """
+    Aplica varios métodos de filtro y devuelve:
+        selections: dict {method_name: {"scores": pd.Series(index=feature_names), "selected": [names...] }}
+
+    - X: np.ndarray or DataFrame
+    - y: array-like
+    - feature_names: list of names (length = X.shape[1])
+    - k: número de features a seleccionar (si None -> k = n_informative_guess ~ sqrt(n_features) fallback)
+    - methods: lista de strings entre {"mutual_info","f_classif","rf","relief",'xgboost'}
+    """
+    if methods is None:
+        methods = ["mutual_info", "f_classif", "rf", "relief","xgboost",
+                   'complexity']
+
+    Xarr = X.values if isinstance(X, pd.DataFrame) else np.asarray(X)
+    n_features = Xarr.shape[1]
+    if k is None:
+        k = max(1, int(np.sqrt(n_features)))  # heuristic fallback
+
+    results = {}
+
+    # standardize for methods that need it
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(Xarr)
+
+    # mutual information
+    if "mutual_info" in methods:
+        mi = mutual_info_classif(Xs, y, random_state=random_state)
+        s = pd.Series(mi, index=feature_names).sort_values(ascending=False)
+        results["mutual_info"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # ANOVA F (f_classif)
+    if "f_classif" in methods:
+        F, p = f_classif(Xs, y)
+        s = pd.Series(F, index=feature_names).sort_values(ascending=False)
+        results["f_classif"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # Random Forest importance
+    if "rf" in methods:
+        rf = RandomForestClassifier(n_estimators=200, random_state=random_state)
+        rf.fit(Xs, y)
+        imp = rf.feature_importances_
+        s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
+        results["rf"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # ReliefF
+    if "relief" in methods:
+        rf_sel = ReliefF(n_features_to_select=Xs.shape[1]) # n_neighbors usamos el valor por defecto de la librería
+        rf_sel.fit(Xs, y)
+        scores = rf_sel.feature_importances_
+        s = pd.Series(scores, index=feature_names).sort_values(ascending=False)
+        results["relief"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # XGBoost
+    if "xgboost" in methods:
+        xgb_clf = xgb.XGBClassifier(eval_metric="logloss",random_state=random_state)
+        xgb_clf.fit(Xs, y)
+        imp = xgb_clf.feature_importances_
+        s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
+        results["xgb"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # COMPLEXITY (univariate study)
+    if 'complexity' in methods:
+        # complexity_measures = ["Hostility", "N1", "kDN"]
+        df_results, dataset_vals = univariate_complexity(X, y, measures=complexity_measures, save_csv=False)
+
+        # Para cada medida generamos un ranking
+        for m in complexity_measures:
+            s = dataset_vals[m].sort_values(ascending=True)  # menor es mejor
+            results[f"complexity_{m}"] = {"scores": s, "selected": list(s.index[:k])}
+
+    return results
+# Para estas primeras pruebas, para no tener que elegir manualmente el k, podemos
+# escoger k como el número de features realmente informativas
+
+
+
+
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+                                                     n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
+
+# Ejecutamos los métodos de FS
+fs_results = select_features_by_filters_and_complexity(X, y, feature_names,k=k,
+                        methods=["mutual_info", "rf", "xgboost", "complexity"],
+                                complexity_measures=["Hostility", "N1",'kDN'])
+
+# fs_results["complexity_Hostility"]
+# fs_results["complexity_N1"]
 
