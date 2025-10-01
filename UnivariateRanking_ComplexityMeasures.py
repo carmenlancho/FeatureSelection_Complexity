@@ -348,7 +348,7 @@ def select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,d
         # Obtener ranking de informativas
         summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature, redundant_sources)
         path_s = 'Results_UnivariateRanking_CM'
-        sname = f"{path_s}/Results_UnivariateComplexityRanking_{dataset_name}.csv"
+        sname = f"{path_s}/TopFeaturesSummary_UnivariateComplexityRanking_{dataset_name}.csv"
         summary.to_csv(sname, index=False)
 
 
@@ -696,16 +696,18 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                                      random_state=0,noise_std=0.01)
 comparison_table, results_classes, detailed_models = FS_complexity_experiment_uni(X, y, dict_info_feature,dataset_name)
 
-# Resultados específicos del ranking univariante
 
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
-                                                     n_redundant_nonlinear=2,
-                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
 
-# Calcular complejidad univariante
-df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"])
-# info de las redundantes
-redundant_sources = get_redundant_feature_relation(dict_info_feature)
-# Obtener ranking de informativas
-summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
-
+# # Resultados específicos del ranking univariante
+#
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+#                                                      n_redundant_nonlinear=2,
+#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+#
+# # Calcular complejidad univariante
+# df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"])
+# # info de las redundantes
+# redundant_sources = get_redundant_feature_relation(dict_info_feature)
+# # Obtener ranking de informativas
+# summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
+#
