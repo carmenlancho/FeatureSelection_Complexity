@@ -254,17 +254,17 @@ def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_source
 
 
 
-
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
-                                                     n_redundant_nonlinear=2,
-                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
-
-# Calcular complejidad univariante
-df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"])
-# info de las redundantes
-redundant_sources = get_redundant_feature_relation(dict_info_feature)
-# Obtener ranking de informativas
-summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
+#
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+#                                                      n_redundant_nonlinear=2,
+#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+#
+# # Calcular complejidad univariante
+# df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"])
+# # info de las redundantes
+# redundant_sources = get_redundant_feature_relation(dict_info_feature)
+# # Obtener ranking de informativas
+# summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
 
 
 
@@ -272,7 +272,8 @@ summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_
 
 
 ## Función para ejecutar diversos métodos de FS tipo filtro del SOTA y tb los nuestros
-def select_features_by_filters_and_complexity(X, y, feature_names,k=None,methods=None,
+def select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,dict_info_feature,
+                                              k=None,methods=None,
                                               complexity_measures = ["Hostility", "N1", "kDN"],
                                               random_state=0):
     """
@@ -339,7 +340,17 @@ def select_features_by_filters_and_complexity(X, y, feature_names,k=None,methods
     # COMPLEXITY (univariate study)
     if 'complexity' in methods:
         # complexity_measures = ["Hostility", "N1", "kDN"]
-        df_results, dataset_vals = univariate_complexity(X, y, measures=complexity_measures, save_csv=False)
+        df_results, dataset_vals = univariate_complexity(X, y, measures=complexity_measures,save_csv = True,
+                                                         path = "Results_UnivariateComplexity", dataset_name = dataset_name)
+
+        # info de las redundantes
+        redundant_sources = get_redundant_feature_relation(dict_info_feature)
+        # Obtener ranking de informativas
+        summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature, redundant_sources)
+        path_s = 'Results_UnivariateRanking_CM'
+        sname = f"{path_s}/Results_UnivariateComplexityRanking_{dataset_name}.csv"
+        summary.to_csv(sname, index=False)
+
 
         # Para cada medida generamos un ranking
         for m in complexity_measures:
@@ -601,7 +612,8 @@ def FS_complexity_experiment_uni(X, y, dict_info_feature, dataset_name,path_to_s
     feature_names = X.columns.tolist()
 
     # Ejecutamos los métodos de FS
-    fs_results = select_features_by_filters_and_complexity(X, y, feature_names, k=k)
+    fs_results = select_features_by_filters_and_complexity(X, y, feature_names,dict_info_feature,
+                                                           dataset_name=dataset_name, k=k)
 
     # Construir subconjuntos
     feature_types = {}
@@ -647,30 +659,54 @@ def FS_complexity_experiment_uni(X, y, dict_info_feature, dataset_name,path_to_s
 
 
 
+#
+#
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+#                                                      n_redundant_nonlinear=2,
+#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+#
+# k = len(dict_info_feature["informative"])
+# feature_names = X.columns.tolist()
+#
+# # Ejecutamos los métodos de FS
+# fs_results = select_features_by_filters_and_complexity(X, y, feature_names,k=k,
+#                         methods=["mutual_info", "rf", "xgboost", "complexity"],
+#                                 complexity_measures=["Hostility", "N1",'kDN'])
+#
+# # fs_results["complexity_Hostility"]
+# # fs_results["complexity_N1"]
+#
+#
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+#
 
+
+path_to_save = "Results_FS_ComplexityEvaluation_WithUnivariate"
+### Dataset 1
+dataset_name = 'ArtificialDataset1'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                        flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+comparison_table, results_classes, detailed_models = FS_complexity_experiment_uni(X, y, dict_info_feature,dataset_name)
+
+# Resultados específicos del ranking univariante
 
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
                                                      n_redundant_nonlinear=2,
                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
 
-k = len(dict_info_feature["informative"])
-feature_names = X.columns.tolist()
-
-# Ejecutamos los métodos de FS
-fs_results = select_features_by_filters_and_complexity(X, y, feature_names,k=k,
-                        methods=["mutual_info", "rf", "xgboost", "complexity"],
-                                complexity_measures=["Hostility", "N1",'kDN'])
-
-# fs_results["complexity_Hostility"]
-# fs_results["complexity_N1"]
-
-
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results)
+# Calcular complejidad univariante
+df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"])
+# info de las redundantes
+redundant_sources = get_redundant_feature_relation(dict_info_feature)
+# Obtener ranking de informativas
+summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
 
