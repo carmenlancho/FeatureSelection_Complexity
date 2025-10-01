@@ -155,8 +155,9 @@ def get_redundant_feature_relation(dict_info_feature):
 
     return redundant_sources
 
-
 # redundant_sources = get_redundant_feature_relation(dict_info_feature)
+
+
 
 def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources):
     """
@@ -205,6 +206,19 @@ def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_source
 
         extended_recall = len(covered_info) / len(informative) if informative else 0
 
+        redundancy_info = {f: False for f in topk}
+
+        # Iteramos sobre los features del top que son redundantes
+        # Redundantes en el sentido de combinación de otras que ya están en el top seleccionado
+        for r in topk:
+            if r in redundant_sources:
+                r = 'f12'
+                # si todas las f ya están en el top, entonces es redundante
+                if all(src in topk for src in redundant_sources[r]):
+                    redundancy_info[r] = True
+        # OJO QUE ES NORMAL QUE SALGAN REDUNDANTES PORQUE ESTO ES UNIVARIANTE
+
+
         analysis.append({
             "measure": m,
             "informative_total": len(informative),
@@ -213,7 +227,9 @@ def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_source
             "extended_recall_informative": extended_recall,
             "caught_redundant_linear": caught_lin,
             "caught_redundant_nonlinear": caught_nonlin,
-            "caught_noise": caught_noise
+            "caught_noise": caught_noise,
+            'redundant_f': sum(redundancy_info.values()),
+            'redundant_f_%': sum(redundancy_info.values())/len(redundancy_info.values())
         })
 
     summary = pd.DataFrame(analysis).set_index("measure")
