@@ -156,9 +156,9 @@ def get_redundant_feature_relation(dict_info_feature):
     return redundant_sources
 
 
+# redundant_sources = get_redundant_feature_relation(dict_info_feature)
 
-
-def evaluate_univariate_ranking(dataset_vals, dict_info_feature):
+def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources):
     """
     Evalúa el ranking univariante de cada medida de complejidad respecto
     a las variables informativas conocidas.
@@ -194,21 +194,26 @@ def evaluate_univariate_ranking(dataset_vals, dict_info_feature):
         caught_lin = len(redundant_lin & topk)
         caught_nonlin = len(redundant_nonlin & topk)
         caught_noise = len(noise & topk)
+
+        # Cobertura teniendo en cuenta redundancias
+        # Si no está la variable original pero está alguna redundante que la contiene, la añadimos a la lista
+        # de pilladas
+        covered_info = set(informative & topk)  # informativas directas
+        for r in (topk & (redundant_lin | redundant_nonlin)):
+            if r in redundant_sources:
+                covered_info = covered_info | set(redundant_sources[r])  # añadimos sus "padres" informativos
+
+        extended_recall = len(covered_info) / len(informative) if informative else 0
+
         analysis.append({
             "measure": m,
             "informative_total": len(informative),
-            "redundant_linear_total": len(redundant_lin),
-            "redundant_nonlinear_total": len(redundant_nonlin),
-            "noise_total": len(noise),
-            "topk_size": k,
             "caught_informative": caught_info,
+            "recall_informative": caught_info / len(informative) if informative else 0,
+            "extended_recall_informative": extended_recall,
             "caught_redundant_linear": caught_lin,
             "caught_redundant_nonlinear": caught_nonlin,
-            "caught_noise": caught_noise,
-            "recall_informative": caught_info / len(informative) if informative else 0,
-            "recall_redundant_linear": caught_lin / len(redundant_lin) if redundant_lin else 0,
-            "recall_redundant_nonlinear": caught_nonlin / len(redundant_nonlin) if redundant_nonlin else 0,
-            "recall_noise": caught_noise / len(noise) if noise else 0
+            "caught_noise": caught_noise
         })
 
     summary = pd.DataFrame(analysis).set_index("measure")
@@ -225,7 +230,8 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informati
 
 # Calcular complejidad univariante
 df_results, dataset_vals = univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"])
-
+# info de las redundantes
+redundant_sources = get_redundant_feature_relation(dict_info_feature)
 # Obtener ranking de informativas
-summary = evaluate_univariate_ranking(df_results, dataset_vals, dict_info_feature)
+summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_sources)
 
