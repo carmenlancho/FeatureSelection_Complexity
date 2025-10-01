@@ -649,9 +649,10 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
     # --- TABLA DE COMPARACIÓN ---
     # results_models tiene MultiIndex (subset, model),
     # hacemos un resumen (medias por subset)
-    summary_models = results_models.groupby(level="subset")[["acc", "gps"]].mean()
-    # OJO: SE PUEDE AGREGAR DE OTROS MODOS O ESCOGER UN ÚNICO MODELO,
-    # PARA SIMIPLIFICAR VAMOS A EMPEZAR CON LA MEDIA
+    summary_models = results_models.groupby(level="subset")[["acc", "gps"]].agg(["mean", "max", "std"])
+    # Formato nombres columnas
+    summary_models.columns = [f"{m}_{stat}" for m, stat in summary_models.columns]
+
 
     # Juntamos en una sola tabla
     results_all = results_total.join(summary_models, how="left")
