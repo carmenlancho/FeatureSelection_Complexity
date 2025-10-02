@@ -682,13 +682,13 @@ def FS_complexity_experiment_uni(X, y, dict_info_feature, dataset_name,path_to_s
 
 
 
-
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
-                                                     n_redundant_nonlinear=2,
-                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
-
-k = len(dict_info_feature["informative"])
-feature_names = X.columns.tolist()
+#
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+#                                                      n_redundant_nonlinear=2,
+#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+#
+# k = len(dict_info_feature["informative"])
+# feature_names = X.columns.tolist()
 #
 # # Ejecutamos los métodos de FS
 # fs_results = select_features_by_filters_and_complexity(X, y, feature_names,k=k,
