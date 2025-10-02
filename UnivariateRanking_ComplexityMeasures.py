@@ -227,7 +227,6 @@ def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_source
         # Redundantes en el sentido de combinación de otras que ya están en el top seleccionado
         for r in topk:
             if r in redundant_sources:
-                r = 'f12'
                 # si todas las f ya están en el top, entonces es redundante
                 if all(src in topk for src in redundant_sources[r]):
                     redundancy_info[r] = True
