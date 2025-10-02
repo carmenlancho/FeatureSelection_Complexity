@@ -1,0 +1,9 @@
+method,informative_total,caught_informative,recall_informative,extended_recall_informative,caught_redundant_linear,caught_redundant_nonlinear,caught_noise,redundant_f,redundant_f_%
+mutual_info,40.0,13.0,0.325,0.55,6.0,6.0,15.0,3.0,0.075
+f_classif,40.0,10.0,0.25,0.375,4.0,4.0,22.0,5.0,0.125
+rf,40.0,1.0,0.025,0.15,0.0,4.0,35.0,0.0,0.0
+relief,40.0,0.0,0.0,0.05,0.0,1.0,39.0,0.0,0.0
+xgb,40.0,2.0,0.05,0.45,2.0,9.0,27.0,0.0,0.0
+complexity_Hostility,40.0,17.0,0.425,0.775,6.0,12.0,5.0,3.0,0.075
+complexity_N1,40.0,13.0,0.325,0.85,5.0,17.0,5.0,1.0,0.025
+complexity_kDN,40.0,17.0,0.425,0.775,4.0,16.0,3.0,4.0,0.1
