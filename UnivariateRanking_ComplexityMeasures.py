@@ -269,8 +269,6 @@ def evaluate_univariate_ranking(dataset_vals, dict_info_feature,redundant_source
 
 
 
-
-
 ## Función para ejecutar diversos métodos de FS tipo filtro del SOTA y tb los nuestros
 def select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,dict_info_feature,
                                               k=None,methods=None,
@@ -296,68 +294,94 @@ def select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,d
         k = max(1, int(np.sqrt(n_features)))  # heuristic fallback
 
     results = {}
+    summary_rows = []  # resúmenes para el CSV final
 
-    # standardize for methods that need it
-    scaler = StandardScaler()
-    Xs = scaler.fit_transform(Xarr)
+    # # standardize for methods that need it
+    # scaler = StandardScaler()
+    # Xs = scaler.fit_transform(Xarr)
+    # ya hemos preprocesado previamente
+
+    # info de las redundantes
+    redundant_sources = get_redundant_feature_relation(dict_info_feature)
 
     # mutual information
     if "mutual_info" in methods:
-        mi = mutual_info_classif(Xs, y, random_state=random_state)
+        mi = mutual_info_classif(Xarr, y, random_state=random_state)
         s = pd.Series(mi, index=feature_names).sort_values(ascending=False)
         results["mutual_info"] = {"scores": s, "selected": list(s.index[:k])}
+        summary_mi = evaluate_univariate_ranking(pd.DataFrame({"score": s}), dict_info_feature, redundant_sources)
+        row = summary_mi.iloc[0].copy()
+        row["method"] = "mutual_info"
+        summary_rows.append(row)
 
     # ANOVA F (f_classif)
     if "f_classif" in methods:
-        F, p = f_classif(Xs, y)
+        F, p = f_classif(Xarr, y)
         s = pd.Series(F, index=feature_names).sort_values(ascending=False)
         results["f_classif"] = {"scores": s, "selected": list(s.index[:k])}
+        summary_f = evaluate_univariate_ranking(pd.DataFrame({"score": s}), dict_info_feature, redundant_sources)
+        row = summary_f.iloc[0].copy()
+        row["method"] = "f_classif"
+        summary_rows.append(row)
 
     # Random Forest importance
     if "rf" in methods:
         rf = RandomForestClassifier(n_estimators=200, random_state=random_state)
-        rf.fit(Xs, y)
+        rf.fit(Xarr, y)
         imp = rf.feature_importances_
         s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
         results["rf"] = {"scores": s, "selected": list(s.index[:k])}
+        summary_rf = evaluate_univariate_ranking(pd.DataFrame({"score": s}), dict_info_feature, redundant_sources)
+        row = summary_rf.iloc[0].copy()
+        row["method"] = "rf"
+        summary_rows.append(row)
 
     # ReliefF
     if "relief" in methods:
-        rf_sel = ReliefF(n_features_to_select=Xs.shape[1]) # n_neighbors usamos el valor por defecto de la librería
-        rf_sel.fit(Xs, y)
+        rf_sel = ReliefF(n_features_to_select=Xarr.shape[1]) # n_neighbors usamos el valor por defecto de la librería
+        rf_sel.fit(Xarr, y)
         scores = rf_sel.feature_importances_
         s = pd.Series(scores, index=feature_names).sort_values(ascending=False)
         results["relief"] = {"scores": s, "selected": list(s.index[:k])}
+        summary_relief = evaluate_univariate_ranking(pd.DataFrame({"score": s}), dict_info_feature, redundant_sources)
+        row = summary_relief.iloc[0].copy()
+        row["method"] = "relief"
+        summary_rows.append(row)
 
     # XGBoost
     if "xgboost" in methods:
         xgb_clf = xgb.XGBClassifier(eval_metric="logloss",random_state=random_state)
-        xgb_clf.fit(Xs, y)
+        xgb_clf.fit(Xarr, y)
         imp = xgb_clf.feature_importances_
         s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
         results["xgb"] = {"scores": s, "selected": list(s.index[:k])}
+        summary_xgb = evaluate_univariate_ranking(pd.DataFrame({"score": s}), dict_info_feature, redundant_sources)
+        row = summary_xgb.iloc[0].copy()
+        row["method"] = "xgb"
+        summary_rows.append(row)
 
     # COMPLEXITY (univariate study)
     if 'complexity' in methods:
         # complexity_measures = ["Hostility", "N1", "kDN"]
         df_results, dataset_vals = univariate_complexity(X, y, measures=complexity_measures,save_csv = True,
                                                          path = "Results_UnivariateRanking_CM", dataset_name = dataset_name)
+        # no ponemos Xarr porque necesita columns
 
-        # info de las redundantes
-        redundant_sources = get_redundant_feature_relation(dict_info_feature)
-        # Obtener ranking de informativas
-        summary = evaluate_univariate_ranking(dataset_vals, dict_info_feature, redundant_sources)
-        path_s = 'Results_UnivariateRanking_CM'
-        sname = f"{path_s}/TopFeaturesSummary_UnivariateComplexityRanking_{dataset_name}.csv"
-        summary.to_csv(sname, index=False)
-
-
-        # Para cada medida generamos un ranking
         for m in complexity_measures:
             s = dataset_vals[m].sort_values(ascending=True)  # menor es mejor
             results[f"complexity_{m}"] = {"scores": s, "selected": list(s.index[:k])}
+            summary_m = evaluate_univariate_ranking(pd.DataFrame({"score": s}), dict_info_feature, redundant_sources)
+            row = summary_m.iloc[0].copy()
+            row["method"] = f"complexity_{m}"
+            summary_rows.append(row)
 
-    return results
+
+    # ----------- Guardar resumen -----------
+    summary_df = pd.DataFrame(summary_rows).set_index("method")
+    fname = f"Results_UnivariateRanking_CM/TopFeaturesSummary_AllMethods_{dataset_name}.csv"
+    summary_df.to_csv(fname, index=True)
+
+    return results, summary_df
 # Para estas primeras pruebas, para no tener que elegir manualmente el k, podemos
 # escoger k como el número de features realmente informativas
 
@@ -611,9 +635,8 @@ def FS_complexity_experiment_uni(X, y, dict_info_feature, dataset_name,path_to_s
     k = len(dict_info_feature["informative"])
     feature_names = X.columns.tolist()
 
-    fs_results = select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,
+    fs_results,_ = select_features_by_filters_and_complexity(X, y, feature_names,dataset_name,
                                                             dict_info_feature, k=k)
-
     # Construir subconjuntos
     feature_types = {}
     for f in dict_info_feature["informative"]: feature_types[f] = "informative"
@@ -658,14 +681,14 @@ def FS_complexity_experiment_uni(X, y, dict_info_feature, dataset_name,path_to_s
 
 
 
-#
-#
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
-#                                                      n_redundant_nonlinear=2,
-#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
-#
-# k = len(dict_info_feature["informative"])
-# feature_names = X.columns.tolist()
+
+
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+                                                     n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
+
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
 #
 # # Ejecutamos los métodos de FS
 # fs_results = select_features_by_filters_and_complexity(X, y, feature_names,k=k,
