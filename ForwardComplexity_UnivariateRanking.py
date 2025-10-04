@@ -134,26 +134,27 @@ def univariate_complexity(X, y, measures=["Hostility", "N1", "kDN"],
     dataset_vals = df_results.xs("dataset", level="level")[measures]
 
     # juntar instancia-level
-    instance_vals = pd.concat(inst_results) if inst_results else None
+    instance_vals = pd.concat(inst_results)
 
     # guardar si procede
     if save_csv and dataset_name:
-        fname = f"{path}/{dataset_name}_featuresComplexityRanking.csv"
-        df_results.to_csv(fname)
-        if instance_vals is not None:
-            fname2 = f"{path}/{dataset_name}_featuresComplexityInstances.csv"
-            instance_vals.to_csv(fname2, index=False)
+        # Lo pongo en comentarios porque ya está ejecutado
+        # fname = f"{path}/{dataset_name}_featuresComplexityRanking.csv"
+        # df_results.to_csv(fname)
+        fname2 = f"{path}/{dataset_name}_featuresComplexityInstances.csv"
+        instance_vals.to_csv(fname2, index=False)
 
     return df_results, dataset_vals, instance_vals
 
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
-#                                                      n_redundant_nonlinear=2,
-#                                 flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
-#
-# k = len(dict_info_feature["informative"])
-# feature_names = X.columns.tolist()
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000, n_informative=10, n_noise=2,n_redundant_linear=4,
+                                                     n_redundant_nonlinear=2,
+                                flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5], random_state=0, noise_std=0.01)
 
+k = len(dict_info_feature["informative"])
+feature_names = X.columns.tolist()
 
+save_csv = True
+dataset_name = 'prueba'
 def forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
                                 save_csv=False, path="Results_ForwardComplexity",
                                 dataset_name=None):
@@ -161,30 +162,46 @@ def forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
     Evalúa complejidad univariante y acumulada (forward) tanto a nivel dataset como instancia.
     """
     # Ranking univariante
-    df_results, dataset_vals = univariate_complexity(X, y, measures=measures, save_csv=False, dataset_name=dataset_name)
+    df_results, dataset_vals, instance_vals = univariate_complexity(X, y, measures=measures, save_csv=True, dataset_name=dataset_name)
 
-    # Ranking global (ordenar por media de complejidad o medida específica)
-    ranking = dataset_vals.mean(axis=1).sort_values().index.tolist()
+    all_forward_inst = []
+    all_forward_classes = []
 
+    # Ranking por medida de complejidad
+    # m = 'Hostility'
+    for m in measures:
+        # ranking ascendente: menor complejidad = mejor
+        ranking = dataset_vals[m].sort_values(ascending=True)
 
-    # Complejidad instancia-level acumulada (forward)
-    instance_forward = []
-    for k in range(1, len(ranking ) +1):
-        subset = ranking[:k]
-        datos = pd.concat([X[subset], pd.Series(y, name="y")], axis=1)
-        _, df_classes, extras = all_measures(datos, save_csv=False, path_to_save=None, name_data=f"subset_{k}")
-        if "instances" in extras:
-            df_inst = extras["instances"][measures].copy()
+        # k = 1
+        for k in range(1, len(ranking) +1):
+            subset = ranking[:k].index
+            datos = pd.concat([X[subset], pd.Series(y, name="y")], axis=1)
+            df_measures, df_classes, extras = all_measures(datos, save_csv=False, path_to_save=None, name_data=f"subset_{k}")
+            # instancia
+            df_inst = df_measures[[m]].copy()
+            df_inst = df_inst.rename(columns={m: "complexity"})
             df_inst["subset_k"] = k
             df_inst["variables_incluidas"] = ",".join(subset)
             df_inst["instance_id"] = df_inst.index
-            instance_forward.append(df_inst)
-    instance_forward = pd.concat(instance_forward) if instance_forward else None
+            df_inst["measure"] = m
+            all_forward_inst.append(df_inst)
+
+            # clase y dataset
+            df_c = df_classes[measures].copy()
+            df_c["subset_k"] = k
+            df_c["variables_incluidas"] = ",".join(subset)
+            df_c["measure"] = m
+            df_c["level"] = df_c.index  # dataset, class_0, class_1
+            all_forward_classes.append(df_c)
+
+
+    all_forward_inst_df = pd.concat(all_forward_inst, ignore_index=True)
+    all_forward_classes_df = pd.concat(all_forward_classes, ignore_index=False)
 
     # Guardar CSVs
     if save_csv and dataset_name:
-        if instance_forward is not None:
-            instance_forward.to_csv(f"{path}/{dataset_name}_forward_instancias.csv", index=False)
-        dataset_vals.to_csv(f"{path}/{dataset_name}_ranking_dataset.csv")
+        all_forward_inst_df.to_csv(f"{path}/{dataset_name}_forward_instancias.csv", index=False)
+        all_forward_classes_df.to_csv(f"{path}/{dataset_name}_forward_dataset_classes.csv")
 
-    return dataset_vals, instance_forward
+    return all_forward_inst_df, all_forward_classes_df
