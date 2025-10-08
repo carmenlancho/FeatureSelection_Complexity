@@ -18,13 +18,12 @@ from sklearn.feature_selection import mutual_info_classif, f_classif
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from skrebate import ReliefF
 from All_measures import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
@@ -463,6 +462,98 @@ def compute_gps(y_true, y_pred):
     return GPS
 
 
+# CON CROSS VAL PREDICT, UN ÚNICO VALOR POR INSTANCIA
+#
+# def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
+#     """
+#     Evalúa modelos en los subsets de features.
+#
+#     Modelos: Logistic Regression, SVM linear, SVM rbf, Random Forest,
+#              KNN, Naive Bayes, Decision Tree, XGBoost.
+#
+#     Returns:
+#     --------
+#     results_df : DataFrame con [subset, best_model, best_acc, best_gps]
+#     detailed_results : dict {subset: {model_name: {"acc":..., "gps":..., "acc_per_class": {...}}}}
+#     """
+#     models = {
+#         "LogReg": LogisticRegression(max_iter=1000, random_state=random_state),
+#         "SVM-linear": SVC(kernel="linear", probability=True, random_state=random_state),
+#         "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=random_state),
+#         "RandomForest": RandomForestClassifier(random_state=random_state),
+#         "KNN": KNeighborsClassifier(),
+#         "NaiveBayes": GaussianNB(),
+#         "DecisionTree": DecisionTreeClassifier(random_state=random_state),
+#         "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=random_state)
+#     }
+#
+#     skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+#     results_summary = []
+#     detailed_results = {}
+#
+#     classes = np.unique(y)
+#
+#     for subset_name, features in subsets.items():
+#         Xsub = X[features].values
+#         subset_scores = {}
+#
+#         for model_name, model in models.items():
+#             y_pred = cross_val_predict(model, Xsub, y, cv=skf)
+#             # el cross_val_predict lo que hace es dar una predicción por instancia
+#             # en base a un modelo que nunca la ha visto
+#             # no me da valores por folds
+#             # Eso lo hace cross_val_score
+#
+#             acc = accuracy_score(y, y_pred)
+#             gps = compute_gps(y, y_pred)
+#
+#             # Accuracy por clase
+#             acc_per_class = {}
+#             for c in classes:
+#                 idx = (y == c)
+#                 acc_per_class[int(c)] = accuracy_score(y[idx], y_pred[idx])
+#
+#             subset_scores[model_name] = {
+#                 "acc": acc,
+#                 "gps": gps,
+#                 "acc_per_class": acc_per_class
+#             }
+#
+#             ## ---------------- PARA GUARDAR TODOS LOS MODELOS ---------------##
+#
+#             registro = {"subset": subset_name,"model": model_name,"acc": acc,"gps": gps}
+#             for cls, val in acc_per_class.items():
+#                 registro[f"acc_class_{cls}"] = val # accuracy por clase
+#             results_summary.append(registro)
+#
+#
+#         ## ---------------- PARA GUARDAR EL MEJOR MODELO EN FUNCIÓN DE PERFORMANCE ---------------##
+#         # # Mejor modelo por GPS (se puede cambiar a "acc")
+#         # best_model = max(subset_scores.items(), key=lambda x: x[1]["gps"])
+#         # best_model_name, best_scores = best_model
+#
+#         # results_summary.append({
+#         #     "subset": subset_name,
+#         #     "best_model": best_model_name,
+#         #     "best_acc": best_scores["acc"],
+#         #     "best_gps": best_scores["gps"]
+#         # })
+#         ## ---------------------------------------------------------------------------------------##
+#
+#
+#         detailed_results[subset_name] = subset_scores
+#
+#     # results_df = pd.DataFrame(results_summary).set_index("subset")
+#     results_df = pd.DataFrame(results_summary).set_index(["subset", "model"])
+#
+#     return results_df, detailed_results
+#
+
+
+# results_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
+#
+# results_df
+# detailed_results
 
 
 def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
@@ -489,7 +580,8 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
     }
 
     skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
-    results_summary = []
+    results_records = []  # registro fold a fold
+    summary_records = []  # medias y std
     detailed_results = {}
 
     classes = np.unique(y)
@@ -499,64 +591,82 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
         subset_scores = {}
 
         for model_name, model in models.items():
-            y_pred = cross_val_predict(model, Xsub, y, cv=skf)
-            # el cross_val_predict lo que hace es dar una predicción por instancia
-            # en base a un modelo que nunca la ha visto
-            # no me da valores por folds
-            # Eso lo hace cross_val_score
+            fold_acc = []
+            fold_gps = []
+            fold_acc_class = []
 
-            acc = accuracy_score(y, y_pred)
-            gps = compute_gps(y, y_pred)
+            for fold, (train_idx, test_idx) in enumerate(skf.split(Xsub, y), 1):
+                X_train, X_test = Xsub[train_idx], Xsub[test_idx]
+                y_train, y_test = y[train_idx], y[test_idx]
 
-            # Accuracy por clase
-            acc_per_class = {}
-            for c in classes:
-                idx = (y == c)
-                acc_per_class[int(c)] = accuracy_score(y[idx], y_pred[idx])
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+
+                acc = accuracy_score(y_test, y_pred)
+                gps = compute_gps(y_test, y_pred)
+
+                # accuracy por clase en este fold
+                acc_per_class = {}
+                for c in classes:
+                    idx = (y_test == c)
+                    acc_per_class[int(c)] = accuracy_score(y_test[idx], y_pred[idx])
+
+                # guardar registro por fold
+                record = {
+                    "subset": subset_name,
+                    "model": model_name,
+                    "fold": fold,
+                    "acc": acc,
+                    "gps": gps,
+                }
+                for cls, val in acc_per_class.items():
+                    record[f"acc_class_{cls}"] = val
+
+                results_records.append(record)
+
+                # acumular para promedios
+                fold_acc.append(acc)
+                fold_gps.append(gps)
+                fold_acc_class.append(acc_per_class)
+
+                # resumen promedio por modelo y subset
+            mean_acc = np.mean(fold_acc)
+            mean_gps = np.mean(fold_gps)
+            std_acc = np.std(fold_acc)
+            std_gps = np.std(fold_gps)
+
+            summary_records.append({
+                "subset": subset_name,
+                "model": model_name,
+                "mean_acc": mean_acc,
+                "std_acc": std_acc,
+                "mean_gps": mean_gps,
+                "std_gps": std_gps
+            })
 
             subset_scores[model_name] = {
-                "acc": acc,
-                "gps": gps,
-                "acc_per_class": acc_per_class
+                "fold_acc": fold_acc,
+                "fold_gps": fold_gps,
+                "fold_acc_class": fold_acc_class,
+                "mean_acc": mean_acc,
+                "mean_gps": mean_gps,
+                "std_acc": std_acc,
+                "std_gps": std_gps
             }
 
-            ## ---------------- PARA GUARDAR TODOS LOS MODELOS ---------------##
+        detailed_results[subset_name] = subset_scores # dict con todo
 
-            registro = {"subset": subset_name,"model": model_name,"acc": acc,"gps": gps}
-            for cls, val in acc_per_class.items():
-                registro[f"acc_class_{cls}"] = val # accuracy por clase
-            results_summary.append(registro)
+    # a DataFrames
+    results_df = pd.DataFrame(results_records).set_index(["subset", "model", "fold"]) # resultados por fold
+    summary_df = pd.DataFrame(summary_records).set_index(["subset", "model"]) # resultados promedio
 
+    return results_df, summary_df, detailed_results
 
-        ## ---------------- PARA GUARDAR EL MEJOR MODELO EN FUNCIÓN DE PERFORMANCE ---------------##
-        # # Mejor modelo por GPS (se puede cambiar a "acc")
-        # best_model = max(subset_scores.items(), key=lambda x: x[1]["gps"])
-        # best_model_name, best_scores = best_model
-
-        # results_summary.append({
-        #     "subset": subset_name,
-        #     "best_model": best_model_name,
-        #     "best_acc": best_scores["acc"],
-        #     "best_gps": best_scores["gps"]
-        # })
-        ## ---------------------------------------------------------------------------------------##
-
-
-        detailed_results[subset_name] = subset_scores
-
-    # results_df = pd.DataFrame(results_summary).set_index("subset")
-    results_df = pd.DataFrame(results_summary).set_index(["subset", "model"])
-
-    return results_df, detailed_results
-
-
-
-# results_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
+# results_df, summary_df, detailed_results = evaluate_models_across_subsets(X, y, subsets)
 #
 # results_df
+# summary_df
 # detailed_results
-
-
 
 
 def save_complexity_csv(dataset_name, subset_name, results_classes, extras_host,
