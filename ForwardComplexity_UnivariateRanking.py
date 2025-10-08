@@ -22,9 +22,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 import xgboost as xgb
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, make_scorer
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.linear_model import LogisticRegression
 
 from All_measures import *
@@ -463,4 +463,126 @@ forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
                                 save_csv=True, path="Results_ForwardComplexity",
                                 dataset_name=dataset_name)
 
+
+###############################################################################################
+##########                                CLASIFICACIÓN                              ##########
+###############################################################################################
+
+def compute_gps(y_true, y_pred):
+    """
+    Calcula GPS para un problema binario.
+    """
+    cm = confusion_matrix(y_true, y_pred, labels=np.unique(y_true))
+
+    TN, FP, FN, TP = cm.ravel()
+
+    # métricas base
+    PPV = TP / (TP + FP) if (TP + FP) > 0 else 0
+    TPR = TP / (TP + FN) if (TP + FN) > 0 else 0
+    NPV = TN / (TN + FN) if (TN + FN) > 0 else 0
+    TNR = TN / (TN + FP) if (TN + FP) > 0 else 0
+
+    # F1+ y F1-
+    F1_pos = 2 * (PPV * TPR) / (PPV + TPR) if (PPV + TPR) > 0 else 0
+    F1_neg = 2 * (NPV * TNR) / (NPV + TNR) if (NPV + TNR) > 0 else 0
+
+    # GPS
+    GPS = 2 * (F1_pos * F1_neg) / (F1_pos + F1_neg) if (F1_pos + F1_neg) > 0 else 0
+    return GPS
+
+def gps_scorer(y_true, y_pred):
+    return compute_gps(y_true, y_pred)
+
+
+## Ejecutamos los modelos en los distintos subsets del forward selection
+# dataset_name = 'rpeuba'
+def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "N1", "kDN"],
+                                    cv_splits=10, random_state=0, save_csv=False,
+                                    path="Results_ForwardComplexity", dataset_name=None):
+    """
+    Evalúa modelos en cada subset generado por forward selection basado en complejidad.
+
+    Devuelve:
+    ----------
+    results_df : DataFrame con [measure, subset_k, variables_incluidas, model, acc, gps, acc_class_0, ...]
+    detailed_results : dict con resultados detallados por subset y modelo.
+    """
+
+    models = {
+        "LogReg": LogisticRegression(max_iter=1000, random_state=random_state),
+        "SVM-linear": SVC(kernel="linear", probability=True, random_state=random_state),
+        "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=random_state),
+        "RandomForest": RandomForestClassifier(random_state=random_state),
+        "KNN": KNeighborsClassifier(),
+        "NaiveBayes": GaussianNB(),
+        "DecisionTree": DecisionTreeClassifier(random_state=random_state),
+        "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=random_state)
+    }
+
+    # scores para evaluar performance
+    scorers = {"accuracy": make_scorer(accuracy_score),"gps": make_scorer(gps_scorer)}
+
+    # CV config
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+    # Resultados
+    results_summary = []
+    detailed_results = {}
+    # classes = np.unique(y)
+
+    for m in measures:
+        ranking = dataset_vals[m].sort_values(ascending=True)
+        detailed_results[m] = {}
+
+        # forward selection incremental
+        for k in range(1, len(ranking) + 1):
+            subset = ranking[:k].index
+            Xsub = X[subset].values
+            subset_name = f"{m}_Top{k}"
+
+            subset_scores = {}
+
+            for model_name, model in models.items():
+                cv_results = cross_validate(model, Xsub, y, cv=skf, scoring=scorers, return_train_score=False)
+
+                mean_acc = np.mean(cv_results["test_accuracy"])
+                std_acc = np.std(cv_results["test_accuracy"])
+                mean_gps = np.mean(cv_results["test_gps"])
+                std_gps = np.std(cv_results["test_gps"])
+
+                registro = {
+                    "measure": m,
+                    "subset_k": k,
+                    "variables_incluidas": ",".join(subset),
+                    "model": model_name,
+                    "mean_acc": mean_acc,
+                    "std_acc": std_acc,
+                    "mean_gps": mean_gps,
+                    "std_gps": std_gps}
+                results_summary.append(registro)
+
+                subset_scores[model_name] = {
+                    "mean_acc": mean_acc,
+                    "std_acc": std_acc,
+                    "mean_gps": mean_gps,
+                    "std_gps": std_gps}
+
+            detailed_results[m][subset_name] = subset_scores
+
+    results_df = pd.DataFrame(results_summary).set_index(["measure", "subset_k", "model"])
+
+    if save_csv and dataset_name:
+        results_df.to_csv(f"{path}/{dataset_name}_forward_classification_full.csv")
+
+    return results_df, detailed_results
+
+# ### Dataset 1
+# dataset_name = 'ArtificialDataset1'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                         flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+# _, dataset_vals, _ = univariate_complexity(X, y)
+# results_df, detailed_results = evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+#
 
