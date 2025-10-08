@@ -654,7 +654,7 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
                 "std_gps": std_gps
             }
 
-        detailed_results[subset_name] = subset_scores # dict con todo
+        detailed_results[subset_name] = subset_scores # dict con tod
 
     # a DataFrames
     results_df = pd.DataFrame(results_records).set_index(["subset", "model", "fold"]) # resultados por fold
@@ -729,7 +729,7 @@ def save_models_csv(dataset_name, results_models, path="Results_FS_ComplexityEva
     return final
 
 
-
+# ME FALTA POR VERIFICAR ESTO CON LOS CAMBIOS DEL CV
 # dataset_name = 'prueba'
 def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save="Results_FS_ComplexityEvaluation"):
     # Número de features informativas como k
@@ -751,19 +751,20 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
     results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
 
     # Evaluación de modelos
-    results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
+    # results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
+    results_models_folds, summary_df_models, detailed_results = evaluate_models_across_subsets(X, y, subsets)
 
     # Guardar csvs de complejidad por subset
     for subset_name in subsets.keys():
         save_complexity_csv(dataset_name, subset_name, results_classes, extras_host, path_to_save)
 
     # Guardar csv de modelos por dataset
-    save_models_csv(dataset_name, results_models, path_to_save)
+    save_models_csv(dataset_name, summary_df_models, path_to_save)
 
     # --- TABLA DE COMPARACIÓN ---
     # results_models tiene MultiIndex (subset, model),
     # hacemos un resumen (medias por subset)
-    summary_models = results_models.groupby(level="subset")[["acc", "gps"]].agg(["mean", "max", "std"])
+    summary_models = summary_df_models.groupby(level="subset")[["acc", "gps"]].agg(["mean", "max", "std"])
     # Formato nombres columnas
     summary_models.columns = [f"{m}_{stat}" for m, stat in summary_models.columns]
 
@@ -779,7 +780,7 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
     fname = f"{path_to_save}/{dataset_name}_comparisonTable.csv"
     comparison_table.to_csv(fname)
 
-    return comparison_table, results_classes, detailed_models
+    return comparison_table, results_classes, results_models_folds
 
 
 
