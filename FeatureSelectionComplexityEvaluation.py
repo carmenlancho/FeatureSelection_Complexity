@@ -500,6 +500,10 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
 
         for model_name, model in models.items():
             y_pred = cross_val_predict(model, Xsub, y, cv=skf)
+            # el cross_val_predict lo que hace es dar una predicción por instancia
+            # en base a un modelo que nunca la ha visto
+            # no me da valores por folds
+            # Eso lo hace cross_val_score
 
             acc = accuracy_score(y, y_pred)
             gps = compute_gps(y, y_pred)
