@@ -490,8 +490,8 @@ def compute_gps(y_true, y_pred):
     GPS = 2 * (F1_pos * F1_neg) / (F1_pos + F1_neg) if (F1_pos + F1_neg) > 0 else 0
     return GPS
 
-def gps_scorer(y_true, y_pred):
-    return compute_gps(y_true, y_pred)
+# def gps_scorer(y_true, y_pred):
+#     return compute_gps(y_true, y_pred)
 
 
 ## Ejecutamos los modelos en los distintos subsets del forward selection
@@ -519,15 +519,15 @@ def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "
         "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=random_state)
     }
 
-    # scores para evaluar performance
-    scorers = {"accuracy": make_scorer(accuracy_score),"gps": make_scorer(gps_scorer)}
 
     # CV config
     skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+    classes = np.unique(y)
+
     # Resultados
-    results_summary = []
-    detailed_results = {}
-    # classes = np.unique(y)
+    results_records = []  # fold-by-fold
+    summary_records = []  # mean & std
+    detailed_results = {} # all versión dict
 
     for m in measures:
         ranking = dataset_vals[m].sort_values(ascending=True)
@@ -538,18 +538,60 @@ def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "
             subset = ranking[:k].index
             Xsub = X[subset].values
             subset_name = f"{m}_Top{k}"
-
             subset_scores = {}
 
             for model_name, model in models.items():
-                cv_results = cross_validate(model, Xsub, y, cv=skf, scoring=scorers, return_train_score=False)
+                fold_acc = []
+                fold_gps = []
+                fold_acc_class = {cls: [] for cls in classes}
 
-                mean_acc = np.mean(cv_results["test_accuracy"])
-                std_acc = np.std(cv_results["test_accuracy"])
-                mean_gps = np.mean(cv_results["test_gps"])
-                std_gps = np.std(cv_results["test_gps"])
+                for fold, (train_idx, test_idx) in enumerate(skf.split(Xsub, y), 1):
+                    X_train, X_test = Xsub[train_idx], Xsub[test_idx]
+                    y_train, y_test = y[train_idx], y[test_idx]
 
-                registro = {
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+
+                    acc = accuracy_score(y_test, y_pred)
+                    gps = compute_gps(y_test, y_pred)
+
+                    # accuracy por clase en este fold
+                    acc_per_class = {}
+                    for c in classes:
+                        idx = (y_test == c)
+                        acc_per_class[int(c)] = accuracy_score(y_test[idx], y_pred[idx])
+
+                    # guardar registro fold a fold
+                    record = {
+                        "measure": m,
+                        "subset_k": k,
+                        "variables_incluidas": ",".join(subset),
+                        "model": model_name,
+                        "fold": fold,
+                        "acc": acc,
+                        "gps": gps,
+                    }
+                    for cls, val in acc_per_class.items():
+                        record[f"acc_class_{cls}"] = val
+                        fold_acc_class[cls].append(val)
+
+                    results_records.append(record)
+                    fold_acc.append(acc)
+                    fold_gps.append(gps)
+
+                # Medias y desviaciones
+                mean_acc = np.mean(fold_acc)
+                std_acc = np.std(fold_acc)
+                mean_gps = np.mean(fold_gps)
+                std_gps = np.std(fold_gps)
+
+                # Medias y desviaciones por clase
+                mean_acc_class = {f"mean_acc_class_{int(c)}": np.mean(vals)
+                                  for c, vals in fold_acc_class.items()}
+                std_acc_class = {f"std_acc_class_{int(c)}": np.std(vals)
+                                 for c, vals in fold_acc_class.items()}
+
+                summary_values = {
                     "measure": m,
                     "subset_k": k,
                     "variables_incluidas": ",".join(subset),
@@ -558,31 +600,42 @@ def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "
                     "std_acc": std_acc,
                     "mean_gps": mean_gps,
                     "std_gps": std_gps}
-                results_summary.append(registro)
+                summary_values.update(mean_acc_class)
+                summary_values.update(std_acc_class)
+                summary_records.append(summary_values)
 
                 subset_scores[model_name] = {
+                    "fold_acc": fold_acc,
+                    "fold_gps": fold_gps,
+                    "fold_acc_class": fold_acc_class,
                     "mean_acc": mean_acc,
                     "std_acc": std_acc,
                     "mean_gps": mean_gps,
-                    "std_gps": std_gps}
+                    "std_gps": std_gps,
+                    "mean_acc_class": mean_acc_class,
+                    "std_acc_class": std_acc_class}
 
             detailed_results[m][subset_name] = subset_scores
 
-    results_df = pd.DataFrame(results_summary).set_index(["measure", "subset_k", "model"])
+    # DataFrames
+    results_df = pd.DataFrame(results_records).set_index(["measure", "subset_k", "model", "fold"])
+    summary_df = pd.DataFrame(summary_records).set_index(["measure", "subset_k", "model"])
 
     if save_csv and dataset_name:
-        results_df.to_csv(f"{path}/{dataset_name}_forward_classification_full.csv")
+        results_df.to_csv(f"{path}/{dataset_name}_forward_folds_fullclassification.csv")
+        summary_df.to_csv(f"{path}/{dataset_name}_forward_summary_fullclassification.csv")
 
-    return results_df, detailed_results
+    return results_df, summary_df, detailed_results
 
-# ### Dataset 1
+### Dataset 1
 # dataset_name = 'ArtificialDataset1'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                         flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
-#                                                      random_state=0,noise_std=0.01)
-#
-# _, dataset_vals, _ = univariate_complexity(X, y)
-# results_df, detailed_results = evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
-#
+dataset_name = 'PRUEBA'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                        flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+_, dataset_vals, _ = univariate_complexity(X, y)
+results_df, summary_df, detailed_results = evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+
 
