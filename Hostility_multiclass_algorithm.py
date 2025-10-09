@@ -9,6 +9,8 @@
 
 
 import copy
+import os
+
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -271,4 +273,29 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
 # host_instance_by_layer_df, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(sigma, X, y, k_min, seed=0)
 #
 #
+
+
+# from sklearn import preprocessing
+# from sklearn.preprocessing import LabelEncoder
+#
+#
+#
+# datos = pd.read_csv('datasets/cirrhosis.csv')
+# datos_clean= datos.drop(columns=['ID','Status'])
+# # aplicar a todas las columnas categóricas
+# for col in datos_clean.select_dtypes(include=["object", "category"]).columns:
+#     le = LabelEncoder()
+#     datos_clean[col] = le.fit_transform(datos_clean[col])
+#
+# X = datos_clean.to_numpy() # all variables except y
+# X = preprocessing.scale(X)
+# y = datos[['Status']]
+# y = y.squeeze()  # (n,1) -> (n,)
+#
+# print(y.shape)
+# sigma = 5
+# delta = 0.5
+# seed = 0
+# k_min = 0
+# host_instance_by_layer_df, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(sigma, X, y, k_min, seed=0)
 
