@@ -593,7 +593,7 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
         for model_name, model in models.items():
             fold_acc = []
             fold_gps = []
-            fold_acc_class = []
+            fold_acc_class = {int(c): [] for c in classes} # accs por clase
 
             for fold, (train_idx, test_idx) in enumerate(skf.split(Xsub, y), 1):
                 X_train, X_test = Xsub[train_idx], Xsub[test_idx]
@@ -609,7 +609,9 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
                 acc_per_class = {}
                 for c in classes:
                     idx = (y_test == c)
-                    acc_per_class[int(c)] = accuracy_score(y_test[idx], y_pred[idx])
+                    acc_c = accuracy_score(y_test[idx], y_pred[idx])
+                    acc_per_class[int(c)] = acc_c
+                    fold_acc_class[int(c)].append(acc_c)
 
                 # guardar registro por fold
                 record = {
@@ -624,35 +626,47 @@ def evaluate_models_across_subsets(X, y, subsets, cv_splits=10, random_state=0):
 
                 results_records.append(record)
 
-                # acumular para promedios
+                # acumular para medias
                 fold_acc.append(acc)
                 fold_gps.append(gps)
-                fold_acc_class.append(acc_per_class)
 
-                # resumen promedio por modelo y subset
+            # resumen media y std por modelo y subset
             mean_acc = np.mean(fold_acc)
             mean_gps = np.mean(fold_gps)
             std_acc = np.std(fold_acc)
             std_gps = np.std(fold_gps)
 
-            summary_records.append({
+            # por clase
+            mean_acc_class = {cls: np.mean(vals) for cls, vals in fold_acc_class.items()}
+            std_acc_class = {cls: np.std(vals) for cls, vals in fold_acc_class.items()}
+
+            resumen = {
                 "subset": subset_name,
                 "model": model_name,
                 "mean_acc": mean_acc,
                 "std_acc": std_acc,
                 "mean_gps": mean_gps,
-                "std_gps": std_gps
-            })
+                "std_gps": std_gps,
+            }
+
+            for cls in classes:
+                resumen[f"mean_acc_class_{int(cls)}"] = mean_acc_class[int(cls)]
+                resumen[f"std_acc_class_{int(cls)}"] = std_acc_class[int(cls)]
+
+            summary_records.append(resumen)
 
             subset_scores[model_name] = {
                 "fold_acc": fold_acc,
                 "fold_gps": fold_gps,
                 "fold_acc_class": fold_acc_class,
                 "mean_acc": mean_acc,
-                "mean_gps": mean_gps,
                 "std_acc": std_acc,
-                "std_gps": std_gps
+                "mean_gps": mean_gps,
+                "std_gps": std_gps,
+                "mean_acc_class": mean_acc_class,
+                "std_acc_class": std_acc_class,
             }
+
 
         detailed_results[subset_name] = subset_scores # dict con tod
 
@@ -761,11 +775,16 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
     # Guardar csv de modelos por dataset
     save_models_csv(dataset_name, summary_df_models, path_to_save)
 
+
+
     # --- TABLA DE COMPARACIÓN ---
     # results_models tiene MultiIndex (subset, model),
     # hacemos un resumen (medias por subset)
-    summary_models = summary_df_models.groupby(level="subset")[["acc", "gps"]].agg(["mean", "max", "std"])
-    # Formato nombres columnas
+    # nos quedamos con las columnas que empiezan por "mean_"
+    perf_cols = [c for c in summary_df_models.columns if c.startswith("mean_")]
+    # media, máximo y desviación estándar por subset
+    summary_models = summary_df_models.groupby(level="subset")[perf_cols].agg(["mean", "max", "std"])
+    # nombres columnas
     summary_models.columns = [f"{m}_{stat}" for m, stat in summary_models.columns]
 
 
@@ -848,14 +867,15 @@ results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
 
 
 
-path_to_save = "Results_FS_ComplexityEvaluation"
+path_to_save = "Results_FS_ComplexityEvaluation_CV"
 ### Dataset 1
 dataset_name = 'ArtificialDataset1'
+# dataset_name = 'PRUEBA'
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
                                          n_redundant_linear=4,n_redundant_nonlinear=2,
                                         flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
                                                      random_state=0,noise_std=0.01)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 ### Dataset 2
 dataset_name = 'ArtificialDataset2'
@@ -863,7 +883,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=4,n_redundant_nonlinear=2,
                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
                                                      random_state=0,noise_std=0.01)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 ### Dataset 3
 dataset_name = 'ArtificialDataset3'
@@ -871,7 +891,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=7,n_redundant_nonlinear=8,
                                          flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=0,noise_std=0.05)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 ### Dataset 4
 dataset_name = 'ArtificialDataset4'
@@ -879,7 +899,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informativ
                                          n_redundant_linear=4,n_redundant_nonlinear=5,
                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=10,noise_std=0.01)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 ### Dataset5
 dataset_name = 'ArtificialDataset5'
@@ -887,7 +907,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informativ
                                          n_redundant_linear=8,n_redundant_nonlinear=7,
                                      flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=10,noise_std=0.05)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataseet 6
 dataset_name = 'ArtificialDataset6'
@@ -895,8 +915,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=10000,n_informati
                                          n_redundant_linear=4,n_redundant_nonlinear=5,
                                          flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=589,noise_std=0.01)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
-# ha tardado como unas 7-8 horas
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataset 7
 dataset_name = 'ArtificialDataset7'
@@ -904,7 +923,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=10,n_redundant_nonlinear=10,
                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=589,noise_std=0.05)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataset 8
 dataset_name = 'ArtificialDataset8'
@@ -912,7 +931,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=15,n_redundant_nonlinear=15,
                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=86785,noise_std=0.1)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataset 9
 dataset_name = 'ArtificialDataset9'
@@ -920,7 +939,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                          n_redundant_linear=20,n_redundant_nonlinear=20,
                                         flip_y=0, class_sep=0.7, n_clusters_per_class=1, weights=[0.5],
                                                      random_state=959,noise_std=0.3)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataset 10
 dataset_name = 'ArtificialDataset10'
@@ -928,7 +947,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=2000,n_informativ
                                          n_redundant_linear=20,n_redundant_nonlinear=15,
                                         flip_y=0, class_sep=0.8, n_clusters_per_class=2, weights=[0.3],
                                                      random_state=959,noise_std=0.3)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataset 11
 dataset_name = 'ArtificialDataset11'
@@ -936,7 +955,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                          n_redundant_linear=20,n_redundant_nonlinear=15,
                                         flip_y=0, class_sep=0.6, n_clusters_per_class=1, weights=[0.4],
                                                      random_state=959,noise_std=0.1)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 #### Dataset 12
 dataset_name = 'ArtificialDataset12'
@@ -944,7 +963,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                          n_redundant_linear=30,n_redundant_nonlinear=30,
                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
                                                      random_state=987,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -954,7 +973,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                          n_redundant_linear=30,n_redundant_nonlinear=30,
                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.4],
                                                      random_state=95,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 #### Dataset 14
@@ -963,7 +982,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                          n_redundant_linear=30,n_redundant_nonlinear=40,
                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
                                                      random_state=95,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 #### Dataset 15
@@ -972,7 +991,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informativ
                                          n_redundant_linear=30,n_redundant_nonlinear=40,
                                         flip_y=0.3, class_sep=0.4, n_clusters_per_class=1, weights=[0.3],
                                                      random_state=78,noise_std=0.1)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 #### Dataset 16
@@ -981,7 +1000,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=30,n_redundant_nonlinear=40,
                                         flip_y=0.3, class_sep=0.4, n_clusters_per_class=1, weights=[0.2],
                                                      random_state=756,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -991,7 +1010,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informativ
                                          n_redundant_linear=40,n_redundant_nonlinear=40,
                                         flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
                                                      random_state=756,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -1001,7 +1020,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                          n_redundant_linear=40,n_redundant_nonlinear=40,
                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
                                                      random_state=9462,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -1012,7 +1031,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                          n_redundant_linear=50,n_redundant_nonlinear=50,
                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
                                                      random_state=655,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -1022,7 +1041,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                          n_redundant_linear=60,n_redundant_nonlinear=60,
                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
                                                      random_state=4556,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -1032,7 +1051,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=100,n_redundant_nonlinear=100,
                                         flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
                                                      random_state=996,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -1043,7 +1062,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=150,n_redundant_nonlinear=150,
                                         flip_y=0.2, class_sep=0.7, n_clusters_per_class=1, weights=[0.4],
                                                      random_state=996,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
@@ -1053,7 +1072,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=1500,n_redundant_nonlinear=1500,
                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=1, weights=[0.4],
                                                      random_state=996,noise_std=0.5)
-comparison_table, results_classes, detailed_models = FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
 
 
 
