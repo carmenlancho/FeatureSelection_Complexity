@@ -21,7 +21,7 @@ def all_measures(data,save_csv,path_to_save, name_data):
     data['y'] = y_format
     # Hostility measure
     y = data['y'].to_numpy()
-    X = data.iloc[:, 0:-1].to_numpy()
+    X = data.drop(columns=["y"]).to_numpy()
     sigma = 5
     # delta = 0.5
     # seed = 0
