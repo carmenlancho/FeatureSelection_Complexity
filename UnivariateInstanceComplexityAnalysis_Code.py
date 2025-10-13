@@ -25,10 +25,6 @@ import os
 root_path = os.getcwd()
 
 
-d1_uni = pd.read_csv("Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityInstances.csv", index_col=None)
-d1_uni
-
-dataset_files = glob.glob("Results_UnivariateRanking_CM/ArtificialDataset*_featuresComplexityInstances.csv")
 
 
 
@@ -135,32 +131,38 @@ def analyze_variable_relationships(dataset_files, measures=["Hostility", "N1", "
 
     return summary_df
 
+# d1_uni = pd.read_csv("Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityInstances.csv", index_col=None)
+# d1_uni
+#
+# dataset_files = glob.glob("Results_UnivariateRanking_CM/ArtificialDataset*_featuresComplexityInstances.csv")
+#
 
-dataset_files = ['Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset2_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset3_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset4_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset5_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset6_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset7_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset8_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset9_featuresComplexityInstances.csv',
-                'Results_UnivariateRanking_CM/ArtificialDataset10_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset11_featuresComplexityInstances.csv',
-                  'Results_UnivariateRanking_CM/ArtificialDataset12_featuresComplexityInstances.csv',
-                'Results_UnivariateRanking_CM/ArtificialDataset13_featuresComplexityInstances.csv',
-                'Results_UnivariateRanking_CM/ArtificialDataset14_featuresComplexityInstances.csv',
-                    'Results_UnivariateRanking_CM/ArtificialDataset15_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset16_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset17_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset18_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset19_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset20_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset21_featuresComplexityInstances.csv',
-                 'Results_UnivariateRanking_CM/ArtificialDataset22_featuresComplexityInstances.csv']
-                 #'Results_UnivariateRanking_CM/ArtificialDataset23_featuresComplexityInstances.csv'] # se queda muy pillado
 
-summary_df = analyze_variable_relationships(dataset_files,show_plots=False)
+# dataset_files = ['Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset2_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset3_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset4_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset5_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset6_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset7_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset8_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset9_featuresComplexityInstances.csv',
+#                 'Results_UnivariateRanking_CM/ArtificialDataset10_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset11_featuresComplexityInstances.csv',
+#                   'Results_UnivariateRanking_CM/ArtificialDataset12_featuresComplexityInstances.csv',
+#                 'Results_UnivariateRanking_CM/ArtificialDataset13_featuresComplexityInstances.csv',
+#                 'Results_UnivariateRanking_CM/ArtificialDataset14_featuresComplexityInstances.csv',
+#                     'Results_UnivariateRanking_CM/ArtificialDataset15_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset16_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset17_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset18_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset19_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset20_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset21_featuresComplexityInstances.csv',
+#                  'Results_UnivariateRanking_CM/ArtificialDataset22_featuresComplexityInstances.csv']
+#                  #'Results_UnivariateRanking_CM/ArtificialDataset23_featuresComplexityInstances.csv'] # se queda muy pillado
+
+# summary_df = analyze_variable_relationships(dataset_files,show_plots=False)
 # en el d23 se queda pillado
 
 
