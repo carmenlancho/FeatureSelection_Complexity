@@ -747,8 +747,6 @@ def save_models_csv(dataset_name, results_models, path="Results_FS_ComplexityEva
     final.to_csv(fname, index=False)
     return final
 
-
-# ME FALTA POR VERIFICAR ESTO CON LOS CAMBIOS DEL CV
 # dataset_name = 'prueba'
 def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save="Results_FS_ComplexityEvaluation"):
     # Número de features informativas como k
@@ -872,7 +870,7 @@ results_models, detailed_models = evaluate_models_across_subsets(X, y, subsets)
 
 
 
-path_to_save = "Results_FS_ComplexityEvaluation_CV"
+path_to_save = "Results_FS_ComplexityEvaluation"
 ### Dataset 1
 dataset_name = 'ArtificialDataset1'
 # dataset_name = 'PRUEBA'
