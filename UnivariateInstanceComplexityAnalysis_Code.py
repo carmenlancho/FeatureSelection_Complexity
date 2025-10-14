@@ -47,7 +47,7 @@ def analyze_variable_relationships(dataset_files, measures=["Hostility", "N1", "
         idx1 = file.find('/')
         idx2 = file.find('_', idx1 + len('/'))
         dataset_name = file[idx1 + len('/'):idx2]
-        print(dataset_name)
+        # print(dataset_name)
 
         df = pd.read_csv(file)
 
@@ -102,7 +102,7 @@ def analyze_variable_relationships(dataset_files, measures=["Hostility", "N1", "
                 # máscara triangular inferior dejando diagonal
                 mask_triu = np.triu(np.ones_like(corr_pearson, dtype=bool), k=1)
                 # Heatmap y dendrograma
-                fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+                fig, axes = plt.subplots(2, 2, figsize=(12, 8))
 
                 sns.heatmap(corr_pearson, ax=axes[0,0], cmap="coolwarm", center=0, vmin=-1, vmax=1,
                                                mask=mask_triu, square=True)
