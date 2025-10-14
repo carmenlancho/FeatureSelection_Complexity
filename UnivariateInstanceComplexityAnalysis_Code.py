@@ -280,6 +280,7 @@ def analyze_variable_relationships_original_datasets(dataset_files,show_plots=Fa
         # Resúmenes
         summary_stats = {
                 "dataset": dataset_name,
+                "measure": "None",  # para poder usar la función plot
                 "pearson_max": np.max(pearson_vals),
                 "pearson_min": np.min(pearson_vals),
                 "pearson_mean": np.mean(pearson_vals),
