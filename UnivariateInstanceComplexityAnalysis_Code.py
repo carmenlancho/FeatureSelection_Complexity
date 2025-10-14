@@ -261,7 +261,6 @@ def analyze_variable_relationships_original_datasets(dataset_files,show_plots=Fa
     results_summary = []
 
     for dataset_name, X in dataset_files.items():
-        print(X)
 
         # Correlaciones
         corr_pearson = X.corr(method="pearson")
