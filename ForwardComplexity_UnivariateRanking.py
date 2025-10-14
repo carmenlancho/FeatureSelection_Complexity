@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import re
 
+from sklearn import preprocessing
 from sklearn.datasets import make_classification
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import mutual_info_classif, f_classif

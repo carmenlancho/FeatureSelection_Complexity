@@ -11,7 +11,7 @@
 # y en el notebook UnivariateInstanceComplexity_Analysis.ipnyb ponemos los resultados ya más visuales
 
 
-
+from sklearn import preprocessing
 import pandas as pd
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
