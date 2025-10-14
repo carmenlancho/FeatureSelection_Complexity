@@ -42,6 +42,8 @@ import os
 
 
 # Función para generar datos sintéticos
+
+# Función para generar datos sintéticos
 def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_linear, n_redundant_nonlinear,
                                 flip_y, class_sep, n_clusters_per_class, weights, random_state=42, noise_std=0.05):
     rng = np.random.RandomState(random_state)
@@ -61,7 +63,7 @@ def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_lin
         random_state=random_state
     )
 
-    X = preprocessing.scale(X)
+    # X = preprocessing.scale(X)
     df = pd.DataFrame(X, columns=[f"f{i}" for i in range(X.shape[1])])
     formulas = {}
     formulas_nonlinear = {}
@@ -96,6 +98,8 @@ def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_lin
         "formulas_linear": formulas,
         "formulas_nonlinear": formulas_nonlinear
     }
+
+    df[df.columns] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
 
     return df, y, dict_info_feature
 
