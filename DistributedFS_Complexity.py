@@ -150,7 +150,7 @@ def distributed_variable_selection_complexity_random(X, y, n_replicas=10, m_vars
         # Multivariate complexity
         datos = pd.DataFrame(Xsub)
         datos['y'] = y
-        df_measures, df_classes, extras = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+        _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
         base_complexity = df_classes.loc['dataset',measures]
 
         current_vars = subset_vars.copy()
@@ -167,7 +167,7 @@ def distributed_variable_selection_complexity_random(X, y, n_replicas=10, m_vars
             # Complexity removing one variable from previous subset
             datos_temp = pd.DataFrame(Xtemp)
             datos_temp['y'] = y
-            df_measures_temp, df_classes_temp, extras_temp = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+            _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
             new_complexity = df_classes_temp.loc['dataset',measures]
 
             # Cambio de complejidad
@@ -201,7 +201,7 @@ univariate_complexity = pd.read_csv(csv_file)
 
 def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars=5,
                                    univariate_complexity=None, # complejidad univariante
-                                   measures=["Hostility", "N1", "kDN"],
+                                   measure="Hostility",
                                    random_state=0):
     """
     Realiza un muestreo distribuido de variables (tipo Random Forest)
@@ -211,7 +211,7 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
     np.random.seed(random_state)
     random.seed(random_state)
     variables = X.columns.tolist()
-    importances = {m: pd.Series(0.0, index=variables) for m in measures} # diccionario para cada complexity measure
+    importances = pd.Series(0.0, index=variables) # diccionario para cada complexity measure
     count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
 
 
@@ -224,8 +224,8 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
         # Multivariate complexity
         datos = pd.DataFrame(Xsub)
         datos['y'] = y
-        df_measures, df_classes, extras = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
-        base_complexity = df_classes.loc['dataset',measures]
+        _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+        base_complexity = df_classes.loc['dataset',measure]
 
         current_vars = subset_vars.copy()
         while len(current_vars) > 1: # hasta que nos quedemos sin vars
@@ -233,13 +233,10 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
             count_vars[current_vars] += 1
 
             # elegir variable a quitar
-            if mode == "random":
-                to_remove = random.choice(current_vars)
-            else: # mode == "guided" and univariate_complexity is not None: #POR HACER
-                df_uni_comp = univariate_complexity[univariate_complexity["level"] == "dataset"].copy()
-                df_uni_comp = df_uni_comp.set_index("feature")[measures]
-                guided_scores = df_uni_comp.loc[current_vars].mean(axis=1)
-                to_remove = guided_scores.idxmax()  # quita la de mayor complejidad univariante
+            df_uni_comp = univariate_complexity[univariate_complexity["level"] == "dataset"].copy()
+            df_uni_comp = df_uni_comp.set_index("feature")[measure]
+            guided_scores = df_uni_comp.loc[current_vars]
+            to_remove = guided_scores.idxmax()  # quita la de mayor complejidad univariante
 
             current_vars.remove(to_remove)
             Xtemp = X[current_vars]
@@ -247,15 +244,14 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
             # Complexity removing one variable from previous subset
             datos_temp = pd.DataFrame(Xtemp)
             datos_temp['y'] = y
-            df_measures_temp, df_classes_temp, extras_temp = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
-            new_complexity = df_classes_temp.loc['dataset',measures]
+            _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+            new_complexity = df_classes_temp.loc['dataset',measure]
 
             # Cambio de complejidad
             delta = new_complexity - base_complexity # mee interesan diferencias positivas, es decir,
             # quitar la variable aumenta la complejidad, luego la variable es útil
             # Las diferencias negativas me dicen que esa variable aumentaba la complejidad, luego no la quiero
-            for m in measures:
-                importances[m][to_remove] += delta[m]
+            importances[to_remove] += delta
 
             # Actualizamos base_complexity para próximo paso
             base_complexity = new_complexity
@@ -264,10 +260,8 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
 
     # Normalizamos importancias
     count_vars = count_vars.replace(0, np.nan) # para no tener problemas con los 0 en la división
-    for m in measures:
-        # importances[m] = importances[m] / n_replicas # esta opción no la veo justa
-        importances[m] = importances[m] / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
-        importances[m].sort_values(ascending=False, inplace=True)
+    importances = importances / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
+    importances.sort_values(ascending=False, inplace=True)
 
     return importances, count_vars
 
