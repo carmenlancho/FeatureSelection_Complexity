@@ -128,14 +128,20 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
 
 def distributed_variable_selection_complexity_random(X, y, n_replicas=10, m_vars=5,
                                    measures=["Hostility", "N1", "kDN"],
+                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
                                    random_state=0):
-    """
-    Realiza un muestreo distribuido de variables (tipo Random Forest)
-    para estimar la importancia basada en reducción de complejidad.
-    """
 
     np.random.seed(random_state)
     random.seed(random_state)
+
+    # Filtro previo opcional de eliminación de variables con correelación > corr_th
+    if filter_corr:
+        corr = X.corr(method=corr_method).abs()
+        upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+        to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
+        X = X.drop(columns=to_drop)
+
+
     variables = X.columns.tolist()
     importances = {m: pd.Series(0.0, index=variables) for m in measures} # diccionario para cada complexity measure
     count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
@@ -202,14 +208,19 @@ univariate_complexity = pd.read_csv(csv_file)
 def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars=5,
                                    univariate_complexity=None, # complejidad univariante
                                    measure="Hostility",
+                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
                                    random_state=0):
-    """
-    Realiza un muestreo distribuido de variables (tipo Random Forest)
-    para estimar la importancia basada en reducción de complejidad.
-    """
 
     np.random.seed(random_state)
     random.seed(random_state)
+
+    # Filtro previo opcional de eliminación de variables con correelación > corr_th
+    if filter_corr:
+        corr = X.corr(method=corr_method).abs()
+        upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+        to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
+        X = X.drop(columns=to_drop)
+
     variables = X.columns.tolist()
     importances = pd.Series(0.0, index=variables) # diccionario para cada complexity measure
     count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
@@ -272,5 +283,9 @@ def plot_importances(importances):
         plt.xlabel("Avg complexity in backward")
         plt.gca().invert_yaxis()
         plt.show()
+
+
+# ME FALTA HACER LA CADENA DE EJECUCIÓN Y SELECCIONAR LOS DATASETS PORQUE TARDA MUCHO Y ALGUNOS SON
+# MUY IGUALEES
 
 
