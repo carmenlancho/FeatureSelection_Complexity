@@ -22,5 +22,186 @@
 # La idea es ir metiendo variables tipo forward en base a esas variables y para cuando ya no disminuyan la complejidad
 
 
+import numpy as np
+import pandas as pd
+import random
+import re
+
+from sklearn import preprocessing
+from sklearn.datasets import make_classification
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import mutual_info_classif, f_classif
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.preprocessing import StandardScaler
+from skrebate import ReliefF
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+import xgboost as xgb
+from sklearn.metrics import accuracy_score, make_scorer
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import StratifiedKFold, cross_validate
+from sklearn.linear_model import LogisticRegression
+
+from All_measures import *
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import os
+
+
+
+# Función para generar datos sintéticos
+def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_linear, n_redundant_nonlinear,
+                                flip_y, class_sep, n_clusters_per_class, weights, random_state=42, noise_std=0.05):
+    rng = np.random.RandomState(random_state)
+
+    # Generamos solo informativas + ruido
+    X, y = make_classification(
+        n_samples=n_samples,
+        n_features=n_informative + n_noise,
+        n_informative=n_informative,
+        n_redundant=0,
+        n_repeated=0,
+        flip_y = flip_y,
+        class_sep = class_sep,
+        n_clusters_per_class = n_clusters_per_class,
+        weights =weights,
+        shuffle=False,
+        random_state=random_state
+    )
+
+    # X = preprocessing.scale(X)
+    df = pd.DataFrame(X, columns=[f"f{i}" for i in range(X.shape[1])])
+    formulas = {}
+    formulas_nonlinear = {}
+
+    # Redundantes lineales
+    for j in range(n_redundant_linear):
+        idx1, idx2 = rng.choice(n_informative, size=2, replace=False)
+        coef1, coef2 = rng.uniform(-2, 2, size=2)
+        new_name = f"f{df.shape[1]}"
+        new_feature = coef1*df[f"f{idx1}"] + coef2*df[f"f{idx2}"]
+        if noise_std > 0:
+            new_feature += rng.normal(0, noise_std, size=n_samples)
+        df[new_name] = new_feature
+        formulas[new_name] = f"{coef1:.2f}*f{idx1} + {coef2:.2f}*f{idx2}" + ("" if noise_std==0 else " + ruido")
+
+    # Redundantes no lineales
+    for j in range(n_redundant_nonlinear):
+        idx = rng.choice(n_informative, size=2, replace=False)
+        func = rng.choice([np.sin, np.cos, np.square, np.exp])
+        new_name = f"f{df.shape[1]}"
+        new_feature = func(df[f"f{idx[0]}"]) + df[f"f{idx[1]}"]
+        if noise_std > 0:
+            new_feature += rng.normal(0, noise_std, size=n_samples)
+        df[new_name] = new_feature
+        formulas_nonlinear[new_name] = f"{func.__name__}(f{idx[0]}) + f{idx[1]}" + ("" if noise_std==0 else " + ruido")
+
+    dict_info_feature = {
+        "informative": [f"f{i}" for i in range(n_informative)],
+        "noise": [f"f{i}" for i in range(n_informative, n_informative + n_noise)],
+        "redundant_linear": list(formulas.keys()),
+        "redundant_nonlinear": list(formulas_nonlinear.keys()),
+        "formulas_linear": formulas,
+        "formulas_nonlinear": formulas_nonlinear
+    }
+
+    df[df.columns] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
+
+    return df, y, dict_info_feature
+
+
+### Dataset 1
+dataset_name = 'ArtificialDataset1'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                        flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+
+
+
+def distributed_variable_selection_complexity(X, y, n_replicas=10, m_vars=5,
+                                   mode="random", # "random" o "guided"
+                                   univariate_complexity=None, # complejidad univariante
+                                   measures=["Hostility", "N1", "kDN"],
+                                   random_state=0):
+    """
+    Realiza un muestreo distribuido de variables (tipo Random Forest)
+    para estimar la importancia basada en reducción de complejidad.
+    """
+
+    np.random.seed(random_state)
+    random.seed(random_state)
+    variables = X.columns.tolist()
+    importances = {m: pd.Series(0.0, index=variables) for m in measures} # diccionario para cada complexity measure
+    count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
+
+
+    # rep = 0
+    for rep in range(n_replicas):
+        print(rep)
+        subset_vars = random.choices(variables, k=m_vars)  # sampling WITH replacement
+        Xsub = X[subset_vars]
+
+        # Multivariate complexity
+        datos = pd.DataFrame(Xsub)
+        datos['y'] = y
+        df_measures, df_classes, extras = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+        base_complexity = df_classes.loc['dataset',measures]
+
+        current_vars = subset_vars.copy()
+        while len(current_vars) > 1: # hasta que nos quedemos sin vars
+            # Conteo de variables participantes
+            count_vars[current_vars] += 1
+
+            # elegir variable a quitar
+            if mode == "random":
+                to_remove = random.choice(current_vars)
+            else: # mode == "guided" and univariate_complexity is not None: #POR HACER
+                guided_scores = univariate_complexity.loc[current_vars].mean(axis=1)
+                to_remove = guided_scores.idxmax()  # quita la de mayor complejidad univariante
+
+            current_vars.remove(to_remove)
+            Xtemp = X[current_vars]
+
+            # Complexity removing one variable from previous subset
+            datos_temp = pd.DataFrame(Xtemp)
+            datos_temp['y'] = y
+            df_measures_temp, df_classes_temp, extras_temp = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+            new_complexity = df_classes_temp.loc['dataset',measures]
+
+            # Cambio de complejidad
+            delta = new_complexity - base_complexity # mee interesan diferencias positivas, es decir,
+            # quitar la variable aumenta la complejidad, luego la variable es útil
+            # Las diferencias negativas me dicen que esa variable aumentaba la complejidad, luego no la quiero
+            for m in measures:
+                importances[m][to_remove] += delta[m]
+
+            # Actualizamos base_complexity para próximo paso
+            base_complexity = new_complexity
+            # Conteo de variables participantes
+            count_vars[current_vars] += 1
+
+    # Normalizamos importancias
+    count_vars = count_vars.replace(0, np.nan) # para no tener problemas con los 0 en la división
+    for m in measures:
+        # importances[m] = importances[m] / n_replicas # esta opción no la veo justa
+        importances[m] = importances[m] / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
+        importances[m].sort_values(ascending=False, inplace=True)
+
+    return importances, count_vars
+
+
+def plot_importances(importances):
+    for m, imp in importances.items():
+        imp.plot(kind="barh", figsize=(8,6), title=f"Variable importance ({m})")
+        plt.xlabel("Avg complexity in backward")
+        plt.gca().invert_yaxis()
+        plt.show()
 
 
