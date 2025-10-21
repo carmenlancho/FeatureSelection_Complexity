@@ -88,6 +88,78 @@ def all_measures(data,save_csv,path_to_save, name_data):
 
 
 
+
+
+def all_measures_FS(data,save_csv,path_to_save, name_data):
+
+    y_format = format_labels(data['y'])
+    data['y'] = y_format
+    # Hostility measure
+    y = data['y'].to_numpy()
+    X = data.drop(columns=["y"]).to_numpy()
+    sigma = 5
+    # delta = 0.5
+    # seed = 0
+    k_min = 0
+    host_instance, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(
+        sigma, X, y, k_min, seed=0)
+    host_instances = np.array(host_instance[k_auto])
+    class_data_host = results.loc[k_auto]['Host_0':'Dataset_Host']
+    df_class_data_host = pd.DataFrame(class_data_host)
+    df_class_data_host.columns = [name_data]
+    extra_results_host = {'results_per_class':results_per_class, 'probs_per_layer':probs_per_layer, 'k_auto':k_auto.item()}
+
+    # L1 = L1_HD(X, y)
+
+    p = ClassificationMeasures(data)
+    kdn = p.k_disagreeing_neighbors()
+
+    # DS = p.disjunct_size()
+    # DCP = p.disjunct_class_percentage()
+    # TD_U = p.tree_depth_unpruned()
+    # TD_P = p.tree_depth_pruned()
+    # MV = p.minority_value()
+    # CB = p.class_balance()
+    # CLD = p.class_likeliood_diff()
+    N1 = p.borderline_points()  # N1
+    # N2 = p.intra_extra_ratio()  # N2
+    # LSC = p.local_set_cardinality()
+    # LSradius = p.ls_radius()
+    # H = p.harmfulness()
+    # U = p.usefulness()
+    # F1 = p.f1()
+    # F2 = p.f2()
+    # F3 = p.f3()
+    # F4 = p.f4()
+
+    dict_measures = {'Hostility': host_instances, 'kDN': kdn, 'N1': N1, 'y':y}
+
+
+    # dict_measures = {'Hostility': host_instances, 'kDN': kdn, 'DS': DS, 'DCP': DCP,
+    #                  'TD_U': TD_U, 'TD_P': TD_P, 'MV': MV, 'CB': CB, 'CLD': CLD, 'N1': N1, 'N2': N2,
+    #                  'LSC': LSC, 'LSradius': LSradius, 'H': H, 'U': U, 'F1': F1, 'F2': F2, 'F3': F3, 'F4': F4,
+    #                  'L1':L1, 'y':y}
+
+    df_measures = pd.DataFrame(dict_measures)
+
+    # Values per class and dataset
+    df_classes_dataset = pd.DataFrame(df_measures.groupby('y').mean())
+    df_classes_dataset.loc["dataset"] = df_measures.mean()[:-1]
+    df_classes_dataset['Hostility'] = np.array(class_data_host)
+
+    if (save_csv == True):
+        # To save the results
+        os.chdir(path_to_save)
+        nombre_csv = 'ComplexityMeasures_InstanceLevel_' + name_data + '.csv'
+        df_measures.to_csv(nombre_csv, encoding='utf_8_sig')
+
+        nombre_csv2 = 'ComplexityMeasures_ClassDatasetLevel_' + name_data + '.csv'
+        df_class_data_host.to_csv(nombre_csv2, encoding='utf_8_sig')
+
+    return df_measures, df_classes_dataset, extra_results_host
+
+
+
 # # ## Ejemplo individual
 # root_path = os.getcwd()
 # path_csv = os.chdir(root_path+'/datasets')
