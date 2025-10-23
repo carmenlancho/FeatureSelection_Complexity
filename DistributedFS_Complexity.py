@@ -115,21 +115,15 @@ def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_lin
     return df, y, dict_info_feature
 
 
-### Dataset 1
-dataset_name = 'ArtificialDataset1'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                        flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
 
 
 
-
-
-def distributed_variable_selection_complexity_random(X, y, n_replicas=10, m_vars=5,
+# n_replicas = 5
+# m_vars = 5
+def distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
                                    measures=["Hostility", "N1", "kDN"],
                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0):
+                                   random_state=0, save_csv=False, path='Results_FS_Distributed'):
 
     np.random.seed(random_state)
     random.seed(random_state)
@@ -144,6 +138,7 @@ def distributed_variable_selection_complexity_random(X, y, n_replicas=10, m_vars
 
     variables = X.columns.tolist()
     importances = {m: pd.Series(0.0, index=variables) for m in measures} # diccionario para cada complexity measure
+    importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}  # diccionario para cada complexity measure
     count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
 
 
@@ -192,24 +187,37 @@ def distributed_variable_selection_complexity_random(X, y, n_replicas=10, m_vars
     count_vars = count_vars.replace(0, np.nan) # para no tener problemas con los 0 en la división
     for m in measures:
         # importances[m] = importances[m] / n_replicas # esta opción no la veo justa
-        importances[m] = importances[m] / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
-        importances[m].sort_values(ascending=False, inplace=True)
+        importances_norm[m] = importances[m] / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
+        importances_norm[m].sort_values(ascending=False, inplace=True)
 
-    return importances, count_vars
+    results_norm = pd.DataFrame.from_dict(importances_norm)
+    results_norm = results_norm.add_suffix('_importances_norm')
+    results = pd.DataFrame.from_dict(importances)
+    results = results.add_suffix('_importances')
+    results_count = pd.DataFrame.from_dict(count_vars)
+    results_count.columns = ['count_vars']
+    results_complete = pd.concat([results, results_norm, results_count], axis=1)
+
+    if save_csv:
+        name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed.csv"
+        results_complete.to_csv(name_csv, index=False)
+
+
+    return importances_norm, importances, count_vars, results_complete
 
 
 
 
 
-# La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
-csv_file = "Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityRanking.csv"
-univariate_complexity = pd.read_csv(csv_file)
+# # La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
+# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityRanking.csv"
+# univariate_complexity = pd.read_csv(csv_file)
 
-def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars=5,
+def distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
                                    univariate_complexity=None, # complejidad univariante
                                    measure="Hostility",
                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0):
+                                   random_state=0, save_csv=False, path='Results_FS_Distributed'):
 
     np.random.seed(random_state)
     random.seed(random_state)
@@ -223,6 +231,7 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
 
     variables = X.columns.tolist()
     importances = pd.Series(0.0, index=variables) # diccionario para cada complexity measure
+    # importances_norm = pd.Series(0.0, index=variables)  # diccionario para cada complexity measure
     count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
 
 
@@ -271,14 +280,28 @@ def distributed_variable_selection_complexity_guided(X, y, n_replicas=10, m_vars
 
     # Normalizamos importancias
     count_vars = count_vars.replace(0, np.nan) # para no tener problemas con los 0 en la división
-    importances = importances / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
-    importances.sort_values(ascending=False, inplace=True)
-
-    return importances, count_vars
+    importances_norm = importances / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
+    importances_norm.sort_values(ascending=False, inplace=True)
 
 
-def plot_importances(importances):
-    for m, imp in importances.items():
+    results_norm = pd.DataFrame.from_dict(importances_norm)
+    results_norm.columns = [measure + '_importances_norm']
+    results = pd.DataFrame.from_dict(importances)
+    results.columns = [measure + '_importances']
+    results_count = pd.DataFrame.from_dict(count_vars)
+    results_count.columns = ['count_vars']
+    results_complete = pd.concat([results, results_norm, results_count], axis=1)
+
+    if save_csv:
+        name_csv = f"{path}/{dataset_name}_ComplexityGuidedDistributed_{measure}.csv"
+        results_complete.to_csv(name_csv, index=False)
+
+    return importances_norm, importances, count_vars, results_complete
+
+
+
+def plot_importances(importances_norm):
+    for m, imp in importances_norm.items():
         imp.plot(kind="barh", figsize=(8,6), title=f"Variable importance ({m})")
         plt.xlabel("Avg complexity in backward")
         plt.gca().invert_yaxis()
@@ -287,5 +310,39 @@ def plot_importances(importances):
 
 # ME FALTA HACER LA CADENA DE EJECUCIÓN Y SELECCIONAR LOS DATASETS PORQUE TARDA MUCHO Y ALGUNOS SON
 # MUY IGUALEES
+
+
+### Random
+
+### Dataset 1
+dataset_name = 'ArtificialDataset1'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                        flip_y=0, class_sep = 1, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+
+n_replicas=5
+m_vars=5
+_, _, _, results_random = distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+                                   measures=["Hostility", "N1", "kDN"],
+                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
+                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
+
+
+## Guided
+# La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
+csv_file = "Results_UnivariateRanking_CM/ArtificialDataset1_featuresComplexityRanking.csv"
+univariate_complexity = pd.read_csv(csv_file)
+selected_cm = 'Hostility'
+
+_, _, _, results_guided= distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
+                                   univariate_complexity=univariate_complexity, # complejidad univariante
+                                   measure=selected_cm,
+                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
+                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
+
+
+
 
 
