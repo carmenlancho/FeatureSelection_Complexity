@@ -489,10 +489,10 @@ def load_forward_selection_results(csv_file):
     return df
 
 
-def plot_forward_complexity(df, dataset_name, save_path=None):
+def plot_forward_complexity(df, dataset_name, figsize, save_path=None):
     measures = ["Hostility", "N1", "kDN"]
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=figsize)
     sns.set(style="whitegrid", font_scale=1.2)
 
     for m in measures:
