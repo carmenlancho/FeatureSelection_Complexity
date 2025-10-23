@@ -209,6 +209,11 @@ def forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
 
     return all_forward_inst_df, all_forward_classes_df
 
+
+
+
+
+
 #
 #
 # ### Dataset 1
@@ -465,6 +470,62 @@ def forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
 # forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
 #                                 save_csv=True, path="Results_ForwardComplexity",
 #                                 dataset_name=dataset_name)
+
+
+
+###########################################################################################
+######             GRÁFICO EVOLUCIÓN COMPLEEJIDAD FORWARD MULTIVARIANTE              ######
+###########################################################################################
+
+def load_forward_selection_results(csv_file):
+    df = pd.read_csv(csv_file)
+
+    # Nos quedamos solo con las filas del nivel dataset (ya veremos si necesitamos las clases en algún momento)
+    df = df[df["level"] == "dataset"].copy()
+
+    # subset_k a numérico
+    df["subset_k"] = pd.to_numeric(df["subset_k"], errors="coerce")
+
+    return df
+
+
+def plot_forward_complexity(df, dataset_name, save_path=None):
+    measures = ["Hostility", "N1", "kDN"]
+
+    plt.figure(figsize=(8, 5))
+    sns.set(style="whitegrid", font_scale=1.2)
+
+    for m in measures:
+        df_m = df[df["measure"] == m]
+        sns.lineplot(data=df_m, x="subset_k", y=m, marker="o", label=m)
+
+        # Marcamos el mínimo
+        min_idx = df_m[m].idxmin()
+        plt.scatter(df_m.loc[min_idx, "subset_k"], df_m.loc[min_idx, m],
+                    color="red", s=80, zorder=5, edgecolor="black")
+        plt.text(df_m.loc[min_idx, "subset_k"], df_m.loc[min_idx, m],
+                 f" min={df_m.loc[min_idx, 'subset_k']}", fontsize=9, color="red",
+                 ha="left", va="bottom")
+
+    plt.title(f"Forward multivariate Complexity evolution - {dataset_name}")
+    plt.xlabel("Number of included features (subset_k)")
+    plt.ylabel("Complexity")
+    plt.legend(title="Measure")
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
+
+
+# csv_file = "Results_ForwardComplexity/ArtificialDataset16_forward_dataset_classes.csv"
+# df_forward = load_forward_selection_results(csv_file)
+# plot_forward_complexity(df_forward, dataset_name="ArtificialDataset16")
+
+
+
+
+
 
 
 ###############################################################################################
@@ -787,58 +848,58 @@ def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "
 
 
 
-#### Dataset 17
-dataset_name = 'ArtificialDataset17'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informative=70,n_noise=40,
-                                         n_redundant_linear=40,n_redundant_nonlinear=40,
-                                        flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
-                                                     random_state=756,noise_std=0.5)
-_, dataset_vals, _ = univariate_complexity(X, y)
-evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
-
-
-
-#### Dataset 18
-dataset_name = 'ArtificialDataset18'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
-                                         n_redundant_linear=40,n_redundant_nonlinear=40,
-                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-                                                     random_state=9462,noise_std=0.5)
-_, dataset_vals, _ = univariate_complexity(X, y)
-evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
-
-
-#### Dataset 19
-dataset_name = 'ArtificialDataset19'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=50,
-                                         n_redundant_linear=50,n_redundant_nonlinear=50,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=655,noise_std=0.5)
-_, dataset_vals, _ = univariate_complexity(X, y)
-evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
-
-
-
-#### Dataset 20
-dataset_name = 'ArtificialDataset20'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
-                                         n_redundant_linear=60,n_redundant_nonlinear=60,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=4556,noise_std=0.5)
-_, dataset_vals, _ = univariate_complexity(X, y)
-evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
-
-
-
-#### Dataset 21
-dataset_name = 'ArtificialDataset21'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
-                                         n_redundant_linear=100,n_redundant_nonlinear=100,
-                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
-                                                     random_state=996,noise_std=0.5)
-_, dataset_vals, _ = univariate_complexity(X, y)
-evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
-
+# #### Dataset 17
+# dataset_name = 'ArtificialDataset17'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informative=70,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=756,noise_std=0.5)
+# _, dataset_vals, _ = univariate_complexity(X, y)
+# evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+#
+#
+#
+# #### Dataset 18
+# dataset_name = 'ArtificialDataset18'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+# _, dataset_vals, _ = univariate_complexity(X, y)
+# evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+#
+#
+# #### Dataset 19
+# dataset_name = 'ArtificialDataset19'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=50,
+#                                          n_redundant_linear=50,n_redundant_nonlinear=50,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=655,noise_std=0.5)
+# _, dataset_vals, _ = univariate_complexity(X, y)
+# evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+#
+#
+#
+# #### Dataset 20
+# dataset_name = 'ArtificialDataset20'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+#                                          n_redundant_linear=60,n_redundant_nonlinear=60,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+# _, dataset_vals, _ = univariate_complexity(X, y)
+# evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+#
+#
+#
+# #### Dataset 21
+# dataset_name = 'ArtificialDataset21'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+#                                          n_redundant_linear=100,n_redundant_nonlinear=100,
+#                                         flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+#                                                      random_state=996,noise_std=0.5)
+# _, dataset_vals, _ = univariate_complexity(X, y)
+# evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
+#
 
 
 
