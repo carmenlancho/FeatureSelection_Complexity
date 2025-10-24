@@ -990,7 +990,7 @@ def plot_classification_evolution(summary_df,
 
         # Resaltar el mejor punto
         best_idx = np.nanargmax(y)
-        plt.scatter(x[best_idx], y[best_idx], s=120, facecolors="none",
+        plt.scatter(x[best_idx], y[best_idx], s=60, facecolors="none",
                     edgecolors="red", linewidths=2.2, zorder=5)
         plt.annotate(f"{y[best_idx]:.3f}",
                      (x[best_idx], y[best_idx]),
