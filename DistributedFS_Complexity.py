@@ -145,6 +145,7 @@ def distributed_variable_selection_complexity_random(X, y, dataset_name, n_repli
     # rep = 0
     for rep in range(n_replicas):
         print(rep)
+        m_vars = int(m_vars)
         subset_vars = random.choices(variables, k=m_vars)  # sampling WITH replacement
         Xsub = X[subset_vars]
 
@@ -244,7 +245,8 @@ def distributed_variable_selection_complexity_guided(X, y, dataset_name, n_repli
 
         # rep = 0
         for rep in range(n_replicas):
-            print(rep)
+            # print(rep)
+            m_vars = int(m_vars)
             subset_vars = random.choices(variables, k=m_vars)  # sampling WITH replacement
             Xsub = X[subset_vars]
 
