@@ -980,8 +980,8 @@ def plot_classification_evolution(summary_df,
         y = dmodel[metric].values
         c = colors[i % len(colors)]
 
-        plt.plot(x, y, label=model, color=c, marker="o", linewidth=1.8)
-        plt.scatter(x, y, color=c, edgecolor="black", s=40, zorder=3)
+        plt.plot(x, y, label=model, color=c, linewidth=1.8)
+        # plt.scatter(x, y, color=c, edgecolor="black", s=40, zorder=3)
 
         # Añadir bandas de desviación estándar
         if show_std and std_col and std_col in dmodel.columns:
@@ -1015,21 +1015,21 @@ def plot_classification_evolution(summary_df,
     return
 
 
-# csv clasificación
-summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
-
-# Plot para GPS
-plot_classification_evolution(summary_df,
-                              measure="Hostility",
-                              metric="mean_gps",
-                              dataset_name="ArtificialDataset1")
-
-# Plot para Accuracy
-plot_classification_evolution(summary_df,
-                              measure="Hostility",
-                              metric="mean_acc",
-                              dataset_name="ArtificialDataset1")
-
-
+# # csv clasificación
+# summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
+#
+# # Plot para GPS
+# plot_classification_evolution(summary_df,
+#                               measure="Hostility",
+#                               metric="mean_gps",
+#                               dataset_name="ArtificialDataset1")
+#
+# # Plot para Accuracy
+# plot_classification_evolution(summary_df,
+#                               measure="Hostility",
+#                               metric="mean_acc",
+#                               dataset_name="ArtificialDataset1")
+#
+#
 
 
