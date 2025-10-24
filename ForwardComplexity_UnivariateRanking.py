@@ -1033,3 +1033,163 @@ def plot_classification_evolution(summary_df,
 #
 
 
+
+def plot_grouped_classification_evolution(summary_df,
+                                          dataset_name="ArtificialDataset1",
+                                          measures=["Hostility", "N1", "kDN"],
+                                          metric="mean_acc",  # o "mean_gps"
+                                          show_std=True,
+                                          figsize=(14, 6),
+                                          save_path=None,
+                                          show=True):
+    """
+    Muestra 3 gráficos (uno por measure) del rendimiento de clasificación
+    según subset_k para un mismo dataset y métrica (accuracy o gps).
+    """
+    sns.set(style="whitegrid", font_scale=1.1)
+    fig, axes = plt.subplots(1, len(measures), figsize=figsize, sharey=True)
+
+    if len(measures) == 1:
+        axes = [axes]
+
+    colors = plt.cm.tab10.colors
+    std_col = metric.replace("mean_", "std_")
+
+    for i, measure in enumerate(measures):
+        ax = axes[i]
+        dfm = summary_df[summary_df["measure"] == measure].copy()
+        dfm["subset_k"] = pd.to_numeric(dfm["subset_k"], errors="coerce")
+        dfm = dfm.sort_values(["model", "subset_k"])
+
+        models = dfm["model"].unique()
+
+        for j, model in enumerate(models):
+            dmodel = dfm[dfm["model"] == model]
+            x = dmodel["subset_k"].values
+            y = dmodel[metric].values
+            c = colors[j % len(colors)]
+
+            ax.plot(x, y, label=model, color=c, linewidth=2)
+
+            if show_std and std_col in dmodel.columns:
+                y_std = dmodel[std_col].values
+                ax.fill_between(x, y - y_std, y + y_std, color=c, alpha=0.15)
+
+        ax.set_title(f"{measure}", fontsize=13)
+        ax.set_xlabel("Number of included features")
+        if i == 0:
+            ylabel = "Accuracy" if "acc" in metric else "GPS"
+            ax.set_ylabel(ylabel)
+        ax.grid(True, linestyle="--", alpha=0.4)
+
+    # Leyenda común
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=len(models), frameon=False)
+    plt.suptitle(f"{dataset_name}", fontsize=15, y=1.03)
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+    return
+
+
+summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
+plot_grouped_classification_evolution(
+    summary_df,
+    dataset_name="ArtificialDataset1",
+    measures=["Hostility", "N1", "kDN"],
+    metric="mean_acc",
+    show_std=True
+)
+
+
+
+
+
+def plot_dataset_performance_grid(
+    summary_df,
+    dataset_name="ArtificialDataset1",
+    measures=["Hostility", "N1", "kDN"],
+    metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],
+    show_std=True,
+    figsize=(15, 8),
+    save_path=None,
+    show=True
+):
+    """
+    Crea un panel 2x3 de plots:
+    - Filas: métricas (accuracy, gps)
+    - Columnas: medidas de complejidad (Hostility, N1, kDN)
+    """
+    sns.set(style="whitegrid", font_scale=1.1)
+    fig, axes = plt.subplots(len(metrics), len(measures), figsize=figsize, sharex=True, sharey='row')
+
+    # Aseguramos que axes sea una matriz 2D
+    if len(metrics) == 1:
+        axes = np.expand_dims(axes, axis=0)
+    if len(measures) == 1:
+        axes = np.expand_dims(axes, axis=1)
+
+    colors = plt.cm.tab10.colors
+    summary_df = summary_df.copy()
+    summary_df["subset_k"] = pd.to_numeric(summary_df["subset_k"], errors="coerce")
+
+    for row_idx, (metric, metric_name) in enumerate(metrics):
+        std_col = metric.replace("mean_", "std_")
+        for col_idx, measure in enumerate(measures):
+            ax = axes[row_idx, col_idx]
+            dfm = summary_df[summary_df["measure"] == measure].sort_values(["model", "subset_k"])
+
+            for j, model in enumerate(dfm["model"].unique()):
+                dmodel = dfm[dfm["model"] == model]
+                x = dmodel["subset_k"].values
+                y = dmodel[metric].values
+                c = colors[j % len(colors)]
+                ax.plot(x, y, label=model, color=c, linewidth=2)
+                if show_std and std_col in dmodel.columns:
+                    y_std = dmodel[std_col].values
+                    ax.fill_between(x, y - y_std, y + y_std, color=c, alpha=0.15)
+
+            # Títulos y etiquetas
+            if row_idx == 0:
+                ax.set_title(measure, fontsize=13, pad=10)
+            if col_idx == 0:
+                ax.set_ylabel(metric_name, fontsize=12)
+            if row_idx == len(metrics) - 1:
+                ax.set_xlabel("Nº of features", fontsize=11)
+
+            ax.grid(True, linestyle="--", alpha=0.4)
+
+    # Leyenda global
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=len(labels), frameon=False, fontsize=10)
+
+    fig.subplots_adjust(top=0.85, bottom=0.1, hspace=0.35, wspace=0.25)
+
+    # Título del dataset
+    fig.suptitle(f"{dataset_name}", fontsize=16, y=0.93)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+
+summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
+
+plot_dataset_performance_grid(
+    summary_df,
+    dataset_name="ArtificialDataset1",
+    measures=["Hostility", "N1", "kDN"],
+    metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],
+    show_std=True
+)
