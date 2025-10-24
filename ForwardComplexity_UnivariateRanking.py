@@ -900,7 +900,7 @@ def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "
 # _, dataset_vals, _ = univariate_complexity(X, y)
 # evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
 #
-
+#
 
 
 # #### Dataset 22
@@ -923,6 +923,112 @@ def evaluate_forward_classification(X, y, dataset_vals, measures=["Hostility", "
 # _, dataset_vals, _ = univariate_complexity(X, y)
 # evaluate_forward_classification(X, y, dataset_vals, dataset_name=dataset_name, save_csv=True)
 #
+
+
+###########################################################################################
+######   GRÁFICO EVOLUCIÓN RENDIMIENTO MODELOS COMPLEEJIDAD FORWARD MULTIVARIANTE    ######
+###########################################################################################
+
+
+def plot_classification_evolution(summary_df,
+                                  measure="Hostility",
+                                  metric="mean_gps",  # "mean_acc" o "mean_gps"
+                                  dataset_name=None,
+                                  show_std=True,
+                                  figsize=(10, 6),
+                                  save_path=None,
+                                  show=True):
+    """
+    Visualiza la evolución de la performance con forward selection para cada modelo.
+
+    Parámetros
+    ----------
+    summary_df : pd.DataFrame
+        DataFrame con columnas ['measure','subset_k','model', metric, std_metric, ...]
+    measure : str
+        Medida de complejidad a filtrar (Hostility, N1, kDN, ...)
+    metric : str
+        Métrica de rendimiento principal a mostrar ('mean_acc' o 'mean_gps')
+    dataset_name : str, optional
+        Nombre del dataset para el título
+    show_std : bool
+        Si True, dibuja la banda ± std
+    figsize : tuple
+        Tamaño del gráfico
+    save_path : str, optional
+        Si se indica, guarda el gráfico en esa ruta
+    show : bool
+        Si False, no muestra el gráfico
+    """
+
+    dfm = summary_df[summary_df["measure"] == measure].copy()
+    std_col = metric.replace("mean_", "std_")
+
+    # Conversión a tipos numéricos
+    dfm["subset_k"] = pd.to_numeric(dfm["subset_k"], errors="coerce")
+    dfm = dfm.sort_values(["model", "subset_k"])
+
+    sns.set(style="whitegrid", font_scale=1.1)
+    plt.figure(figsize=figsize)
+
+    # Dibujar líneas por modelo
+    models = dfm["model"].unique()
+    colors = plt.cm.tab10.colors
+    for i, model in enumerate(models):
+        dmodel = dfm[dfm["model"] == model]
+        x = dmodel["subset_k"].values
+        y = dmodel[metric].values
+        c = colors[i % len(colors)]
+
+        plt.plot(x, y, label=model, color=c, marker="o", linewidth=1.8)
+        plt.scatter(x, y, color=c, edgecolor="black", s=40, zorder=3)
+
+        # Añadir bandas de desviación estándar
+        if show_std and std_col and std_col in dmodel.columns:
+            y_std = dmodel[std_col].values
+            plt.fill_between(x, y - y_std, y + y_std, color=c, alpha=0.15)
+
+        # Resaltar el mejor punto
+        best_idx = np.nanargmax(y)
+        plt.scatter(x[best_idx], y[best_idx], s=120, facecolors="none",
+                    edgecolors="red", linewidths=2.2, zorder=5)
+        plt.annotate(f"{y[best_idx]:.3f}",
+                     (x[best_idx], y[best_idx]),
+                     xytext=(5, -10), textcoords="offset points",
+                     color="red", fontsize=9)
+
+    plt.xlabel("Number of included features")
+    ylabel = "Mean accuracy" if "acc" in metric else "Mean GPS"
+    plt.ylabel(ylabel)
+    title_name = dataset_name or ""
+    plt.title(f"Evolution of {metric.replace('mean_', '')} — {measure} {title_name}")
+    plt.legend()
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+    return
+
+
+# csv clasificación
+summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
+
+# Plot para GPS
+plot_classification_evolution(summary_df,
+                              measure="Hostility",
+                              metric="mean_gps",
+                              dataset_name="ArtificialDataset1")
+
+# Plot para Accuracy
+plot_classification_evolution(summary_df,
+                              measure="Hostility",
+                              metric="mean_acc",
+                              dataset_name="ArtificialDataset1")
 
 
 
