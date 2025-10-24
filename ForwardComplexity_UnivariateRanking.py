@@ -518,12 +518,12 @@ def analyze_informative_capture(forward_csv_path, metadata_csv_path):
             "subset_all_informative_included": captured_step
         }
 
-    summary_df = pd.DataFrame.from_dict(results, orient="index")
-    summary_df.index.name = "measure"
+    captured_info_df = pd.DataFrame.from_dict(results, orient="index")
+    captured_info_df.index.name = "measure"
 
-    return results, summary_df
+    return results, captured_info_df
 
-# results, summary_df = analyze_informative_capture(
+# results, captured_info_df = analyze_informative_capture(
 #     forward_csv_path="Results_ForwardComplexity/ArtificialDataset1_forward_dataset_classes.csv",
 #     metadata_csv_path="Synthetic_Metadata/ArtificialDataset1_features.csv")
 
@@ -544,7 +544,7 @@ def load_forward_selection_results(csv_file):
     return df
 
 
-def plot_forward_complexity(df, dataset_name, figsize, save_path=None):
+def plot_forward_complexity(df, dataset_name, figsize, captured_info_df, save_path=None):
     measures = ["Hostility", "N1", "kDN"]
 
     plt.figure(figsize=figsize)
@@ -553,6 +553,18 @@ def plot_forward_complexity(df, dataset_name, figsize, save_path=None):
     for m in measures:
         df_m = df[df["measure"] == m]
         sns.lineplot(data=df_m, x="subset_k", y=m, marker="o", label=m)
+
+        # Líneas verticales
+        captured_row = captured_info_df.loc[m,:]
+
+        # Número real de variables informativas
+        n_info = captured_row["n_informative"]
+        plt.axvline(x=n_info, color="black", linestyle="--", label="n informatives" if m == measures[0] else None)
+
+        # Todas informativas capturadas
+        subset_capture = captured_row["subset_all_informative_included"]
+        plt.axvline(x=subset_capture, color=sns.color_palette()[measures.index(m)], linestyle="-",
+                    label=f"{m} captured all" if m == measures[0] else None)
 
         # Marcamos el mínimo
         min_idx = df_m[m].idxmin()
@@ -563,20 +575,21 @@ def plot_forward_complexity(df, dataset_name, figsize, save_path=None):
                  ha="left", va="bottom")
 
     plt.title(f"Forward multivariate Complexity evolution - {dataset_name}")
-    plt.xlabel("Number of included features (subset_k)")
+    plt.xlabel("Number of included features")
     plt.ylabel("Complexity")
-    plt.legend(title="Measure")
+    plt.legend()
     plt.tight_layout()
 
     if save_path:
         plt.savefig(save_path, dpi=300)
     plt.show()
 
-
-# csv_file = "Results_ForwardComplexity/ArtificialDataset16_forward_dataset_classes.csv"
+#
+# csv_file = "Results_ForwardComplexity/ArtificialDataset1_forward_dataset_classes.csv"
 # df_forward = load_forward_selection_results(csv_file)
-# plot_forward_complexity(df_forward, dataset_name="ArtificialDataset16")
-
+# figsize = (8,5)
+# plot_forward_complexity(df_forward, dataset_name="ArtificialDataset1",figsize=figsize, captured_info_df=captured_info_df)
+#
 
 
 
