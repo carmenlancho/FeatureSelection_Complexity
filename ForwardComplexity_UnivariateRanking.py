@@ -473,6 +473,61 @@ def forward_complexity_analysis(X, y, measures=["Hostility" ,"N1" ,"kDN"],
 
 
 
+
+###########################################################################################
+####                       PILLAMOS VARIABLES INFORMATIVAS??                           ####
+###########################################################################################
+
+
+def analyze_informative_capture(forward_csv_path, metadata_csv_path):
+    """
+    Dado un CSV de resultados del forward selection y el CSV de metadatos,
+    devuelve el número de variables informativas y en qué subset_k se incluyen todas.
+    """
+    # Read files
+    df_forward = pd.read_csv(forward_csv_path)
+    df_meta = pd.read_csv(metadata_csv_path)
+
+    # Identificamos variables informativas
+    informative_vars = df_meta.loc[df_meta["feature_type"] == "informative", "feature_name"].tolist()
+    n_informative = len(informative_vars)
+
+    # Guardar resultados por medida
+    results = {}
+
+    # Solo filas de dataset (no de clases)
+    df_dataset = df_forward[df_forward["level"] == "dataset"].copy()
+
+    # Formato
+    df_dataset["vars_set"] = df_dataset["variables_incluidas"].apply(lambda x: set(x.split(",")))
+
+    # Cuándo pillamos todas las informativas
+    measures = df_dataset.measure.unique()
+    for m in measures:
+        df_m = df_dataset[df_dataset.measure == m].copy()
+        measure_name = str(m)
+        df_m = df_m.sort_values("subset_k") # ordenamos por subset_k
+        captured_step = None
+        for _, row in df_m.iterrows():
+            if set(informative_vars).issubset(set(row["vars_set"])):
+                captured_step = row["subset_k"]
+                break  # ahora sí, las tenemos todas
+
+        results[measure_name] = {
+            "n_informative": n_informative,
+            "subset_all_informative_included": captured_step
+        }
+
+    summary_df = pd.DataFrame.from_dict(results, orient="index")
+    summary_df.index.name = "measure"
+
+    return results, summary_df
+
+# results, summary_df = analyze_informative_capture(
+#     forward_csv_path="Results_ForwardComplexity/ArtificialDataset1_forward_dataset_classes.csv",
+#     metadata_csv_path="Synthetic_Metadata/ArtificialDataset1_features.csv")
+
+
 ###########################################################################################
 ######             GRÁFICO EVOLUCIÓN COMPLEEJIDAD FORWARD MULTIVARIANTE              ######
 ###########################################################################################
