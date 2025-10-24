@@ -1098,15 +1098,15 @@ def plot_grouped_classification_evolution(summary_df,
     return
 
 
-summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
-plot_grouped_classification_evolution(
-    summary_df,
-    dataset_name="ArtificialDataset1",
-    measures=["Hostility", "N1", "kDN"],
-    metric="mean_acc",
-    show_std=True
-)
-
+# summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
+# plot_grouped_classification_evolution(
+#     summary_df,
+#     dataset_name="ArtificialDataset1",
+#     measures=["Hostility", "N1", "kDN"],
+#     metric="mean_acc",
+#     show_std=True
+# )
+#
 
 
 
@@ -1184,12 +1184,12 @@ def plot_dataset_performance_grid(
         plt.close()
 
 
-summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
-
-plot_dataset_performance_grid(
-    summary_df,
-    dataset_name="ArtificialDataset1",
-    measures=["Hostility", "N1", "kDN"],
-    metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],
-    show_std=True
-)
+# summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
+#
+# plot_dataset_performance_grid(
+#     summary_df,
+#     dataset_name="ArtificialDataset1",
+#     measures=["Hostility", "N1", "kDN"],
+#     metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],
+#     show_std=True
+# )
