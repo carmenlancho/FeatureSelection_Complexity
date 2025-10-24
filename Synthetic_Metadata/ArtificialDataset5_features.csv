@@ -1,0 +1,56 @@
+feature_name,feature_type,formula
+f0,informative,
+f1,informative,
+f2,informative,
+f3,informative,
+f4,informative,
+f5,informative,
+f6,informative,
+f7,informative,
+f8,informative,
+f9,informative,
+f10,informative,
+f11,informative,
+f12,informative,
+f13,informative,
+f14,informative,
+f15,informative,
+f16,informative,
+f17,informative,
+f18,informative,
+f19,informative,
+f20,informative,
+f21,informative,
+f22,informative,
+f23,informative,
+f24,informative,
+f25,noise,
+f26,noise,
+f27,noise,
+f28,noise,
+f29,noise,
+f30,noise,
+f31,noise,
+f32,noise,
+f33,noise,
+f34,noise,
+f35,noise,
+f36,noise,
+f37,noise,
+f38,noise,
+f39,noise,
+f40,redundant_linear,0.89*f5 + -0.83*f1 + ruido
+f41,redundant_linear,0.16*f21 + -1.96*f13 + ruido
+f42,redundant_linear,-0.33*f4 + -1.01*f21 + ruido
+f43,redundant_linear,1.05*f18 + 1.03*f8 + ruido
+f44,redundant_linear,-1.79*f23 + -1.17*f10 + ruido
+f45,redundant_linear,-0.99*f17 + 0.49*f2 + ruido
+f46,redundant_linear,-0.25*f3 + -1.08*f15 + ruido
+f47,redundant_linear,0.45*f23 + -1.10*f1 + ruido
+f48,redundant_nonlinear,cos(f17) + f3 + ruido
+f49,redundant_nonlinear,cos(f3) + f14 + ruido
+f50,redundant_nonlinear,exp(f4) + f11 + ruido
+f51,redundant_nonlinear,exp(f19) + f0 + ruido
+f52,redundant_nonlinear,cos(f20) + f16 + ruido
+f53,redundant_nonlinear,cos(f5) + f10 + ruido
+f54,redundant_nonlinear,cos(f12) + f7 + ruido

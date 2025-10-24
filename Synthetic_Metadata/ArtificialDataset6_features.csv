@@ -1,0 +1,33 @@
+feature_name,feature_type,formula
+f0,informative,
+f1,informative,
+f2,informative,
+f3,informative,
+f4,informative,
+f5,informative,
+f6,informative,
+f7,informative,
+f8,noise,
+f9,noise,
+f10,noise,
+f11,noise,
+f12,noise,
+f13,noise,
+f14,noise,
+f15,noise,
+f16,noise,
+f17,noise,
+f18,noise,
+f19,noise,
+f20,noise,
+f21,noise,
+f22,noise,
+f23,redundant_linear,0.92*f3 + -0.57*f7 + ruido
+f24,redundant_linear,1.18*f5 + 1.48*f4 + ruido
+f25,redundant_linear,1.50*f1 + 0.31*f4 + ruido
+f26,redundant_linear,-0.29*f6 + 0.67*f2 + ruido
+f27,redundant_nonlinear,square(f1) + f2 + ruido
+f28,redundant_nonlinear,exp(f7) + f2 + ruido
+f29,redundant_nonlinear,exp(f5) + f0 + ruido
+f30,redundant_nonlinear,cos(f4) + f5 + ruido
+f31,redundant_nonlinear,square(f6) + f5 + ruido

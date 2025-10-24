@@ -1,0 +1,191 @@
+feature_name,feature_type,formula
+f0,informative,
+f1,informative,
+f2,informative,
+f3,informative,
+f4,informative,
+f5,informative,
+f6,informative,
+f7,informative,
+f8,informative,
+f9,informative,
+f10,informative,
+f11,informative,
+f12,informative,
+f13,informative,
+f14,informative,
+f15,informative,
+f16,informative,
+f17,informative,
+f18,informative,
+f19,informative,
+f20,informative,
+f21,informative,
+f22,informative,
+f23,informative,
+f24,informative,
+f25,informative,
+f26,informative,
+f27,informative,
+f28,informative,
+f29,informative,
+f30,informative,
+f31,informative,
+f32,informative,
+f33,informative,
+f34,informative,
+f35,informative,
+f36,informative,
+f37,informative,
+f38,informative,
+f39,informative,
+f40,informative,
+f41,informative,
+f42,informative,
+f43,informative,
+f44,informative,
+f45,informative,
+f46,informative,
+f47,informative,
+f48,informative,
+f49,informative,
+f50,informative,
+f51,informative,
+f52,informative,
+f53,informative,
+f54,informative,
+f55,informative,
+f56,informative,
+f57,informative,
+f58,informative,
+f59,informative,
+f60,informative,
+f61,informative,
+f62,informative,
+f63,informative,
+f64,informative,
+f65,informative,
+f66,informative,
+f67,informative,
+f68,informative,
+f69,informative,
+f70,noise,
+f71,noise,
+f72,noise,
+f73,noise,
+f74,noise,
+f75,noise,
+f76,noise,
+f77,noise,
+f78,noise,
+f79,noise,
+f80,noise,
+f81,noise,
+f82,noise,
+f83,noise,
+f84,noise,
+f85,noise,
+f86,noise,
+f87,noise,
+f88,noise,
+f89,noise,
+f90,noise,
+f91,noise,
+f92,noise,
+f93,noise,
+f94,noise,
+f95,noise,
+f96,noise,
+f97,noise,
+f98,noise,
+f99,noise,
+f100,noise,
+f101,noise,
+f102,noise,
+f103,noise,
+f104,noise,
+f105,noise,
+f106,noise,
+f107,noise,
+f108,noise,
+f109,noise,
+f110,redundant_linear,0.49*f31 + 0.07*f66 + ruido
+f111,redundant_linear,1.45*f11 + 1.84*f24 + ruido
+f112,redundant_linear,0.86*f41 + -0.93*f39 + ruido
+f113,redundant_linear,-0.81*f6 + 0.78*f55 + ruido
+f114,redundant_linear,-0.20*f38 + -0.91*f19 + ruido
+f115,redundant_linear,1.61*f2 + -0.85*f25 + ruido
+f116,redundant_linear,-0.67*f58 + -0.13*f19 + ruido
+f117,redundant_linear,-1.36*f62 + 1.54*f67 + ruido
+f118,redundant_linear,-0.98*f8 + -1.97*f6 + ruido
+f119,redundant_linear,0.63*f67 + -0.63*f8 + ruido
+f120,redundant_linear,1.01*f39 + -0.54*f20 + ruido
+f121,redundant_linear,-1.70*f52 + 1.86*f58 + ruido
+f122,redundant_linear,-1.69*f67 + 1.91*f4 + ruido
+f123,redundant_linear,1.06*f19 + -1.43*f1 + ruido
+f124,redundant_linear,-0.30*f55 + -1.37*f56 + ruido
+f125,redundant_linear,-1.66*f50 + 0.91*f36 + ruido
+f126,redundant_linear,1.96*f23 + -0.95*f32 + ruido
+f127,redundant_linear,1.49*f49 + 1.38*f32 + ruido
+f128,redundant_linear,1.26*f19 + 0.71*f53 + ruido
+f129,redundant_linear,-0.35*f19 + -1.16*f63 + ruido
+f130,redundant_linear,-0.41*f32 + 1.96*f39 + ruido
+f131,redundant_linear,-0.20*f46 + 0.89*f50 + ruido
+f132,redundant_linear,1.83*f8 + 1.18*f54 + ruido
+f133,redundant_linear,0.53*f65 + -1.53*f54 + ruido
+f134,redundant_linear,0.19*f35 + 0.73*f25 + ruido
+f135,redundant_linear,0.36*f20 + 0.91*f63 + ruido
+f136,redundant_linear,-0.85*f65 + -1.81*f19 + ruido
+f137,redundant_linear,0.71*f47 + 0.42*f23 + ruido
+f138,redundant_linear,1.10*f19 + -1.67*f36 + ruido
+f139,redundant_linear,0.73*f53 + -0.06*f65 + ruido
+f140,redundant_linear,-1.59*f50 + -1.41*f25 + ruido
+f141,redundant_linear,0.73*f18 + -0.21*f21 + ruido
+f142,redundant_linear,-1.65*f57 + -1.04*f17 + ruido
+f143,redundant_linear,0.55*f56 + 1.76*f57 + ruido
+f144,redundant_linear,0.93*f29 + 0.31*f9 + ruido
+f145,redundant_linear,-1.12*f13 + -0.70*f53 + ruido
+f146,redundant_linear,-1.02*f9 + 0.88*f46 + ruido
+f147,redundant_linear,-0.67*f4 + 1.89*f10 + ruido
+f148,redundant_linear,0.17*f13 + 1.54*f57 + ruido
+f149,redundant_linear,-0.56*f34 + 1.26*f15 + ruido
+f150,redundant_nonlinear,cos(f12) + f6 + ruido
+f151,redundant_nonlinear,exp(f44) + f61 + ruido
+f152,redundant_nonlinear,cos(f42) + f69 + ruido
+f153,redundant_nonlinear,exp(f57) + f22 + ruido
+f154,redundant_nonlinear,square(f52) + f58 + ruido
+f155,redundant_nonlinear,exp(f39) + f25 + ruido
+f156,redundant_nonlinear,cos(f56) + f63 + ruido
+f157,redundant_nonlinear,square(f60) + f3 + ruido
+f158,redundant_nonlinear,sin(f34) + f9 + ruido
+f159,redundant_nonlinear,square(f66) + f14 + ruido
+f160,redundant_nonlinear,cos(f35) + f47 + ruido
+f161,redundant_nonlinear,square(f2) + f57 + ruido
+f162,redundant_nonlinear,exp(f61) + f45 + ruido
+f163,redundant_nonlinear,exp(f5) + f21 + ruido
+f164,redundant_nonlinear,square(f39) + f10 + ruido
+f165,redundant_nonlinear,cos(f26) + f33 + ruido
+f166,redundant_nonlinear,exp(f10) + f58 + ruido
+f167,redundant_nonlinear,square(f49) + f21 + ruido
+f168,redundant_nonlinear,exp(f42) + f5 + ruido
+f169,redundant_nonlinear,exp(f25) + f63 + ruido
+f170,redundant_nonlinear,sin(f43) + f17 + ruido
+f171,redundant_nonlinear,cos(f20) + f56 + ruido
+f172,redundant_nonlinear,square(f58) + f24 + ruido
+f173,redundant_nonlinear,cos(f24) + f41 + ruido
+f174,redundant_nonlinear,cos(f45) + f20 + ruido
+f175,redundant_nonlinear,cos(f51) + f61 + ruido
+f176,redundant_nonlinear,square(f46) + f67 + ruido
+f177,redundant_nonlinear,sin(f30) + f60 + ruido
+f178,redundant_nonlinear,sin(f21) + f49 + ruido
+f179,redundant_nonlinear,exp(f42) + f65 + ruido
+f180,redundant_nonlinear,sin(f68) + f39 + ruido
+f181,redundant_nonlinear,sin(f5) + f67 + ruido
+f182,redundant_nonlinear,cos(f5) + f6 + ruido
+f183,redundant_nonlinear,exp(f8) + f59 + ruido
+f184,redundant_nonlinear,exp(f55) + f37 + ruido
+f185,redundant_nonlinear,exp(f19) + f33 + ruido
+f186,redundant_nonlinear,cos(f44) + f19 + ruido
+f187,redundant_nonlinear,sin(f13) + f61 + ruido
+f188,redundant_nonlinear,cos(f16) + f69 + ruido
+f189,redundant_nonlinear,cos(f62) + f69 + ruido

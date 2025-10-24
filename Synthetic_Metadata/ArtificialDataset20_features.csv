@@ -1,0 +1,481 @@
+feature_name,feature_type,formula
+f0,informative,
+f1,informative,
+f2,informative,
+f3,informative,
+f4,informative,
+f5,informative,
+f6,informative,
+f7,informative,
+f8,informative,
+f9,informative,
+f10,informative,
+f11,informative,
+f12,informative,
+f13,informative,
+f14,informative,
+f15,informative,
+f16,informative,
+f17,informative,
+f18,informative,
+f19,informative,
+f20,informative,
+f21,informative,
+f22,informative,
+f23,informative,
+f24,informative,
+f25,informative,
+f26,informative,
+f27,informative,
+f28,informative,
+f29,informative,
+f30,informative,
+f31,informative,
+f32,informative,
+f33,informative,
+f34,informative,
+f35,informative,
+f36,informative,
+f37,informative,
+f38,informative,
+f39,informative,
+f40,informative,
+f41,informative,
+f42,informative,
+f43,informative,
+f44,informative,
+f45,informative,
+f46,informative,
+f47,informative,
+f48,informative,
+f49,informative,
+f50,informative,
+f51,informative,
+f52,informative,
+f53,informative,
+f54,informative,
+f55,informative,
+f56,informative,
+f57,informative,
+f58,informative,
+f59,informative,
+f60,informative,
+f61,informative,
+f62,informative,
+f63,informative,
+f64,informative,
+f65,informative,
+f66,informative,
+f67,informative,
+f68,informative,
+f69,informative,
+f70,informative,
+f71,informative,
+f72,informative,
+f73,informative,
+f74,informative,
+f75,informative,
+f76,informative,
+f77,informative,
+f78,informative,
+f79,informative,
+f80,informative,
+f81,informative,
+f82,informative,
+f83,informative,
+f84,informative,
+f85,informative,
+f86,informative,
+f87,informative,
+f88,informative,
+f89,informative,
+f90,informative,
+f91,informative,
+f92,informative,
+f93,informative,
+f94,informative,
+f95,informative,
+f96,informative,
+f97,informative,
+f98,informative,
+f99,informative,
+f100,informative,
+f101,informative,
+f102,informative,
+f103,informative,
+f104,informative,
+f105,informative,
+f106,informative,
+f107,informative,
+f108,informative,
+f109,informative,
+f110,informative,
+f111,informative,
+f112,informative,
+f113,informative,
+f114,informative,
+f115,informative,
+f116,informative,
+f117,informative,
+f118,informative,
+f119,informative,
+f120,informative,
+f121,informative,
+f122,informative,
+f123,informative,
+f124,informative,
+f125,informative,
+f126,informative,
+f127,informative,
+f128,informative,
+f129,informative,
+f130,informative,
+f131,informative,
+f132,informative,
+f133,informative,
+f134,informative,
+f135,informative,
+f136,informative,
+f137,informative,
+f138,informative,
+f139,informative,
+f140,informative,
+f141,informative,
+f142,informative,
+f143,informative,
+f144,informative,
+f145,informative,
+f146,informative,
+f147,informative,
+f148,informative,
+f149,informative,
+f150,informative,
+f151,informative,
+f152,informative,
+f153,informative,
+f154,informative,
+f155,informative,
+f156,informative,
+f157,informative,
+f158,informative,
+f159,informative,
+f160,informative,
+f161,informative,
+f162,informative,
+f163,informative,
+f164,informative,
+f165,informative,
+f166,informative,
+f167,informative,
+f168,informative,
+f169,informative,
+f170,informative,
+f171,informative,
+f172,informative,
+f173,informative,
+f174,informative,
+f175,informative,
+f176,informative,
+f177,informative,
+f178,informative,
+f179,informative,
+f180,informative,
+f181,informative,
+f182,informative,
+f183,informative,
+f184,informative,
+f185,informative,
+f186,informative,
+f187,informative,
+f188,informative,
+f189,informative,
+f190,informative,
+f191,informative,
+f192,informative,
+f193,informative,
+f194,informative,
+f195,informative,
+f196,informative,
+f197,informative,
+f198,informative,
+f199,informative,
+f200,informative,
+f201,informative,
+f202,informative,
+f203,informative,
+f204,informative,
+f205,informative,
+f206,informative,
+f207,informative,
+f208,informative,
+f209,informative,
+f210,informative,
+f211,informative,
+f212,informative,
+f213,informative,
+f214,informative,
+f215,informative,
+f216,informative,
+f217,informative,
+f218,informative,
+f219,informative,
+f220,informative,
+f221,informative,
+f222,informative,
+f223,informative,
+f224,informative,
+f225,informative,
+f226,informative,
+f227,informative,
+f228,informative,
+f229,informative,
+f230,informative,
+f231,informative,
+f232,informative,
+f233,informative,
+f234,informative,
+f235,informative,
+f236,informative,
+f237,informative,
+f238,informative,
+f239,informative,
+f240,informative,
+f241,informative,
+f242,informative,
+f243,informative,
+f244,informative,
+f245,informative,
+f246,informative,
+f247,informative,
+f248,informative,
+f249,informative,
+f250,informative,
+f251,informative,
+f252,informative,
+f253,informative,
+f254,informative,
+f255,informative,
+f256,informative,
+f257,informative,
+f258,informative,
+f259,informative,
+f260,informative,
+f261,informative,
+f262,informative,
+f263,informative,
+f264,informative,
+f265,informative,
+f266,informative,
+f267,informative,
+f268,informative,
+f269,informative,
+f270,informative,
+f271,informative,
+f272,informative,
+f273,informative,
+f274,informative,
+f275,informative,
+f276,informative,
+f277,informative,
+f278,informative,
+f279,informative,
+f280,informative,
+f281,informative,
+f282,informative,
+f283,informative,
+f284,informative,
+f285,informative,
+f286,informative,
+f287,informative,
+f288,informative,
+f289,informative,
+f290,informative,
+f291,informative,
+f292,informative,
+f293,informative,
+f294,informative,
+f295,informative,
+f296,informative,
+f297,informative,
+f298,informative,
+f299,informative,
+f300,noise,
+f301,noise,
+f302,noise,
+f303,noise,
+f304,noise,
+f305,noise,
+f306,noise,
+f307,noise,
+f308,noise,
+f309,noise,
+f310,noise,
+f311,noise,
+f312,noise,
+f313,noise,
+f314,noise,
+f315,noise,
+f316,noise,
+f317,noise,
+f318,noise,
+f319,noise,
+f320,noise,
+f321,noise,
+f322,noise,
+f323,noise,
+f324,noise,
+f325,noise,
+f326,noise,
+f327,noise,
+f328,noise,
+f329,noise,
+f330,noise,
+f331,noise,
+f332,noise,
+f333,noise,
+f334,noise,
+f335,noise,
+f336,noise,
+f337,noise,
+f338,noise,
+f339,noise,
+f340,noise,
+f341,noise,
+f342,noise,
+f343,noise,
+f344,noise,
+f345,noise,
+f346,noise,
+f347,noise,
+f348,noise,
+f349,noise,
+f350,noise,
+f351,noise,
+f352,noise,
+f353,noise,
+f354,noise,
+f355,noise,
+f356,noise,
+f357,noise,
+f358,noise,
+f359,noise,
+f360,redundant_linear,1.25*f130 + -0.06*f91 + ruido
+f361,redundant_linear,1.52*f158 + -0.84*f81 + ruido
+f362,redundant_linear,1.99*f251 + -1.50*f261 + ruido
+f363,redundant_linear,0.62*f55 + 1.57*f199 + ruido
+f364,redundant_linear,-1.60*f157 + -1.40*f119 + ruido
+f365,redundant_linear,-0.76*f83 + 1.27*f98 + ruido
+f366,redundant_linear,0.97*f202 + 0.91*f264 + ruido
+f367,redundant_linear,-1.16*f100 + -0.15*f204 + ruido
+f368,redundant_linear,1.11*f81 + 0.42*f80 + ruido
+f369,redundant_linear,0.70*f174 + 1.61*f15 + ruido
+f370,redundant_linear,1.21*f180 + -1.15*f40 + ruido
+f371,redundant_linear,1.53*f8 + 1.73*f229 + ruido
+f372,redundant_linear,0.39*f277 + -0.76*f221 + ruido
+f373,redundant_linear,1.45*f133 + 0.93*f40 + ruido
+f374,redundant_linear,1.39*f65 + 1.72*f259 + ruido
+f375,redundant_linear,1.14*f213 + -1.30*f67 + ruido
+f376,redundant_linear,1.21*f239 + -1.79*f170 + ruido
+f377,redundant_linear,-1.37*f139 + 1.17*f157 + ruido
+f378,redundant_linear,0.05*f114 + 0.47*f87 + ruido
+f379,redundant_linear,-0.27*f132 + 1.74*f139 + ruido
+f380,redundant_linear,-1.40*f195 + 0.95*f36 + ruido
+f381,redundant_linear,1.19*f171 + -0.41*f124 + ruido
+f382,redundant_linear,-0.78*f39 + -0.79*f288 + ruido
+f383,redundant_linear,-0.95*f0 + 0.00*f148 + ruido
+f384,redundant_linear,1.51*f284 + -1.24*f5 + ruido
+f385,redundant_linear,-0.93*f209 + 0.26*f218 + ruido
+f386,redundant_linear,1.62*f105 + 1.03*f209 + ruido
+f387,redundant_linear,0.75*f298 + -0.67*f249 + ruido
+f388,redundant_linear,0.49*f139 + 1.29*f90 + ruido
+f389,redundant_linear,0.31*f167 + 1.48*f211 + ruido
+f390,redundant_linear,0.08*f265 + 1.61*f221 + ruido
+f391,redundant_linear,1.98*f69 + 0.46*f61 + ruido
+f392,redundant_linear,0.30*f51 + -0.70*f147 + ruido
+f393,redundant_linear,0.86*f86 + 0.61*f29 + ruido
+f394,redundant_linear,0.68*f177 + -0.61*f40 + ruido
+f395,redundant_linear,0.71*f38 + -1.29*f231 + ruido
+f396,redundant_linear,-1.30*f107 + -0.96*f261 + ruido
+f397,redundant_linear,-1.43*f15 + 1.08*f177 + ruido
+f398,redundant_linear,1.12*f38 + -1.00*f252 + ruido
+f399,redundant_linear,-0.18*f233 + -0.80*f207 + ruido
+f400,redundant_linear,1.94*f283 + 1.99*f91 + ruido
+f401,redundant_linear,1.88*f37 + 0.79*f142 + ruido
+f402,redundant_linear,-1.35*f73 + 0.91*f103 + ruido
+f403,redundant_linear,-0.77*f257 + -1.49*f91 + ruido
+f404,redundant_linear,0.00*f258 + -1.13*f235 + ruido
+f405,redundant_linear,0.06*f299 + -0.73*f243 + ruido
+f406,redundant_linear,0.67*f257 + 0.73*f163 + ruido
+f407,redundant_linear,-1.80*f265 + 0.70*f12 + ruido
+f408,redundant_linear,-1.60*f260 + 0.92*f127 + ruido
+f409,redundant_linear,1.97*f224 + 1.61*f205 + ruido
+f410,redundant_linear,-0.38*f233 + 1.99*f241 + ruido
+f411,redundant_linear,-0.19*f110 + -1.81*f264 + ruido
+f412,redundant_linear,1.16*f279 + 1.25*f34 + ruido
+f413,redundant_linear,1.71*f3 + -1.74*f291 + ruido
+f414,redundant_linear,0.22*f137 + -1.35*f113 + ruido
+f415,redundant_linear,-0.81*f147 + 1.62*f129 + ruido
+f416,redundant_linear,0.31*f79 + 1.11*f209 + ruido
+f417,redundant_linear,-0.81*f130 + 1.52*f293 + ruido
+f418,redundant_linear,-1.34*f167 + 1.54*f127 + ruido
+f419,redundant_linear,0.98*f54 + 1.23*f79 + ruido
+f420,redundant_nonlinear,sin(f134) + f107 + ruido
+f421,redundant_nonlinear,cos(f46) + f2 + ruido
+f422,redundant_nonlinear,square(f23) + f222 + ruido
+f423,redundant_nonlinear,exp(f149) + f279 + ruido
+f424,redundant_nonlinear,exp(f109) + f136 + ruido
+f425,redundant_nonlinear,cos(f253) + f272 + ruido
+f426,redundant_nonlinear,sin(f196) + f131 + ruido
+f427,redundant_nonlinear,square(f117) + f37 + ruido
+f428,redundant_nonlinear,square(f93) + f230 + ruido
+f429,redundant_nonlinear,sin(f189) + f156 + ruido
+f430,redundant_nonlinear,square(f32) + f112 + ruido
+f431,redundant_nonlinear,exp(f191) + f138 + ruido
+f432,redundant_nonlinear,sin(f50) + f90 + ruido
+f433,redundant_nonlinear,square(f96) + f248 + ruido
+f434,redundant_nonlinear,sin(f138) + f188 + ruido
+f435,redundant_nonlinear,exp(f95) + f74 + ruido
+f436,redundant_nonlinear,square(f32) + f248 + ruido
+f437,redundant_nonlinear,square(f261) + f16 + ruido
+f438,redundant_nonlinear,exp(f140) + f297 + ruido
+f439,redundant_nonlinear,square(f187) + f289 + ruido
+f440,redundant_nonlinear,sin(f171) + f262 + ruido
+f441,redundant_nonlinear,cos(f111) + f203 + ruido
+f442,redundant_nonlinear,exp(f134) + f149 + ruido
+f443,redundant_nonlinear,square(f170) + f134 + ruido
+f444,redundant_nonlinear,square(f16) + f231 + ruido
+f445,redundant_nonlinear,square(f127) + f243 + ruido
+f446,redundant_nonlinear,sin(f73) + f218 + ruido
+f447,redundant_nonlinear,sin(f74) + f137 + ruido
+f448,redundant_nonlinear,square(f241) + f262 + ruido
+f449,redundant_nonlinear,cos(f220) + f183 + ruido
+f450,redundant_nonlinear,exp(f162) + f183 + ruido
+f451,redundant_nonlinear,square(f72) + f216 + ruido
+f452,redundant_nonlinear,exp(f68) + f211 + ruido
+f453,redundant_nonlinear,square(f53) + f3 + ruido
+f454,redundant_nonlinear,square(f218) + f259 + ruido
+f455,redundant_nonlinear,square(f169) + f51 + ruido
+f456,redundant_nonlinear,cos(f182) + f231 + ruido
+f457,redundant_nonlinear,square(f206) + f133 + ruido
+f458,redundant_nonlinear,square(f14) + f244 + ruido
+f459,redundant_nonlinear,sin(f278) + f227 + ruido
+f460,redundant_nonlinear,exp(f242) + f255 + ruido
+f461,redundant_nonlinear,square(f109) + f284 + ruido
+f462,redundant_nonlinear,cos(f168) + f111 + ruido
+f463,redundant_nonlinear,exp(f281) + f138 + ruido
+f464,redundant_nonlinear,cos(f124) + f158 + ruido
+f465,redundant_nonlinear,cos(f156) + f55 + ruido
+f466,redundant_nonlinear,sin(f48) + f191 + ruido
+f467,redundant_nonlinear,sin(f195) + f8 + ruido
+f468,redundant_nonlinear,sin(f211) + f210 + ruido
+f469,redundant_nonlinear,square(f4) + f142 + ruido
+f470,redundant_nonlinear,square(f237) + f67 + ruido
+f471,redundant_nonlinear,cos(f227) + f274 + ruido
+f472,redundant_nonlinear,exp(f31) + f200 + ruido
+f473,redundant_nonlinear,cos(f285) + f79 + ruido
+f474,redundant_nonlinear,exp(f74) + f194 + ruido
+f475,redundant_nonlinear,sin(f293) + f43 + ruido
+f476,redundant_nonlinear,sin(f198) + f147 + ruido
+f477,redundant_nonlinear,cos(f105) + f160 + ruido
+f478,redundant_nonlinear,exp(f258) + f203 + ruido
+f479,redundant_nonlinear,exp(f196) + f126 + ruido

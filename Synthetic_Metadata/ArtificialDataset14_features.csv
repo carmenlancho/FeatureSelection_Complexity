@@ -1,0 +1,141 @@
+feature_name,feature_type,formula
+f0,informative,
+f1,informative,
+f2,informative,
+f3,informative,
+f4,informative,
+f5,informative,
+f6,informative,
+f7,informative,
+f8,informative,
+f9,informative,
+f10,informative,
+f11,informative,
+f12,informative,
+f13,informative,
+f14,informative,
+f15,informative,
+f16,informative,
+f17,informative,
+f18,informative,
+f19,informative,
+f20,informative,
+f21,informative,
+f22,informative,
+f23,informative,
+f24,informative,
+f25,informative,
+f26,informative,
+f27,informative,
+f28,informative,
+f29,informative,
+f30,noise,
+f31,noise,
+f32,noise,
+f33,noise,
+f34,noise,
+f35,noise,
+f36,noise,
+f37,noise,
+f38,noise,
+f39,noise,
+f40,noise,
+f41,noise,
+f42,noise,
+f43,noise,
+f44,noise,
+f45,noise,
+f46,noise,
+f47,noise,
+f48,noise,
+f49,noise,
+f50,noise,
+f51,noise,
+f52,noise,
+f53,noise,
+f54,noise,
+f55,noise,
+f56,noise,
+f57,noise,
+f58,noise,
+f59,noise,
+f60,noise,
+f61,noise,
+f62,noise,
+f63,noise,
+f64,noise,
+f65,noise,
+f66,noise,
+f67,noise,
+f68,noise,
+f69,noise,
+f70,redundant_linear,1.99*f20 + 1.27*f16 + ruido
+f71,redundant_linear,0.14*f20 + -1.52*f7 + ruido
+f72,redundant_linear,-0.78*f1 + 1.50*f5 + ruido
+f73,redundant_linear,-0.34*f2 + -1.90*f13 + ruido
+f74,redundant_linear,-1.27*f21 + 0.84*f18 + ruido
+f75,redundant_linear,-0.21*f0 + -0.32*f15 + ruido
+f76,redundant_linear,1.74*f17 + -0.40*f29 + ruido
+f77,redundant_linear,1.61*f26 + 0.44*f27 + ruido
+f78,redundant_linear,-1.32*f1 + 1.22*f27 + ruido
+f79,redundant_linear,0.89*f18 + 1.16*f20 + ruido
+f80,redundant_linear,0.01*f8 + 1.91*f15 + ruido
+f81,redundant_linear,-0.23*f28 + 1.33*f19 + ruido
+f82,redundant_linear,0.41*f0 + 0.89*f28 + ruido
+f83,redundant_linear,1.89*f19 + -1.97*f3 + ruido
+f84,redundant_linear,1.03*f13 + -0.51*f26 + ruido
+f85,redundant_linear,1.36*f15 + 1.58*f25 + ruido
+f86,redundant_linear,1.75*f24 + -0.52*f17 + ruido
+f87,redundant_linear,0.73*f15 + -0.52*f0 + ruido
+f88,redundant_linear,1.78*f4 + -0.54*f29 + ruido
+f89,redundant_linear,0.63*f19 + 0.44*f15 + ruido
+f90,redundant_linear,0.83*f29 + 1.31*f0 + ruido
+f91,redundant_linear,0.46*f22 + 1.92*f8 + ruido
+f92,redundant_linear,-0.87*f3 + 1.55*f26 + ruido
+f93,redundant_linear,-1.77*f1 + -1.01*f23 + ruido
+f94,redundant_linear,0.76*f9 + -0.70*f13 + ruido
+f95,redundant_linear,0.73*f11 + 2.00*f15 + ruido
+f96,redundant_linear,-0.70*f29 + -0.84*f9 + ruido
+f97,redundant_linear,-1.71*f9 + 1.80*f20 + ruido
+f98,redundant_linear,0.96*f11 + 1.07*f4 + ruido
+f99,redundant_linear,-1.07*f13 + -1.13*f5 + ruido
+f100,redundant_nonlinear,cos(f23) + f28 + ruido
+f101,redundant_nonlinear,cos(f7) + f29 + ruido
+f102,redundant_nonlinear,cos(f11) + f3 + ruido
+f103,redundant_nonlinear,sin(f27) + f0 + ruido
+f104,redundant_nonlinear,exp(f6) + f18 + ruido
+f105,redundant_nonlinear,cos(f17) + f14 + ruido
+f106,redundant_nonlinear,exp(f4) + f21 + ruido
+f107,redundant_nonlinear,cos(f18) + f11 + ruido
+f108,redundant_nonlinear,cos(f13) + f6 + ruido
+f109,redundant_nonlinear,square(f4) + f11 + ruido
+f110,redundant_nonlinear,cos(f22) + f10 + ruido
+f111,redundant_nonlinear,cos(f26) + f27 + ruido
+f112,redundant_nonlinear,sin(f14) + f19 + ruido
+f113,redundant_nonlinear,exp(f7) + f29 + ruido
+f114,redundant_nonlinear,exp(f24) + f14 + ruido
+f115,redundant_nonlinear,exp(f17) + f14 + ruido
+f116,redundant_nonlinear,sin(f12) + f6 + ruido
+f117,redundant_nonlinear,sin(f14) + f7 + ruido
+f118,redundant_nonlinear,square(f26) + f8 + ruido
+f119,redundant_nonlinear,exp(f12) + f29 + ruido
+f120,redundant_nonlinear,cos(f7) + f19 + ruido
+f121,redundant_nonlinear,sin(f27) + f23 + ruido
+f122,redundant_nonlinear,sin(f15) + f27 + ruido
+f123,redundant_nonlinear,square(f3) + f1 + ruido
+f124,redundant_nonlinear,square(f21) + f9 + ruido
+f125,redundant_nonlinear,sin(f1) + f24 + ruido
+f126,redundant_nonlinear,square(f25) + f11 + ruido
+f127,redundant_nonlinear,cos(f9) + f27 + ruido
+f128,redundant_nonlinear,cos(f1) + f28 + ruido
+f129,redundant_nonlinear,cos(f7) + f0 + ruido
+f130,redundant_nonlinear,exp(f11) + f19 + ruido
+f131,redundant_nonlinear,sin(f26) + f0 + ruido
+f132,redundant_nonlinear,square(f18) + f0 + ruido
+f133,redundant_nonlinear,square(f24) + f22 + ruido
+f134,redundant_nonlinear,cos(f6) + f20 + ruido
+f135,redundant_nonlinear,sin(f2) + f0 + ruido
+f136,redundant_nonlinear,cos(f23) + f18 + ruido
+f137,redundant_nonlinear,exp(f15) + f4 + ruido
+f138,redundant_nonlinear,sin(f28) + f5 + ruido
+f139,redundant_nonlinear,sin(f18) + f29 + ruido

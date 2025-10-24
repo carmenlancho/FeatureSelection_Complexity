@@ -1,0 +1,62 @@
+feature_name,feature_type,formula
+f0,informative,
+f1,informative,
+f2,informative,
+f3,informative,
+f4,informative,
+f5,informative,
+f6,noise,
+f7,noise,
+f8,noise,
+f9,noise,
+f10,noise,
+f11,noise,
+f12,noise,
+f13,noise,
+f14,noise,
+f15,noise,
+f16,noise,
+f17,noise,
+f18,noise,
+f19,noise,
+f20,noise,
+f21,noise,
+f22,noise,
+f23,noise,
+f24,noise,
+f25,noise,
+f26,redundant_linear,-0.54*f2 + 0.56*f0 + ruido
+f27,redundant_linear,1.25*f0 + 1.47*f2 + ruido
+f28,redundant_linear,-1.35*f1 + -1.89*f4 + ruido
+f29,redundant_linear,-0.44*f3 + -1.95*f4 + ruido
+f30,redundant_linear,-0.75*f5 + 1.16*f1 + ruido
+f31,redundant_linear,-0.43*f1 + 0.51*f0 + ruido
+f32,redundant_linear,0.65*f1 + -1.06*f4 + ruido
+f33,redundant_linear,0.90*f0 + -0.61*f4 + ruido
+f34,redundant_linear,1.78*f1 + -0.47*f2 + ruido
+f35,redundant_linear,-0.90*f5 + 1.89*f4 + ruido
+f36,redundant_linear,0.09*f0 + 1.62*f2 + ruido
+f37,redundant_linear,1.56*f1 + 1.92*f2 + ruido
+f38,redundant_linear,0.88*f0 + -1.02*f3 + ruido
+f39,redundant_linear,1.79*f1 + -1.50*f3 + ruido
+f40,redundant_linear,-1.98*f4 + 0.86*f2 + ruido
+f41,redundant_linear,-1.37*f1 + -0.89*f2 + ruido
+f42,redundant_linear,-1.01*f3 + 1.22*f2 + ruido
+f43,redundant_linear,0.85*f1 + -1.04*f0 + ruido
+f44,redundant_linear,1.26*f4 + -0.74*f2 + ruido
+f45,redundant_linear,0.78*f2 + -1.82*f5 + ruido
+f46,redundant_nonlinear,exp(f4) + f0 + ruido
+f47,redundant_nonlinear,cos(f4) + f0 + ruido
+f48,redundant_nonlinear,exp(f2) + f3 + ruido
+f49,redundant_nonlinear,cos(f2) + f0 + ruido
+f50,redundant_nonlinear,square(f3) + f1 + ruido
+f51,redundant_nonlinear,exp(f4) + f3 + ruido
+f52,redundant_nonlinear,cos(f0) + f1 + ruido
+f53,redundant_nonlinear,exp(f5) + f2 + ruido
+f54,redundant_nonlinear,square(f0) + f2 + ruido
+f55,redundant_nonlinear,sin(f4) + f5 + ruido
+f56,redundant_nonlinear,square(f1) + f2 + ruido
+f57,redundant_nonlinear,cos(f0) + f2 + ruido
+f58,redundant_nonlinear,cos(f3) + f2 + ruido
+f59,redundant_nonlinear,exp(f4) + f5 + ruido
+f60,redundant_nonlinear,cos(f0) + f3 + ruido
