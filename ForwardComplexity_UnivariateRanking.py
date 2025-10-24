@@ -1181,7 +1181,8 @@ def plot_grouped_classification_evolution(summary_df,
 
 def plot_dataset_performance_grid(
     summary_df,
-    dataset_name="ArtificialDataset1",
+    dataset_name,
+    captured_info_df,
     measures=["Hostility", "N1", "kDN"],
     metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],
     show_std=True,
@@ -1196,12 +1197,6 @@ def plot_dataset_performance_grid(
     """
     sns.set(style="whitegrid", font_scale=1.1)
     fig, axes = plt.subplots(len(metrics), len(measures), figsize=figsize, sharex=True, sharey='row')
-
-    # Aseguramos que axes sea una matriz 2D
-    if len(metrics) == 1:
-        axes = np.expand_dims(axes, axis=0)
-    if len(measures) == 1:
-        axes = np.expand_dims(axes, axis=1)
 
     colors = plt.cm.tab10.colors
     summary_df = summary_df.copy()
@@ -1222,6 +1217,15 @@ def plot_dataset_performance_grid(
                 if show_std and std_col in dmodel.columns:
                     y_std = dmodel[std_col].values
                     ax.fill_between(x, y - y_std, y + y_std, color=c, alpha=0.15)
+                # Líneas verticales de información sobre variables informativas
+                n_informative = captured_info_df.loc[measure, "n_informative"]
+                subset_captured = captured_info_df.loc[measure, "subset_all_informative_included"]
+
+                # Línea discontinua negra: número real de informativas
+                ax.axvline(n_informative, color='black', linestyle='--', linewidth=1, label=None)
+
+                # Línea continua negra: momento en que se capturan todas
+                ax.axvline(subset_captured, color='black', linestyle='-', linewidth=1, label=None)
 
             # Títulos y etiquetas
             if row_idx == 0:
@@ -1251,13 +1255,19 @@ def plot_dataset_performance_grid(
     else:
         plt.close()
 
+# results, captured_info_df = analyze_informative_capture(
+#     forward_csv_path="Results_ForwardComplexity/ArtificialDataset1_forward_dataset_classes.csv",
+#     metadata_csv_path="Synthetic_Metadata/ArtificialDataset1_features.csv")
+
+
+
 
 # summary_df = pd.read_csv("Results_ForwardComplexity/ArtificialDataset1_forward_summary_fullclassification.csv")
 #
 # plot_dataset_performance_grid(
 #     summary_df,
 #     dataset_name="ArtificialDataset1",
+#     captured_info_df = captured_info_df,
 #     measures=["Hostility", "N1", "kDN"],
-#     metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],
-#     show_std=True
-# )
+#     metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],#captured_info_df=None,
+#     show_std=True)
