@@ -238,10 +238,176 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
                                                      random_state=0,noise_std=0.01)
 
-# df, y, info = generate_synthetic_dataset(...)
 feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset2_features.csv")
 
 evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+
+
+### Dataset 3
+dataset_name = 'ArtificialDataset3'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=25,n_noise=5,
+                                         n_redundant_linear=7,n_redundant_nonlinear=8,
+                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=0,noise_std=0.05)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset3_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+#### Dataset 7
+dataset_name = 'ArtificialDataset7'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=589,noise_std=0.05)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset7_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+#### Dataset 8
+dataset_name = 'ArtificialDataset8'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=40,n_noise=15,
+                                         n_redundant_linear=15,n_redundant_nonlinear=15,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=86785,noise_std=0.1)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset8_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+#### Dataset 10
+dataset_name = 'ArtificialDataset10'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=2000,n_informative=6,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=15,
+                                        flip_y=0, class_sep=0.8, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=959,noise_std=0.3)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset10_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+#### Dataset 11
+dataset_name = 'ArtificialDataset11'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=20,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=15,
+                                        flip_y=0, class_sep=0.6, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=959,noise_std=0.1)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset11_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+#### Dataset 12
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset12_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+#### Dataset 14
+dataset_name = 'ArtificialDataset14'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset14_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+#### Dataset 16
+dataset_name = 'ArtificialDataset16'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=50,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.3, class_sep=0.4, n_clusters_per_class=1, weights=[0.2],
+                                                     random_state=756,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset16_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+#### Dataset 17
+dataset_name = 'ArtificialDataset17'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=756,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset17_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+#### Dataset 18
+dataset_name = 'ArtificialDataset18'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset18_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+#### Dataset 19
+dataset_name = 'ArtificialDataset19'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=50,
+                                         n_redundant_linear=50,n_redundant_nonlinear=50,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=655,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDatase19_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+#### Dataset 20
+dataset_name = 'ArtificialDataset20'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+                                         n_redundant_linear=60,n_redundant_nonlinear=60,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset20_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+#### Dataset 21
+dataset_name = 'ArtificialDataset21'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+                                         n_redundant_linear=100,n_redundant_nonlinear=100,
+                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+                                                     random_state=996,noise_std=0.5)
+
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset21_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+
+
 
 
 
