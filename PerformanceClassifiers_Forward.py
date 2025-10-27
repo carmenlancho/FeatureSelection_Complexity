@@ -376,7 +376,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
                                                      random_state=655,noise_std=0.5)
 
-feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDatase19_features.csv")
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset19_features.csv")
 
 evaluate_incremental_models(X, y, feature_info,save_csv=True)
 
