@@ -1,0 +1,249 @@
+### 27/10/2025
+# En este script vamos a hacer un código para evaluar cómo va cambiando la performance de los modelos
+# al ir añadiendo de 1 en 1 las variables
+#  Primero metemos las informativas y luego las otros modo random
+# Lo hacemos así porque también quiero estudiar  si la performance se estanca o sigue aumentando
+# dado que en algunos casos del distributed hemos visto que aunque ya están todas las variables
+# informativas, ha seguido aumentando con variables irrelevantes
+
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import cross_validate, StratifiedKFold
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, make_scorer
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import make_classification
+from sklearn.metrics import confusion_matrix
+import os
+
+
+# Función para generar datos sintéticos
+def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_linear, n_redundant_nonlinear,
+                                flip_y, class_sep, n_clusters_per_class, weights, random_state=42, noise_std=0.05):
+    rng = np.random.RandomState(random_state)
+
+    # Generamos solo informativas + ruido
+    X, y = make_classification(
+        n_samples=n_samples,
+        n_features=n_informative + n_noise,
+        n_informative=n_informative,
+        n_redundant=0,
+        n_repeated=0,
+        flip_y = flip_y,
+        class_sep = class_sep,
+        n_clusters_per_class = n_clusters_per_class,
+        weights =weights,
+        shuffle=False,
+        random_state=random_state
+    )
+
+    # X = preprocessing.scale(X)
+    df = pd.DataFrame(X, columns=[f"f{i}" for i in range(X.shape[1])])
+    formulas = {}
+    formulas_nonlinear = {}
+
+    # Redundantes lineales
+    for j in range(n_redundant_linear):
+        idx1, idx2 = rng.choice(n_informative, size=2, replace=False)
+        coef1, coef2 = rng.uniform(-2, 2, size=2)
+        new_name = f"f{df.shape[1]}"
+        new_feature = coef1*df[f"f{idx1}"] + coef2*df[f"f{idx2}"]
+        if noise_std > 0:
+            new_feature += rng.normal(0, noise_std, size=n_samples)
+        df[new_name] = new_feature
+        formulas[new_name] = f"{coef1:.2f}*f{idx1} + {coef2:.2f}*f{idx2}" + ("" if noise_std==0 else " + ruido")
+
+    # Redundantes no lineales
+    for j in range(n_redundant_nonlinear):
+        idx = rng.choice(n_informative, size=2, replace=False)
+        func = rng.choice([np.sin, np.cos, np.square, np.exp])
+        new_name = f"f{df.shape[1]}"
+        new_feature = func(df[f"f{idx[0]}"]) + df[f"f{idx[1]}"]
+        if noise_std > 0:
+            new_feature += rng.normal(0, noise_std, size=n_samples)
+        df[new_name] = new_feature
+        formulas_nonlinear[new_name] = f"{func.__name__}(f{idx[0]}) + f{idx[1]}" + ("" if noise_std==0 else " + ruido")
+
+    dict_info_feature = {
+        "informative": [f"f{i}" for i in range(n_informative)],
+        "noise": [f"f{i}" for i in range(n_informative, n_informative + n_noise)],
+        "redundant_linear": list(formulas.keys()),
+        "redundant_nonlinear": list(formulas_nonlinear.keys()),
+        "formulas_linear": formulas,
+        "formulas_nonlinear": formulas_nonlinear
+    }
+
+    df[df.columns] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
+
+    return df, y, dict_info_feature
+
+
+
+def compute_gps(y_true, y_pred):
+    """
+    Calcula GPS para un problema binario.
+    """
+    cm = confusion_matrix(y_true, y_pred, labels=np.unique(y_true))
+
+    TN, FP, FN, TP = cm.ravel()
+
+    # métricas base
+    PPV = TP / (TP + FP) if (TP + FP) > 0 else 0
+    TPR = TP / (TP + FN) if (TP + FN) > 0 else 0
+    NPV = TN / (TN + FN) if (TN + FN) > 0 else 0
+    TNR = TN / (TN + FP) if (TN + FP) > 0 else 0
+
+    # F1+ y F1-
+    F1_pos = 2 * (PPV * TPR) / (PPV + TPR) if (PPV + TPR) > 0 else 0
+    F1_neg = 2 * (NPV * TNR) / (NPV + TNR) if (NPV + TNR) > 0 else 0
+
+    # GPS
+    GPS = 2 * (F1_pos * F1_neg) / (F1_pos + F1_neg) if (F1_pos + F1_neg) > 0 else 0
+    return GPS
+
+
+# save_csv = True
+def evaluate_incremental_models(X, y, feature_info, random_state=42, cv_splits=10,save_csv=False,
+                                path = 'Results_PerformanceClassifiers_Forward'):
+    rng = np.random.default_rng(random_state)
+
+    # Orden de variables
+    informative = feature_info.query("feature_type == 'informative'")["feature_name"].tolist()
+    other_vars = feature_info.query("feature_type != 'informative'")["feature_name"].tolist()
+    rng.shuffle(other_vars)
+    ordered_features = informative + other_vars
+
+    # Modelos
+    models = {
+        # "LogReg": LogisticRegression(max_iter=1000),
+        # "SVM-linear": SVC(kernel="linear"),
+        "SVM-rbf": SVC(kernel="rbf"),
+        # "RandomForest": RandomForestClassifier(n_estimators=200, random_state=random_state),
+        "KNN": KNeighborsClassifier(),
+        # "NaiveBayes": GaussianNB(),
+        # "DecisionTree": DecisionTreeClassifier(random_state=random_state)
+    }
+
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+    # classes = np.unique(y)
+
+    # Resultados
+    results_records = []   # fold-by-fold
+    summary_records = []   # resumen mean/std
+    detailed_results = {}  # por subset_k
+
+    # Evaluación incremental
+    for k in range(1, len(ordered_features) + 1):
+        subset = ordered_features[:k]
+        Xsub = X[subset].values
+        subset_name = f"Top{k}"
+
+        detailed_results[subset_name] = {}
+
+        for model_name, model in models.items():
+            fold_acc = []
+            fold_gps = []
+            # fold_acc_class = {cls: [] for cls in classes}
+
+            for fold, (train_idx, test_idx) in enumerate(skf.split(Xsub, y), 1):
+                X_train, X_test = Xsub[train_idx], Xsub[test_idx]
+                y_train, y_test = y[train_idx], y[test_idx]
+
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+
+                acc = accuracy_score(y_test, y_pred)
+                gps = compute_gps(y_test, y_pred)
+
+                # acc_per_class = {}
+                # for c in classes:
+                #     idx = (y_test == c)
+                #     acc_per_class[int(c)] = accuracy_score(y_test[idx], y_pred[idx])
+
+                # Registro fold a fold
+                record = {
+                    "subset_k": k,
+                    "variables_incluidas": ",".join(subset),
+                    "model": model_name,
+                    "fold": fold,
+                    "acc": acc,
+                    "gps": gps
+                }
+                # for cls, val in acc_per_class.items():
+                #     record[f"acc_class_{cls}"] = val
+                #     fold_acc_class[cls].append(val)
+
+                results_records.append(record)
+                fold_acc.append(acc)
+                fold_gps.append(gps)
+
+            # Medias y std
+            mean_acc = np.mean(fold_acc)
+            std_acc = np.std(fold_acc)
+            mean_gps = np.mean(fold_gps)
+            std_gps = np.std(fold_gps)
+
+            # mean_acc_class = {f"mean_acc_class_{int(c)}": np.mean(vals)
+            #                   for c, vals in fold_acc_class.items()}
+            # std_acc_class = {f"std_acc_class_{int(c)}": np.std(vals)
+            #                  for c, vals in fold_acc_class.items()}
+
+            summary_values = {
+                "subset_k": k,
+                "variables_incluidas": ",".join(subset),
+                "model": model_name,
+                "mean_acc": mean_acc,
+                "std_acc": std_acc,
+                "mean_gps": mean_gps,
+                "std_gps": std_gps
+            }
+            # summary_values.update(mean_acc_class)
+            # summary_values.update(std_acc_class)
+            summary_records.append(summary_values)
+
+            detailed_results[subset_name][model_name] = {
+                "fold_acc": fold_acc,
+                "fold_gps": fold_gps,
+                # "fold_acc_class": fold_acc_class,
+                "mean_acc": mean_acc,
+                "std_acc": std_acc,
+                "mean_gps": mean_gps,
+                "std_gps": std_gps
+                # "mean_acc_class": mean_acc_class,
+                # "std_acc_class": std_acc_class
+            }
+
+        # DataFrames finales
+    results_df = pd.DataFrame(results_records).set_index(["subset_k", "model", "fold"])
+    summary_df = pd.DataFrame(summary_records).set_index(["subset_k", "model"])
+
+    # Guardar
+    if save_csv and dataset_name:
+        results_df.to_csv(f"{path}/{dataset_name}_informative_order_folds.csv")
+        summary_df.to_csv(f"{path}/{dataset_name}_informative_order_summary.csv")
+
+    return results_df, summary_df, detailed_results
+
+
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+# df, y, info = generate_synthetic_dataset(...)
+feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset2_features.csv")
+
+evaluate_incremental_models(X, y, feature_info,save_csv=True)
+
+
+
+
+
