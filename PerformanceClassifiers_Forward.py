@@ -435,8 +435,6 @@ def plot_models_two_panel_performance(summary_df,dataset_name="Dataset",n_inform
     # ACCURACY
     ax = axes[0]
     for i, m in enumerate(model_list):
-        print(i)
-        print(m)
         d = df[df["model"] == m].sort_values("subset_k")
         ax.plot(d["subset_k"], d["mean_acc"], label=m, color=palette[i], linewidth=2)
         if show_std and "std_acc" in d.columns:
