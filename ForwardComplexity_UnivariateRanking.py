@@ -1271,3 +1271,141 @@ def plot_dataset_performance_grid(
 #     measures=["Hostility", "N1", "kDN"],
 #     metrics=[("mean_acc", "Accuracy"), ("mean_gps", "GPS")],#captured_info_df=None,
 #     show_std=True)
+
+
+
+############################################################################################################
+# Vamos a apuuntar ahora cuándo hann incluido los métodos del SOTA todas las variables informativas
+# OJO PORQUE COMO HAY VARIABLES QUE SON COMBINACIÓN DE OTRAS, ESTO ES UN POCO TRICKY
+
+
+
+
+
+# COGEMOS ESTA FUNCIÓN DEL SCRIPT FeatureSelectionComplexityEvaluation
+## Función para ejecutar diversos métodos de FS tipo filtro del SOTA
+def select_features_by_filters(X, y, feature_names,k=None,methods=None,random_state=0):
+    """
+    Aplica varios métodos de filtro y devuelve:
+        selections: dict {method_name: {"scores": pd.Series(index=feature_names), "selected": [names...] }}
+
+    - X: np.ndarray or DataFrame
+    - y: array-like
+    - feature_names: list of names (length = X.shape[1])
+    - k: número de features a seleccionar (si None -> k = n_informative_guess ~ sqrt(n_features) fallback)
+    - methods: lista de strings entre {"mutual_info","f_classif","rf","relief",'xgboost'}
+    """
+    if methods is None:
+        methods = ["mutual_info", "f_classif", "rf", "relief","xgboost"]
+
+    Xarr = X.values if isinstance(X, pd.DataFrame) else np.asarray(X)
+    n_features = Xarr.shape[1]
+    if k is None:
+        k = max(1, int(np.sqrt(n_features)))  # heuristic fallback
+
+    results = {}
+
+    # standardize for methods that need it
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(Xarr)
+
+    # mutual information
+    if "mutual_info" in methods:
+        mi = mutual_info_classif(Xs, y, random_state=random_state)
+        s = pd.Series(mi, index=feature_names).sort_values(ascending=False)
+        results["mutual_info"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # ANOVA F (f_classif)
+    if "f_classif" in methods:
+        F, p = f_classif(Xs, y)
+        s = pd.Series(F, index=feature_names).sort_values(ascending=False)
+        results["f_classif"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # Random Forest importance
+    if "rf" in methods:
+        rf = RandomForestClassifier(n_estimators=200, random_state=random_state)
+        rf.fit(Xs, y)
+        imp = rf.feature_importances_
+        s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
+        results["rf"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # ReliefF
+    if "relief" in methods:
+        rf_sel = ReliefF(n_features_to_select=Xs.shape[1]) # n_neighbors usamos el valor por defecto de la librería
+        rf_sel.fit(Xs, y)
+        scores = rf_sel.feature_importances_
+        s = pd.Series(scores, index=feature_names).sort_values(ascending=False)
+        results["relief"] = {"scores": s, "selected": list(s.index[:k])}
+
+    # XGBoost
+    if "xgboost" in methods:
+        xgb_clf = xgb.XGBClassifier(eval_metric="logloss",random_state=random_state)
+        xgb_clf.fit(Xs, y)
+        imp = xgb_clf.feature_importances_
+        s = pd.Series(imp, index=feature_names).sort_values(ascending=False)
+        results["xgb"] = {"scores": s, "selected": list(s.index[:k])}
+
+
+    return results
+
+
+
+def capture_informatives_by_filters(X, y, feature_info, methods=None, random_state=0):
+    """
+    Calcula para cada métod de selección tipo filtro el punto (k) en el que
+    todas las variables informativas han sido seleccionadas.
+
+    Devuelve:
+    ----------
+    captured_info_df : pd.DataFrame con columnas:
+        [method, total_features, n_informative, captured_k]
+
+    - captured_k: valor mínimo de k donde se incluyen todas las informativas
+    """
+    feature_names = X.columns.tolist()
+    n_total = len(feature_names)
+    informative = feature_info.query("feature_type == 'informative'")["feature_name"].tolist()
+    n_inf = len(informative)
+
+    if methods is None:
+        methods = ["mutual_info", "f_classif", "rf", "relief", "xgboost"]
+
+    # Llamamos a la función base
+    results = select_features_by_filters(X, y, feature_names, k=n_total, methods=methods, random_state=random_state)
+
+    records = []
+    for method, vals in results.items():
+        ranked_features = vals["scores"].index.tolist()
+
+        captured_k = None
+        for k in range(n_inf, n_total + 1):
+            subset = ranked_features[:k]
+            if set(informative).issubset(set(subset)):
+                captured_k = k
+                break
+
+        record = {
+            "method": method,
+            "total_features": n_total,
+            "n_informative": n_inf,
+            "captured_k": captured_k}
+        records.append(record)
+
+    captured_info_df = pd.DataFrame(records)
+    return captured_info_df
+
+
+#
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+#
+# feature_info = pd.read_csv("Synthetic_Metadata/ArtificialDataset2_features.csv")
+# captured_info_df = capture_informatives_by_filters(X, y, feature_info, methods=None, random_state=0)
+#
+#
+
