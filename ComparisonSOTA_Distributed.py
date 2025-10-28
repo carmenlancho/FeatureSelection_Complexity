@@ -202,6 +202,24 @@ def build_subsets_for_complexity(feature_names, feature_types, fs_selections,k_r
 
     return subsets
 
+# csv_path = 'Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv'
+# Función para generar los subconjuntos de interés para cada dataset en base a los resultados de distributed
+def build_distributed_subsets_from_csv(csv_path, k, prefix="guided"):
+    df = pd.read_csv(csv_path, index_col=0)
+    subsets = {}
+
+    # Medidas
+    measures = ["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"]
+    # m = "Hostility_importances_norm"
+    for m in measures:
+        df_m = df[[m]].dropna().sort_values(m, ascending=False)
+        top_features = df_m.index[:k].tolist()
+        subset_name = f"{prefix}_{m.split('_')[0]}_top{k}"
+        subsets[subset_name] = top_features
+
+    return subsets
+
+
 
 
 def evaluate_complexity_across_subsets(X, y, subsets, save_csv=False, path_to_save=None):
@@ -465,7 +483,9 @@ def save_models_csv(dataset_name, results_models, path="Results_ComparisonDistri
 
 
 # dataset_name = 'prueba'
-def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save="Results_ComparisonDistributed_SOTA"):
+def FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA"):
     # Número de features informativas como k
     k = len(dict_info_feature["informative"])
     feature_names = X.columns.tolist()
@@ -484,6 +504,12 @@ def FS_complexity_experiment(X, y, dict_info_feature, dataset_name,path_to_save=
     for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
     for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
     subsets = build_subsets_for_complexity(feature_names, feature_types, fs_results_combined)
+
+    # Añadimos subsets de k variables escogidas por el métod distribuido
+    subsets_guided = build_distributed_subsets_from_csv(csv_guided_path, k, prefix="guided")
+    subsets.update(subsets_guided)
+    subsets_random = build_distributed_subsets_from_csv(csv_random_path, k, prefix="random")
+    subsets.update(subsets_random)
 
     # Evaluación de complejidad
     results_total, results_classes, extras_host = evaluate_complexity_across_subsets(X, y, subsets)
@@ -533,4 +559,8 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                          n_redundant_linear=4,n_redundant_nonlinear=2,
                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
                                                      random_state=0,noise_std=0.01)
-FS_complexity_experiment(X, y, dict_info_feature,dataset_name)
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset2_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
