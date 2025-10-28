@@ -762,8 +762,6 @@ def plot_complexity_importances(df, dataset_name="Dataset", guided=True, save_pa
     1) Importancias medias por variable y medida de complejidad
     2) Frecuencia de aparición (count_vars)
 
-    df: DataFrame con columnas como:
-        ['Hostility_importances', 'N1_importances', 'kDN_importances', 'count_vars']
     guided: True si el dataset es guiado por complejidad, False si es random
     """
     sns.set(style="whitegrid", font_scale=1.1)
@@ -772,15 +770,15 @@ def plot_complexity_importances(df, dataset_name="Dataset", guided=True, save_pa
 
     # Reordenamos según la media de importancias (positivas = útiles puesto que quitarlas aumenta la complejidad)
     df_plot = df.copy()
-    df_plot["mean_importance"] = df_plot[["Hostility_importances", "N1_importances", "kDN_importances"]].mean(axis=1)
-    df_plot = df_plot.sort_values("mean_importance", ascending=False)
+    df_plot["mean_importance_norm"] = df_plot[["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"]].mean(axis=1)
+    df_plot = df_plot.sort_values("mean_importance_norm", ascending=False)
 
     # Gráfico de importancias
     plt.figure(figsize=(10, 6))
-    df_melt = df_plot.melt(value_vars=["Hostility_importances", "N1_importances", "kDN_importances"],
-                           var_name="Measure", value_name="Importance", ignore_index=False).reset_index()
+    df_melt = df_plot.melt(value_vars=["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"],
+                           var_name="Measure", value_name="Importance_norm", ignore_index=False).reset_index()
 
-    sns.barplot(data=df_melt, x="index", y="Importance", hue="Measure")
+    sns.barplot(data=df_melt, x="index", y="Importance_norm", hue="Measure")
     plt.axhline(0, color="black", linewidth=1)
     plt.xticks(rotation=45)
     plt.xlabel("Variable")
@@ -816,6 +814,31 @@ df_guided = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityGui
 
 plot_complexity_importances(df_random, dataset_name="Dataset2", guided=False)
 plot_complexity_importances(df_guided, dataset_name="Dataset2", guided=True)
+
+
+######### CORR SPEARMAN ENTRE RANKING COMPLEJIDAD
+
+def compute_spearman_correlations(df, measures=["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"]):
+    """
+    Calcula la correlación de Spearman entre las medidas de complejidad
+    ignorando NaN.
+    Devuelve un DataFrame con la matriz de correlaciones.
+    """
+    # Filtramos solo las columnas relevantes y quitamos filas con NaN
+    df_corr = df[measures].dropna(how="any")
+
+    # Calculamos correlación
+    corr, _ = spearmanr(df_corr)
+    corr_matrix = pd.DataFrame(corr, index=measures, columns=measures)
+
+    return corr_matrix
+
+
+df = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv", index_col=0)
+
+
+corr_matrix = compute_spearman_correlations(df)
+print(corr_matrix)
 
 
 
