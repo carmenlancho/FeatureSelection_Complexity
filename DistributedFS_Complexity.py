@@ -842,3 +842,71 @@ def compute_spearman_correlations(df, measures=["Hostility_importances_norm", "N
 #
 #
 
+
+
+
+
+##########################################################################################################
+#############                                IMPORTANCIA NEGATIVA                            #############
+##########################################################################################################
+
+
+# En los gráficos de importancia de complejidad (similar a RF) han salido algunas variables con valores negativos
+# Vamos a estudiar la naturaleza de dichas variables (noise, redudant, etc.) para ver si pillamos bien
+# cuáles son las malas
+
+
+def analyze_negative_importances(csv_path, dict_info_feature):
+    """
+    Analiza las variables con importancia negativa en el método distribuido.
+    """
+    df = pd.read_csv(csv_path, index_col=0)
+
+    # Selección de medidas
+    measures = ["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"]
+
+    # Naturaleza variables en diccionario
+    feature_types = {}
+    for t, feats in dict_info_feature.items():
+        for f in feats:
+            feature_types[f] = t
+
+    summary_list = []
+
+    for m in measures:
+        negatives = df[df[m] < 0][m]
+
+        # Clasificación de cada variable negativa
+        neg_types = [feature_types.get(f, "unknown") for f in negatives.index]
+        neg_df = pd.DataFrame({"feature": negatives.index, "importance": negatives.values, "type": neg_types})
+
+        # Resumen por tipo
+        type_counts = neg_df["type"].value_counts(normalize=True) * 100
+        type_counts = type_counts.round(2)
+
+        # Total negativas y proporciones
+        summary_entry = {
+            "measure": m,
+            "n_negatives": len(neg_df),
+            "pct_informative": type_counts.get("informative", 0),
+            "pct_noise": type_counts.get("noise", 0),
+            "pct_redundant_linear": type_counts.get("redundant_linear", 0),
+            "pct_redundant_nonlinear": type_counts.get("redundant_nonlinear", 0),
+        }
+
+        summary_list.append(summary_entry)
+
+    summary_df = pd.DataFrame(summary_list)
+    return summary_df
+
+
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+# csv_path = "Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv"
+# summary_neg = analyze_negative_importances(csv_path, dict_info_feature)
+
+
