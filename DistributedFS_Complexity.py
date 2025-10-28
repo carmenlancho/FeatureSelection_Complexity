@@ -858,7 +858,7 @@ def compute_spearman_correlations(df, measures=["Hostility_importances_norm", "N
 
 def analyze_negative_importances(csv_path, dict_info_feature):
     """
-    Analiza las variables con importancia negativa en el método distribuido.
+    Analiza las variables con importancia negativa en el métod distribuido.
     """
     df = pd.read_csv(csv_path, index_col=0)
 
