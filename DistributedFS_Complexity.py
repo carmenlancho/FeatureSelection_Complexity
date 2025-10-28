@@ -875,6 +875,8 @@ def analyze_negative_importances(csv_path, dict_info_feature):
 
     for m in measures:
         negatives = df[df[m] < 0][m]
+        if negatives.empty:
+            continue
 
         # Clasificación de cada variable negativa
         neg_types = [feature_types.get(f, "unknown") for f in negatives.index]
