@@ -564,3 +564,191 @@ csv_random_path = 'Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDis
 FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
                                                 csv_guided_path, csv_random_path,
                                               path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+### Dataset 3
+dataset_name = 'ArtificialDataset3'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=25,n_noise=5,
+                                         n_redundant_linear=7,n_redundant_nonlinear=8,
+                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=0,noise_std=0.05)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset3_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset3_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+#### Dataset 7
+dataset_name = 'ArtificialDataset7'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=589,noise_std=0.05)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset7_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset7_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+#### Dataset 8
+dataset_name = 'ArtificialDataset8'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=40,n_noise=15,
+                                         n_redundant_linear=15,n_redundant_nonlinear=15,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=86785,noise_std=0.1)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset8_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset8_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+#### Dataset 10
+dataset_name = 'ArtificialDataset10'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=2000,n_informative=6,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=15,
+                                        flip_y=0, class_sep=0.8, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=959,noise_std=0.3)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset10_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset10_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+#### Dataset 11
+dataset_name = 'ArtificialDataset11'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=20,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=15,
+                                        flip_y=0, class_sep=0.6, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=959,noise_std=0.1)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset11_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset11_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+#### Dataset 12
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset12_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset12_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+
+#### Dataset 14
+dataset_name = 'ArtificialDataset14'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset14_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset14_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+
+#### Dataset 16
+dataset_name = 'ArtificialDataset16'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=50,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.3, class_sep=0.4, n_clusters_per_class=1, weights=[0.2],
+                                                     random_state=756,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset16_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset16_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+#### Dataset 17
+dataset_name = 'ArtificialDataset17'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=756,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset17_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset17_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+#### Dataset 18
+dataset_name = 'ArtificialDataset18'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset18_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset18_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+#### Dataset 19
+dataset_name = 'ArtificialDataset19'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=50,
+                                         n_redundant_linear=50,n_redundant_nonlinear=50,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=655,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset19_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset19_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+#### Dataset 20
+dataset_name = 'ArtificialDataset20'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+                                         n_redundant_linear=60,n_redundant_nonlinear=60,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset20_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset20_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
+
+
+
+#### Dataset 21
+dataset_name = 'ArtificialDataset21'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+                                         n_redundant_linear=100,n_redundant_nonlinear=100,
+                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+                                                     random_state=996,noise_std=0.5)
+
+csv_guided_path = 'Results_FS_Distributed/ArtificialDataset21_ComplexityGuidedDistributed.csv'
+csv_random_path = 'Results_FS_Distributed/ArtificialDataset21_ComplexityRandomDistributed.csv'
+FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
+                                                csv_guided_path, csv_random_path,
+                                              path_to_save="Results_ComparisonDistributed_SOTA")
