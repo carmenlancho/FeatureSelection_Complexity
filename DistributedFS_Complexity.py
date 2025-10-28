@@ -807,13 +807,13 @@ def plot_complexity_importances(df, dataset_name="Dataset", guided=True, save_pa
     plt.show()
 
 
-
-df_random = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv", index_col=0)
-df_guided = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityGuidedDistributed.csv", index_col=0)
-# df = df_random
-
-plot_complexity_importances(df_random, dataset_name="Dataset2", guided=False)
-plot_complexity_importances(df_guided, dataset_name="Dataset2", guided=True)
+#
+# df_random = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv", index_col=0)
+# df_guided = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityGuidedDistributed.csv", index_col=0)
+# # df = df_random
+#
+# plot_complexity_importances(df_random, dataset_name="Dataset2", guided=False)
+# plot_complexity_importances(df_guided, dataset_name="Dataset2", guided=True)
 
 
 ######### CORR SPEARMAN ENTRE RANKING COMPLEJIDAD
@@ -833,12 +833,12 @@ def compute_spearman_correlations(df, measures=["Hostility_importances_norm", "N
 
     return corr_matrix
 
-
-df = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv", index_col=0)
-
-
-corr_matrix = compute_spearman_correlations(df)
-print(corr_matrix)
-
-
+#
+# df = pd.read_csv("Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv", index_col=0)
+#
+#
+# corr_matrix = compute_spearman_correlations(df)
+# print(corr_matrix)
+#
+#
 
