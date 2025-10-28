@@ -892,8 +892,8 @@ def analyze_negative_importances(csv_path, dict_info_feature):
             "n_negatives": len(neg_df),
             "pct_informative": type_counts.get("informative", 0),
             "pct_noise": type_counts.get("noise", 0),
-            "pct_redundant_linear": type_counts.get("redundant_linear", 0),
-            "pct_redundant_nonlinear": type_counts.get("redundant_nonlinear", 0),
+            "pct_redundant_linear": type_counts.get("formulas_linear", 0),
+            "pct_redundant_nonlinear": type_counts.get("formulas_nonlinear", 0),
         }
 
         summary_list.append(summary_entry)
