@@ -566,171 +566,171 @@ n_replicas = 200
 #                                                             path='Results_FS_Distributed')
 #
 #
+# #
+# #### Dataset 16
+# dataset_name = 'ArtificialDataset16'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=50,n_noise=40,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=40,
+#                                         flip_y=0.3, class_sep=0.4, n_clusters_per_class=1, weights=[0.2],
+#                                                      random_state=756,noise_std=0.5)
 #
-#### Dataset 16
-dataset_name = 'ArtificialDataset16'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=50,n_noise=40,
-                                         n_redundant_linear=30,n_redundant_nonlinear=40,
-                                        flip_y=0.3, class_sep=0.4, n_clusters_per_class=1, weights=[0.2],
-                                                     random_state=756,noise_std=0.5)
-
-# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset16_featuresComplexityRanking.csv"
-# univariate_complexity = pd.read_csv(csv_file)
-
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p))
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
+# # csv_file = "Results_UnivariateRanking_CM/ArtificialDataset16_featuresComplexityRanking.csv"
+# # univariate_complexity = pd.read_csv(csv_file)
 #
-# ## Guided
-# distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
-#                                                             univariate_complexity=univariate_complexity,
-#                                                             # complejidad univariante
-#                                                             measures=['Hostility','kDN','N1'],
-#                                                             filter_corr=True, corr_th=0.9,
-#                                                             corr_method="pearson",
-#                                                             random_state=0, save_csv=True,
-#                                                             path='Results_FS_Distributed')
-#
-#
-#
-#### Dataset 17
-dataset_name = 'ArtificialDataset17'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informative=70,n_noise=40,
-                                         n_redundant_linear=40,n_redundant_nonlinear=40,
-                                        flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
-                                                     random_state=756,noise_std=0.5)
-#
-# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset17_featuresComplexityRanking.csv"
-# univariate_complexity = pd.read_csv(csv_file)
-#
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p))
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
-#
-# ## Guided
-# distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
-#                                                             univariate_complexity=univariate_complexity,
-#                                                             # complejidad univariante
-#                                                             measures=['Hostility','kDN','N1'],
-#                                                             filter_corr=True, corr_th=0.9,
-#                                                             corr_method="pearson",
-#                                                             random_state=0, save_csv=True,
-#                                                             path='Results_FS_Distributed')
-#
-#
-#
-#### Dataset 18
-dataset_name = 'ArtificialDataset18'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
-                                         n_redundant_linear=40,n_redundant_nonlinear=40,
-                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-                                                     random_state=9462,noise_std=0.5)
-#
-# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset18_featuresComplexityRanking.csv"
-# univariate_complexity = pd.read_csv(csv_file)
-#
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p))
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
-#
-# ## Guided
-# distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
-#                                                             univariate_complexity=univariate_complexity,
-#                                                             # complejidad univariante
-#                                                             measures=['Hostility','kDN','N1'],
-#                                                             filter_corr=True, corr_th=0.9,
-#                                                             corr_method="pearson",
-#                                                             random_state=0, save_csv=True,
-#                                                             path='Results_FS_Distributed')
-#
-#
-#### Dataset 19
-dataset_name = 'ArtificialDataset19'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=50,
-                                         n_redundant_linear=50,n_redundant_nonlinear=50,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=655,noise_std=0.5)
-#
-# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset19_featuresComplexityRanking.csv"
-# univariate_complexity = pd.read_csv(csv_file)
-#
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p))
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
-#
-# ## Guided
-# distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
-#                                                             univariate_complexity=univariate_complexity,
-#                                                             # complejidad univariante
-#                                                             measures=['Hostility','kDN','N1'],
-#                                                             filter_corr=True, corr_th=0.9,
-#                                                             corr_method="pearson",
-#                                                             random_state=0, save_csv=True,
-#                                                             path='Results_FS_Distributed')
-#
-#
-#### Dataset 20
-dataset_name = 'ArtificialDataset20'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
-                                         n_redundant_linear=60,n_redundant_nonlinear=60,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=4556,noise_std=0.5)
-#
-# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset20_featuresComplexityRanking.csv"
-# univariate_complexity = pd.read_csv(csv_file)
-#
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p))
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
-#
-# ## Guided
-# distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
-#                                                             univariate_complexity=univariate_complexity,
-#                                                             # complejidad univariante
-#                                                             measures=['Hostility','kDN','N1'],
-#                                                             filter_corr=True, corr_th=0.9,
-#                                                             corr_method="pearson",
-#                                                             random_state=0, save_csv=True,
-#                                                             path='Results_FS_Distributed')
-#
-#
-#### Dataset 21
-dataset_name = 'ArtificialDataset21'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
-                                         n_redundant_linear=100,n_redundant_nonlinear=100,
-                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
-                                                     random_state=996,noise_std=0.5)
-#
-# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset21_featuresComplexityRanking.csv"
-# univariate_complexity = pd.read_csv(csv_file)
-#
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p))
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=True, path='Results_FS_Distributed')
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p))
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
+# #
+# # ## Guided
+# # distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
+# #                                                             univariate_complexity=univariate_complexity,
+# #                                                             # complejidad univariante
+# #                                                             measures=['Hostility','kDN','N1'],
+# #                                                             filter_corr=True, corr_th=0.9,
+# #                                                             corr_method="pearson",
+# #                                                             random_state=0, save_csv=True,
+# #                                                             path='Results_FS_Distributed')
+# #
+# #
+# #
+# #### Dataset 17
+# dataset_name = 'ArtificialDataset17'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=5000,n_informative=70,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.3, class_sep=0.6, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=756,noise_std=0.5)
+# #
+# # csv_file = "Results_UnivariateRanking_CM/ArtificialDataset17_featuresComplexityRanking.csv"
+# # univariate_complexity = pd.read_csv(csv_file)
+# #
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p))
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
+# #
+# # ## Guided
+# # distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
+# #                                                             univariate_complexity=univariate_complexity,
+# #                                                             # complejidad univariante
+# #                                                             measures=['Hostility','kDN','N1'],
+# #                                                             filter_corr=True, corr_th=0.9,
+# #                                                             corr_method="pearson",
+# #                                                             random_state=0, save_csv=True,
+# #                                                             path='Results_FS_Distributed')
+# #
+# #
+# #
+# #### Dataset 18
+# dataset_name = 'ArtificialDataset18'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+# #
+# # csv_file = "Results_UnivariateRanking_CM/ArtificialDataset18_featuresComplexityRanking.csv"
+# # univariate_complexity = pd.read_csv(csv_file)
+# #
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p))
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
+# #
+# # ## Guided
+# # distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
+# #                                                             univariate_complexity=univariate_complexity,
+# #                                                             # complejidad univariante
+# #                                                             measures=['Hostility','kDN','N1'],
+# #                                                             filter_corr=True, corr_th=0.9,
+# #                                                             corr_method="pearson",
+# #                                                             random_state=0, save_csv=True,
+# #                                                             path='Results_FS_Distributed')
+# #
+# #
+# #### Dataset 19
+# dataset_name = 'ArtificialDataset19'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=50,
+#                                          n_redundant_linear=50,n_redundant_nonlinear=50,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=655,noise_std=0.5)
+# #
+# # csv_file = "Results_UnivariateRanking_CM/ArtificialDataset19_featuresComplexityRanking.csv"
+# # univariate_complexity = pd.read_csv(csv_file)
+# #
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p))
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
+# #
+# # ## Guided
+# # distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
+# #                                                             univariate_complexity=univariate_complexity,
+# #                                                             # complejidad univariante
+# #                                                             measures=['Hostility','kDN','N1'],
+# #                                                             filter_corr=True, corr_th=0.9,
+# #                                                             corr_method="pearson",
+# #                                                             random_state=0, save_csv=True,
+# #                                                             path='Results_FS_Distributed')
+# #
+# #
+# #### Dataset 20
+# dataset_name = 'ArtificialDataset20'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+#                                          n_redundant_linear=60,n_redundant_nonlinear=60,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+# #
+# # csv_file = "Results_UnivariateRanking_CM/ArtificialDataset20_featuresComplexityRanking.csv"
+# # univariate_complexity = pd.read_csv(csv_file)
+# #
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p))
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
+# #
+# # ## Guided
+# # distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
+# #                                                             univariate_complexity=univariate_complexity,
+# #                                                             # complejidad univariante
+# #                                                             measures=['Hostility','kDN','N1'],
+# #                                                             filter_corr=True, corr_th=0.9,
+# #                                                             corr_method="pearson",
+# #                                                             random_state=0, save_csv=True,
+# #                                                             path='Results_FS_Distributed')
+# #
+# #
+# #### Dataset 21
+# dataset_name = 'ArtificialDataset21'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+#                                          n_redundant_linear=100,n_redundant_nonlinear=100,
+#                                         flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+#                                                      random_state=996,noise_std=0.5)
+# #
+# # csv_file = "Results_UnivariateRanking_CM/ArtificialDataset21_featuresComplexityRanking.csv"
+# # univariate_complexity = pd.read_csv(csv_file)
+# #
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p))
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
 #
 # ## Guided
 # distributed_variable_selection_complexity_guided(X, y, dataset_name, n_replicas, m_vars,
@@ -875,8 +875,8 @@ def analyze_negative_importances(csv_path, dict_info_feature):
 
     for m in measures:
         negatives = df[df[m] < 0][m]
-        if negatives.empty:
-            continue
+        # if negatives.empty:
+        #     continue
 
         # Clasificación de cada variable negativa
         neg_types = [feature_types.get(f, "unknown") for f in negatives.index]
@@ -902,13 +902,13 @@ def analyze_negative_importances(csv_path, dict_info_feature):
     return summary_df
 
 
-# dataset_name = 'ArtificialDataset2'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-#                                                      random_state=0,noise_std=0.01)
+# dataset_name = 'ArtificialDataset12'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
 #
-# csv_path = "Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv"
+# csv_path = "Results_FS_Distributed/ArtificialDataset12_ComplexityRandomDistributed.csv"
 # summary_neg = analyze_negative_importances(csv_path, dict_info_feature)
-
-
+#
+#
