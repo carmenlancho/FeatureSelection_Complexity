@@ -205,17 +205,19 @@ def build_subsets_for_complexity(feature_names, feature_types, fs_selections,k_r
 # csv_path = 'Results_FS_Distributed/ArtificialDataset2_ComplexityRandomDistributed.csv'
 # Función para generar los subconjuntos de interés para cada dataset en base a los resultados de distributed
 def build_distributed_subsets_from_csv(csv_path, k, prefix="guided"):
-    df = pd.read_csv(csv_path, index_col=0)
-    subsets = {}
+    subsets = None
+    if csv_path:
+        df = pd.read_csv(csv_path, index_col=0)
+        subsets = {}
 
-    # Medidas
-    measures = ["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"]
-    # m = "Hostility_importances_norm"
-    for m in measures:
-        df_m = df[[m]].dropna().sort_values(m, ascending=False)
-        top_features = df_m.index[:k].tolist()
-        subset_name = f"{prefix}_{m.split('_')[0]}_top{k}"
-        subsets[subset_name] = top_features
+        # Medidas
+        measures = ["Hostility_importances_norm", "N1_importances_norm", "kDN_importances_norm"]
+        # m = "Hostility_importances_norm"
+        for m in measures:
+            df_m = df[[m]].dropna().sort_values(m, ascending=False)
+            top_features = df_m.index[:k].tolist()
+            subset_name = f"{prefix}_{m.split('_')[0]}_top{k}"
+            subsets[subset_name] = top_features
 
     return subsets
 
@@ -507,7 +509,8 @@ def FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_n
 
     # Añadimos subsets de k variables escogidas por el métod distribuido
     subsets_guided = build_distributed_subsets_from_csv(csv_guided_path, k, prefix="guided")
-    subsets.update(subsets_guided)
+    if subsets_guided:
+        subsets.update(subsets_guided)
     subsets_random = build_distributed_subsets_from_csv(csv_random_path, k, prefix="random")
     subsets.update(subsets_random)
 
@@ -657,7 +660,8 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
                                                      random_state=95,noise_std=0.5)
 
-csv_guided_path = 'Results_FS_Distributed/ArtificialDataset14_ComplexityGuidedDistributed.csv'
+# csv_guided_path = 'Results_FS_Distributed/ArtificialDataset14_ComplexityGuidedDistributed.csv'
+csv_guided_path = None
 csv_random_path = 'Results_FS_Distributed/ArtificialDataset14_ComplexityRandomDistributed.csv'
 FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_name,
                                                 csv_guided_path, csv_random_path,
