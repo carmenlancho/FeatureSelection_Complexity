@@ -393,18 +393,22 @@ def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN
                                                          measures=measures,
                                                          filter_corr=True, corr_th=0.9, corr_method="pearson",
                                                          random_state=0, save_csv=False, path='Results_FS_Distributed')
+        # Guardamos nombre de variable y fold
+        imp_df = imp_df.reset_index().rename(columns={"index": "feature"})
         imp_df["fold"] = fold
         importances_records.append(imp_df)
 
-        # Seleccionar top-k variables por cada medida
+        # Seleccionamod top-k variables por cada medida
         measures_norm = [s + '_importances_norm' for s in measures]
+        # measure = 'Hostility_importances_norm'
         for measure in measures_norm:
             imp_m = imp_df[measure]
             top_feats = (imp_m.sort_values(ascending=False).index.tolist())[:k]
+            feats = imp_df.loc[top_feats,'feature']
 
-            # Entrenar y evaluar modelo
-            X_train_sel = X_train[top_feats]
-            X_test_sel = X_test[top_feats]
+            # Training modelo
+            X_train_sel = X_train[feats]
+            X_test_sel = X_test[feats]
 
             model.fit(X_train_sel, y_train)
 
@@ -421,7 +425,8 @@ def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN
             performance_records.append({
                 "fold": fold,
                 "measure": measure,
-                "n_features": len(top_feats),
+                "n_features": k,
+                "top_features": list(feats), # variables seleccionadas
                 "acc_train": acc_train,
                 "gps_train": gps_train,
                 "acc_test": acc_test,
@@ -441,18 +446,77 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
                                                      random_state=0,noise_std=0.01)
 
-### Random
-p = X.shape[1]
-m_vars= np.floor(np.sqrt(p)) # como en el RF
-distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=False, path='Results_FS_Distributed')
 
 k=10
 model = RandomForestClassifier(random_state=0)
 importances_df, performance_df = evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN"],
                                cv_splits=5, random_state=0, n_replicas=3)
+
+
+
+
+def run_distributed_cv_multiple_models(X, y, dict_info_feature, models_dict,
+                                       measures=["Hostility", "N1", "kDN"],
+                                       cv_splits=5, n_replicas=200, random_state=0):
+    """
+    Ejecuta evaluate_distributed_fs_cv para varios modelos y resume resultados.
+    """
+    k = len(dict_info_feature["informative"])  # nº de variables informativas
+
+    all_importances = []
+    all_performance = []
+
+    for model_name, model in models_dict.items():
+        print(f"\n Classifier: {model_name}")
+        imp_df, perf_df = evaluate_distributed_fs_cv(
+            X=X, y=y, k=k, model=model, measures=measures,
+            cv_splits=cv_splits, random_state=random_state, n_replicas=n_replicas)
+
+        # Añadir nombre del modelo
+        imp_df["model"] = model_name
+        perf_df["model"] = model_name
+
+        all_importances.append(imp_df)
+        all_performance.append(perf_df)
+
+    # Concatenar todos los resultados
+    importances_all = pd.concat(all_importances, ignore_index=True)
+    performance_all = pd.concat(all_performance, ignore_index=True)
+
+    # Resumen por modelo y medida
+    summary = (
+        performance_all
+        .groupby(["model", "measure"])
+        .agg({
+            "acc_train": ["mean", "std", "max"],
+            "gps_train": ["mean", "std", "max"],
+            "acc_test": ["mean", "std", "max"],
+            "gps_test": ["mean", "std", "max"],
+        }).round(3))
+
+    summary.columns = ["_".join(col).strip() for col in summary.columns.values]
+    summary = summary.reset_index()
+
+    return importances_all, performance_all, summary
+
+
+
+models_dict = {
+    "RandomForest": RandomForestClassifier(random_state=0),
+    "LogReg": LogisticRegression(max_iter=2000, random_state=0),
+    "SVM": SVC(kernel="rbf", probability=True, random_state=0)
+}
+
+imp_all, perf_all, summary = run_distributed_cv_multiple_models(
+    X, y,
+    dict_info_feature=dict_info_feature,
+    models_dict=models_dict,
+    measures=["Hostility", "N1", "kDN"],
+    cv_splits=5,
+    n_replicas=100
+)
+
+
 
 
 #
