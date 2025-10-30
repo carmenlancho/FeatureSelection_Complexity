@@ -330,6 +330,25 @@ def distributed_variable_selection_complexity_random(X, y, dataset_name, n_repli
     return importances_norm, importances, count_vars, results_complete
 
 
+# n_replicas = 200
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+# # La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
+#
+# csv_file = "Results_UnivariateRanking_CM/ArtificialDataset2_featuresComplexityRanking.csv"
+# univariate_complexity = pd.read_csv(csv_file)
+#
+# ### Random
+# p = X.shape[1]
+# m_vars= np.floor(np.sqrt(p)) # como en el RF
+# distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=True, path='Results_FS_Distributed')
 
 ## Una primera selección de datos es: 2,3,7,8,10,11,12,14,16,17,18,19,20,21
 
@@ -410,6 +429,13 @@ def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN
             X_train_sel = X_train[feats]
             X_test_sel = X_test[feats]
 
+            # Complejidad con el subset de variables
+            datos = pd.DataFrame(X_train_sel)
+            datos['y'] = y_train
+            _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+            subset_complexity = df_classes.loc["dataset", measures].to_dict()
+
+
             model.fit(X_train_sel, y_train)
 
             # Train
@@ -430,7 +456,8 @@ def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN
                 "acc_train": acc_train,
                 "gps_train": gps_train,
                 "acc_test": acc_test,
-                "gps_test": gps_test
+                "gps_test": gps_test,
+                **{f"complexity_{m}": subset_complexity[m] for m in measures}
             })
 
     importances_df = pd.concat(importances_records, ignore_index=True)
@@ -455,9 +482,10 @@ importances_df, performance_df = evaluate_distributed_fs_cv(X, y, k, model, meas
 
 
 
-def run_distributed_cv_multiple_models(X, y, dict_info_feature, models_dict,
+def run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, models_dict,
                                        measures=["Hostility", "N1", "kDN"],
-                                       cv_splits=5, n_replicas=200, random_state=0):
+                                       cv_splits=5, n_replicas=200, random_state=0,
+                                       path="Results_FS_Distributed_CV", save_csv=False):
     """
     Ejecuta evaluate_distributed_fs_cv para varios modelos y resume resultados.
     """
@@ -492,35 +520,48 @@ def run_distributed_cv_multiple_models(X, y, dict_info_feature, models_dict,
             "gps_train": ["mean", "std", "max"],
             "acc_test": ["mean", "std", "max"],
             "gps_test": ["mean", "std", "max"],
-        }).round(3))
+            "complexity_Hostility": ["mean", "std"],
+            "complexity_N1": ["mean", "std"], # la complejidad por modelo es la misma, pero es para que cuadre el DF
+            "complexity_kDN": ["mean", "std"]
+        }))
 
     summary.columns = ["_".join(col).strip() for col in summary.columns.values]
     summary = summary.reset_index()
 
+    if save_csv:
+        name_csv1 = f"{path}/{dataset_name}_DistributedCVRandom_FeatureImportance_Folds.csv"
+        importances_all.to_csv(name_csv1, index=False)
+        name_csv2 = f"{path}/{dataset_name}_DistributedCVRandom_Performance_Folds.csv"
+        performance_all.to_csv(name_csv2, index=False)
+        name_csv3 = f"{path}/{dataset_name}_DistributedCVRandom_SummaryResults.csv"
+        summary.to_csv(name_csv3, index=False)
+
     return importances_all, performance_all, summary
 
 
-
-models_dict = {
+models_dict = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
     "RandomForest": RandomForestClassifier(random_state=0),
-    "LogReg": LogisticRegression(max_iter=2000, random_state=0),
-    "SVM": SVC(kernel="rbf", probability=True, random_state=0)
-}
+    "KNN": KNeighborsClassifier(),
+    "NaiveBayes": GaussianNB(),
+    "DecisionTree": DecisionTreeClassifier(random_state=0),
+    "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)}
 
+dataset_name = 'prueba'
 imp_all, perf_all, summary = run_distributed_cv_multiple_models(
-    X, y,
-    dict_info_feature=dict_info_feature,
-    models_dict=models_dict,
+    X, y, dict_info_feature, dataset_name, models_dict,
     measures=["Hostility", "N1", "kDN"],
-    cv_splits=5,
-    n_replicas=100
-)
+    cv_splits=5, n_replicas=2, random_state=0,
+    path="Results_FS_Distributed_CV", save_csv=True)
+
+
 
 
 
 
 #
-n_replicas = 200
+# n_replicas = 200
 # ### Dataset 2
 # dataset_name = 'ArtificialDataset2'
 # X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
