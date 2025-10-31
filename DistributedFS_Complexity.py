@@ -252,7 +252,8 @@ def distributed_variable_selection_complexity_random(X, y, dataset_name, n_repli
         corr = X.corr(method=corr_method).abs()
         upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
         to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
-        X = X.drop(columns=to_drop)
+        if len(to_drop) > 0:
+            X = X.drop(columns=to_drop)
 
 
     variables = X.columns.tolist()
@@ -329,7 +330,6 @@ def distributed_variable_selection_complexity_random(X, y, dataset_name, n_repli
 
     return importances_norm, importances, count_vars, results_complete
 
-
 # n_replicas = 200
 # ### Dataset 2
 # dataset_name = 'ArtificialDataset2'
@@ -354,6 +354,130 @@ def distributed_variable_selection_complexity_random(X, y, dataset_name, n_repli
 
 
 
+
+def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
+                                   measures=["Hostility", "N1", "kDN"],
+                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
+                                   random_state=0, save_csv=False, path='Results_FS_Distributed'):
+    np.random.seed(random_state)
+    random.seed(random_state)
+
+    # Filtro correlación
+    if filter_corr:
+        corr = X.corr(method=corr_method).abs()
+        upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+        to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
+        X = X.drop(columns=to_drop)
+
+    variables = X.columns.tolist()
+
+    # Dicts para guardar
+    importances = {m: pd.Series(0.0, index=variables) for m in measures}
+    importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}
+    count_vars = pd.Series(0.0, index=variables)
+    removed_vars = {m: pd.Series(0.0, index=variables) for m in measures}
+
+    # Cada medida tiene su propio conjunto de variables activas
+    active_vars = {m: set(variables) for m in measures}
+
+    # Main loop
+    # rep=0
+    for rep in range(n_replicas):
+        # m_vars = int(m_vars)
+
+        # m = 'Hostility'
+        for m in measures:
+            # # Si ya se eliminaron todas las variables, saltamos
+            # if len(active_vars[m]) < 2:
+            #     continue
+            p = len(active_vars[m])
+            m_vars = int(np.floor(np.sqrt(p)))
+            subset_vars = random.sample(list(active_vars[m]), k=m_vars) # sin remplazamiento
+            Xsub = X[subset_vars]
+
+            datos = pd.DataFrame(Xsub)
+            datos['y'] = y
+            _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+            base_complexity = df_classes.loc['dataset', m]
+
+            current_vars = subset_vars.copy()
+            while len(current_vars) > 1:
+                count_vars[current_vars] += 1
+                to_remove = random.choice(current_vars)
+                current_vars.remove(to_remove)
+
+                Xtemp = X[current_vars]
+                datos_temp = pd.DataFrame(Xtemp)
+                datos_temp['y'] = y
+                _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+                new_complexity = df_classes_temp.loc['dataset', m]
+
+                # cambio de complejidad
+                delta = new_complexity - base_complexity
+
+                importances[m][to_remove] += delta
+
+                # Si la complejidad baja (delta < 0), eliminamos la variable de las opciones de esta medida
+                if delta < 0:
+                    active_vars[m].remove(to_remove)
+                    removed_vars[m][to_remove] += 1
+
+                base_complexity = new_complexity
+                count_vars[current_vars] += 1
+
+    # Normalizamos aparición variables (POR PENSAR SERIAMNTE)
+    count_vars = count_vars.replace(0, np.nan)
+    for m in measures:
+        importances_norm[m] = importances[m] / count_vars
+        importances_norm[m].sort_values(ascending=False, inplace=True)
+
+    # Formato resultados
+    results_norm = pd.DataFrame.from_dict(importances_norm)
+    results_norm = results_norm.add_suffix('_importances_norm')
+
+    results = pd.DataFrame.from_dict(importances)
+    results = results.add_suffix('_importances')
+
+    results_count = pd.DataFrame(count_vars, columns=['count_vars'])
+
+    removed_df = pd.DataFrame.from_dict(removed_vars)
+    removed_df = removed_df.add_suffix('_removed_count')
+
+    results_complete = pd.concat([results, results_norm, results_count, removed_df], axis=1)
+
+    if filter_corr: # aclaramos las que se hayan quitado por correlación
+        results_complete = results_complete.reindex(results_complete.index.union(to_drop))
+        results_complete.loc[to_drop, :] = np.nan
+
+    if save_csv:
+        name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed_NegOut.csv"
+        results_complete.to_csv(name_csv, index=True)
+
+    return importances_norm, importances, count_vars, removed_vars, results_complete
+
+#
+#
+# n_replicas = 3
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+# # La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
+#
+#
+#
+# ### Random
+# p = X.shape[1]
+# dataset_name = 'PRUEBA'
+# m_vars= np.floor(np.sqrt(p)) # como en el RF
+# importances_norm, importances, count_vars, removed_vars, results_complete = distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=False, path='Results_FS_Distributed')
+#
+#
 
 
 
@@ -407,11 +531,10 @@ def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN
         # Calcular importancias distributed en el fold de entrenamiento
         p = X.shape[1]
         m_vars = np.floor(np.sqrt(p))  # como en el RF
-
-        importances_norm, importances, count_vars, imp_df = distributed_variable_selection_complexity_random(X_train, y_train, dataset_name, n_replicas, m_vars,
+        importances_norm, importances, count_vars, removed_vars, imp_df = distributed_complexity_random_neg_out(X_train, y_train, dataset_name, n_replicas, m_vars,
                                                          measures=measures,
                                                          filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                                         random_state=0, save_csv=False, path='Results_FS_Distributed')
+                                                         random_state=0, save_csv=False)
         # Guardamos nombre de variable y fold
         imp_df = imp_df.reset_index().rename(columns={"index": "feature"})
         imp_df["fold"] = fold
@@ -538,14 +661,16 @@ def run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, mo
 
     return importances_all, performance_all, summary
 
-
-
-
+# models_dict = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+#     "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+#                "KNN": KNeighborsClassifier()}
+#
+#
 # dataset_name = 'prueba'
 # imp_all, perf_all, summary = run_distributed_cv_multiple_models(
 #     X, y, dict_info_feature, dataset_name, models_dict,
 #     measures=["Hostility", "N1", "kDN"],
-#     cv_splits=5, n_replicas=2, random_state=0,
+#     cv_splits=5, n_replicas=10, random_state=0,
 #     path="Results_FS_Distributed_CV", save_csv=True)
 #
 
