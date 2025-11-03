@@ -316,7 +316,7 @@ def run_evaluate_sota_fs_multiple_models(X, y, k, models_dict,
     all_summary = []
 
     for model_name, model in models_dict.items():
-        print(f"\n=== Ejecutando modelo: {model_name} ===")
+        print(f"\n Classifier: {model_name}")
 
         selections_df, performance_df, complexity_df, summary_perf = evaluate_sota_fs_cv(
             X=X, y=y, k=k, model=model,
@@ -373,14 +373,41 @@ def run_evaluate_sota_fs_multiple_models(X, y, k, models_dict,
     return results
 
 
-models_dict = {
-    "RF": RandomForestClassifier(random_state=0),
-    "SVM": SVC(kernel="rbf", probability=True, random_state=0)}
 
-results_sota = run_evaluate_sota_fs_multiple_models(
-    X, y, k=15, models_dict=models_dict,
-    cv_splits=5, random_state=0
-)
+
+
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+
+
+# model = RandomForestClassifier(random_state=0)
+# k=3
+# selections_df, performance_df, complexity_df, summary_perf = evaluate_sota_fs_cv(
+#     X, y, k=len(dict_info_feature["informative"]),
+#     model=model,cv_splits=5, random_state=0)
+
+
+# models_dict = {
+#     "RF": RandomForestClassifier(random_state=0),
+#     "SVM": SVC(kernel="rbf", probability=True, random_state=0)}
+#
+# k = len(dict_info_feature["informative"])  # nº de variables informativas
+# run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+    # "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier()
+    # "NaiveBayes": GaussianNB(),
+    # "DecisionTree": DecisionTreeClassifier(random_state=0),
+    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    }
 
 
 
@@ -391,11 +418,86 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
                                                      random_state=0,noise_std=0.01)
 
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
 
 
-# model = RandomForestClassifier(random_state=0)
-# k=3
-# selections_df, performance_df, complexity_df, summary_perf = evaluate_sota_fs_cv(
-#     X, y, k=len(dict_info_feature["informative"]),
-#     model=model,cv_splits=5, random_state=0)
+
+
+#### Dataset 7
+dataset_name = 'ArtificialDataset7'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=589,noise_std=0.05)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+
+#### Dataset 12
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+#### Dataset 14
+dataset_name = 'ArtificialDataset14'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+#### Dataset 18
+dataset_name = 'ArtificialDataset18'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+#### Dataset 20
+dataset_name = 'ArtificialDataset20'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+                                         n_redundant_linear=60,n_redundant_nonlinear=60,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+#### Dataset 21
+dataset_name = 'ArtificialDataset21'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+                                         n_redundant_linear=100,n_redundant_nonlinear=100,
+                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+                                                     random_state=996,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+
+
 
