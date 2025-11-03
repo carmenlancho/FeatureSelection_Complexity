@@ -678,44 +678,45 @@ def run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, mo
 ### Segundo filtro de variables
 # 2, 7, 12, 14, 18, 20, 21
 
-models_dict = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier(),
-    "NaiveBayes": GaussianNB(),
-    "DecisionTree": DecisionTreeClassifier(random_state=0),
-    "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)}
+    # "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier()
+    # "NaiveBayes": GaussianNB(),
+    # "DecisionTree": DecisionTreeClassifier(random_state=0),
+    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    }
 
 
 n_replicas = 200
-### Dataset 2
-dataset_name = 'ArtificialDataset2'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
-
-run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, models_dict,
-                                measures=["Hostility", "N1", "kDN"],
-                                    cv_splits=5, n_replicas=n_replicas, random_state=0,
-                                        path="Results_FS_Distributed_CV", save_csv=True)
-
-
-
-
-#### Dataset 7
-dataset_name = 'ArtificialDataset7'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
-                                         n_redundant_linear=10,n_redundant_nonlinear=10,
-                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
-                                                     random_state=589,noise_std=0.05)
-
-run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, models_dict,
-                                measures=["Hostility", "N1", "kDN"],
-                                    cv_splits=5, n_replicas=n_replicas, random_state=0,
-                                        path="Results_FS_Distributed_CV", save_csv=True)
-
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+# run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, models_dict,
+#                                 measures=["Hostility", "N1", "kDN"],
+#                                     cv_splits=5, n_replicas=n_replicas, random_state=0,
+#                                         path="Results_FS_Distributed_CV", save_csv=True)
+#
+#
+#
+#
+# #### Dataset 7
+# dataset_name = 'ArtificialDataset7'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+#                                          n_redundant_linear=10,n_redundant_nonlinear=10,
+#                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+#                                                      random_state=589,noise_std=0.05)
+#
+# run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, models_dict,
+#                                 measures=["Hostility", "N1", "kDN"],
+#                                     cv_splits=5, n_replicas=n_replicas, random_state=0,
+#                                         path="Results_FS_Distributed_CV", save_csv=True)
+#
 
 
 
