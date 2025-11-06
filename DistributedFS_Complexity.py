@@ -375,10 +375,11 @@ def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars
     importances = {m: pd.Series(0.0, index=variables) for m in measures}
     importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}
     count_vars = pd.Series(0.0, index=variables)
-    removed_vars = {m: pd.Series(0.0, index=variables) for m in measures}
+    removed_vars = {m: pd.Series(0.0, index=variables) for m in measures} # las que quitamos por negativas
 
     # Cada medida tiene su propio conjunto de variables activas
     active_vars = {m: set(variables) for m in measures}
+    permanently_removed = {m: set() for m in measures}
 
     # Main loop
     # rep=0
@@ -387,12 +388,15 @@ def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars
 
         # m = 'Hostility'
         for m in measures:
+            print(m)
             # # Si ya se eliminaron todas las variables, saltamos
             # if len(active_vars[m]) < 2:
             #     continue
-            p = len(active_vars[m])
+            available_vars = list(active_vars[m] - permanently_removed[m])
+            print(available_vars)
+            # p = len(available_vars)
             m_vars = int(np.floor(np.sqrt(p)))
-            subset_vars = random.sample(list(active_vars[m]), k=m_vars) # sin remplazamiento
+            subset_vars = random.sample(available_vars, k=m_vars) # sin remplazamiento
             Xsub = X[subset_vars]
 
             datos = pd.DataFrame(Xsub)
@@ -402,6 +406,8 @@ def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars
 
             current_vars = subset_vars.copy()
             while len(current_vars) > 1:
+                # print('Current vars')
+                # print(current_vars)
                 count_vars[current_vars] += 1
                 to_remove = random.choice(current_vars)
                 current_vars.remove(to_remove)
@@ -416,11 +422,16 @@ def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars
                 delta = new_complexity - base_complexity
 
                 importances[m][to_remove] += delta
+                # print(delta)
 
                 # Si la complejidad baja (delta < 0), eliminamos la variable de las opciones de esta medida
-                if delta < 0:
+                if delta < -1e-3: # le ponemos un margen de tolerancia
                     active_vars[m].remove(to_remove)
+                    permanently_removed[m].add(to_remove)
                     removed_vars[m][to_remove] += 1
+                    # print(delta)
+                    # print(to_remove)
+
 
                 base_complexity = new_complexity
                 count_vars[current_vars] += 1
@@ -455,29 +466,29 @@ def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars
 
     return importances_norm, importances, count_vars, removed_vars, results_complete
 
-#
-#
-# n_replicas = 3
-# ### Dataset 2
-# dataset_name = 'ArtificialDataset2'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-#                                                      random_state=0,noise_std=0.01)
-# # La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
-#
-#
-#
-# ### Random
-# p = X.shape[1]
-# dataset_name = 'PRUEBA'
-# m_vars= np.floor(np.sqrt(p)) # como en el RF
-# importances_norm, importances, count_vars, removed_vars, results_complete = distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
-#                                    measures=["Hostility", "N1", "kDN"],
-#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
-#                                    random_state=0, save_csv=False, path='Results_FS_Distributed')
-#
-#
+
+
+n_replicas = 3
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+# La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
+
+
+
+### Random
+p = X.shape[1]
+dataset_name = 'PRUEBA'
+m_vars= np.floor(np.sqrt(p)) # como en el RF
+importances_norm, importances, count_vars, removed_vars, results_complete = distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
+                                   measures=["Hostility", "N1", "kDN"],
+                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
+                                   random_state=0, save_csv=False, path='Results_FS_Distributed')
+
+
 
 
 
@@ -507,7 +518,7 @@ def compute_gps(y_true, y_pred):
 
 
 
-def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN"],
+def evaluate_distributed_fs_cv(X, y, k, model, dataset_name, measures=["Hostility", "N1", "kDN"],
                                cv_splits=5, random_state=0, n_replicas = 200):
     """
     Realiza CV evaluando el métod distributed:
@@ -588,19 +599,19 @@ def evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN
 
     return importances_df, performance_df
 
-#
-# ### Dataset 2
-# dataset_name = 'ArtificialDataset2'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-#                                                      random_state=0,noise_std=0.01)
-#
-#
-# k=10
-# model = RandomForestClassifier(random_state=0)
-# importances_df, performance_df = evaluate_distributed_fs_cv(X, y, k, model, measures=["Hostility", "N1", "kDN"],
-#                                cv_splits=5, random_state=0, n_replicas=3)
+
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+
+k=10
+model = RandomForestClassifier(random_state=0)
+importances_df, performance_df = evaluate_distributed_fs_cv(X, y, k, model, dataset_name, measures=["Hostility", "N1", "kDN"],
+                               cv_splits=5, random_state=0, n_replicas=3)
 
 
 
@@ -620,7 +631,7 @@ def run_distributed_cv_multiple_models(X, y, dict_info_feature, dataset_name, mo
     for model_name, model in models_dict.items():
         print(f"\n Classifier: {model_name}")
         imp_df, perf_df = evaluate_distributed_fs_cv(
-            X=X, y=y, k=k, model=model, measures=measures,
+            X=X, y=y, k=k, model=model,dataset_name=dataset_name, measures=measures,
             cv_splits=cv_splits, random_state=random_state, n_replicas=n_replicas)
 
         # Añadir nombre del modelo
