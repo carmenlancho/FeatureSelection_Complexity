@@ -466,31 +466,31 @@ def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars
 
     return importances_norm, importances, count_vars, removed_vars, results_complete
 
-
-
-n_replicas = 3
-### Dataset 2
-dataset_name = 'ArtificialDataset2'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
-# La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
-
-
-
-### Random
-p = X.shape[1]
-dataset_name = 'PRUEBA'
-m_vars= np.floor(np.sqrt(p)) # como en el RF
-importances_norm, importances, count_vars, removed_vars, results_complete = distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=False, path='Results_FS_Distributed')
-
-
-
-
+#
+#
+# n_replicas = 3
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+# # La complejidad con cada feature de forma univariante está en ArtificialDatasetXX_featuresComplexityRanking.csv
+#
+#
+#
+# ### Random
+# p = X.shape[1]
+# dataset_name = 'PRUEBA'
+# m_vars= np.floor(np.sqrt(p)) # como en el RF
+# importances_norm, importances, count_vars, removed_vars, results_complete = distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=False, path='Results_FS_Distributed')
+#
+#
+#
+#
 
 
 def compute_gps(y_true, y_pred):
@@ -599,20 +599,20 @@ def evaluate_distributed_fs_cv(X, y, k, model, dataset_name, measures=["Hostilit
 
     return importances_df, performance_df
 
-
-### Dataset 2
-dataset_name = 'ArtificialDataset2'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
-
-
-k=10
-model = RandomForestClassifier(random_state=0)
-importances_df, performance_df = evaluate_distributed_fs_cv(X, y, k, model, dataset_name, measures=["Hostility", "N1", "kDN"],
-                               cv_splits=5, random_state=0, n_replicas=3)
-
+#
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+#
+# k=10
+# model = RandomForestClassifier(random_state=0)
+# importances_df, performance_df = evaluate_distributed_fs_cv(X, y, k, model, dataset_name, measures=["Hostility", "N1", "kDN"],
+#                                cv_splits=5, random_state=0, n_replicas=3)
+#
 
 
 
