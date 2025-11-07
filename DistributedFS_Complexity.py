@@ -966,3 +966,404 @@ def analyze_negative_importances(csv_path, dict_info_feature):
 # summary_neg = analyze_negative_importances(csv_path, dict_info_feature)
 #
 #
+
+
+
+########################################################################################################################
+########                VERSION DISTRIBUTED QUITANDO NEGATIVAS Y FIJANDO LAS DE COMPLEJIDAD ALTA                ########
+########################################################################################################################
+
+# n_replicas=2
+
+def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_replicas, m_vars,
+                                                measures=["Hostility", "N1", "kDN"],
+                                                filter_corr=True, corr_th=0.9, corr_method="pearson",
+                                                random_state=0, save_csv=False, path='Results_FS_Distributed_CV',
+                                                tau=0.01): # Umbral para fijar variables por importancia alta
+
+    np.random.seed(random_state)
+    random.seed(random_state)
+
+    # Filtro por correlación
+    if filter_corr:
+        corr = X.corr(method=corr_method).abs()
+        upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+        to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
+        X = X.drop(columns=to_drop)
+
+    variables = X.columns.tolist()
+
+    # Inicialización
+    importances = {m: pd.Series(0.0, index=variables) for m in measures}
+    importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}
+    count_vars = pd.Series(0.0, index=variables)
+    removed_vars = {m: pd.Series(0.0, index=variables) for m in measures}
+    fixed_vars = {m: pd.Series(0.0, index=variables) for m in measures}
+
+    # Conjuntos activos y de control
+    active_vars = {m: set(variables) for m in measures}
+    permanently_removed = {m: set() for m in measures}
+    permanently_fixed = {m: set() for m in measures}
+
+    # Bucle principal
+    for rep in range(n_replicas):
+        for m in measures:
+            # print(f"[{m}] Réplica {rep + 1}/{n_replicas}")
+
+            # Variables disponibles (ni eliminadas ni fijadas)
+            available_vars = list(active_vars[m] - permanently_removed[m])
+            # print('Available variables:')
+            # print(available_vars)
+
+            # if len(available_vars) < 2:
+            #     continue
+
+            p = len(available_vars)
+            m_vars = int(np.floor(np.sqrt(p)))
+            subset_vars = random.sample(available_vars, k=m_vars)
+
+            # Añadimos las variables fijas
+            subset_vars = list(set(subset_vars) | permanently_fixed[m])
+            # print('Muestra bootrstap:')
+            # print(subset_vars)
+
+            Xsub = X[subset_vars]
+            datos = pd.DataFrame(Xsub)
+            datos['y'] = y
+
+            _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+            base_complexity = df_classes.loc['dataset', m]
+
+            current_vars = subset_vars.copy()
+
+            while len(current_vars) > 1:
+                count_vars[current_vars] += 1
+                to_remove = random.choice(current_vars)
+                current_vars.remove(to_remove)
+
+                Xtemp = X[current_vars]
+                datos_temp = pd.DataFrame(Xtemp)
+                datos_temp['y'] = y
+                _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+                new_complexity = df_classes_temp.loc['dataset', m]
+
+                # cambio de complejidad
+                delta = new_complexity - base_complexity
+                importances[m][to_remove] += delta
+
+                # Si baja complejidad (delta < 0): eliminar permanentemente
+                if delta <= -0.01:
+                    # print(delta)
+                    # print('Se elimina:')
+                    # print(to_remove)
+                    permanently_removed[m].add(to_remove)
+                    active_vars[m].discard(to_remove)
+                    removed_vars[m][to_remove] += 1
+
+                # Si delta > tau: fijar variable
+                elif delta >= tau:
+                    # print('Se fija:')
+                    # print(to_remove)
+                    # print('Delta de la que se fija:')
+                    # print(delta)
+                    permanently_fixed[m].add(to_remove)
+                    fixed_vars[m][to_remove] += 1
+
+                base_complexity = new_complexity
+                # count_vars[current_vars] += 1
+
+    # Normalización
+    count_vars = count_vars.replace(0, np.nan)
+    for m in measures:
+        importances_norm[m] = importances[m] / count_vars
+        importances_norm[m].sort_values(ascending=False, inplace=True)
+
+    # Formato resultados
+    results_norm = pd.DataFrame.from_dict(importances_norm).add_suffix('_importances_norm')
+    results = pd.DataFrame.from_dict(importances).add_suffix('_importances')
+    results_count = pd.DataFrame(count_vars, columns=['count_vars'])
+    removed_df = pd.DataFrame.from_dict(removed_vars).add_suffix('_removed_count')
+    fixed_df = pd.DataFrame.from_dict(fixed_vars).add_suffix('_fixed_count')
+
+    results_complete = pd.concat([results, results_norm, results_count, removed_df, fixed_df], axis=1)
+
+    if filter_corr:
+        results_complete = results_complete.reindex(results_complete.index.union(to_drop))
+        results_complete.loc[to_drop, :] = np.nan
+
+    if save_csv:
+        name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed_NegOut_HighFixed.csv"
+        results_complete.to_csv(name_csv, index=True)
+
+    # Devuelve también los conjuntos fijos y eliminados
+    return (importances_norm, importances, count_vars,removed_vars,fixed_vars,
+        permanently_removed,permanently_fixed,results_complete)
+
+
+# dataset_name = 'ArtificialDataset12'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
+
+
+
+def evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
+                                cv_splits=5, random_state=0, n_replicas=200,tau=0.01):
+    """
+    Realiza CV evaluando el métod distributed:
+      - selecciona top-k variables según cada medida
+      - entrena y evalúa modelo en cada fold
+      - registra variables eliminadas (por importancia negativa)
+        y variables fijadas (por importancia positiva > tau)
+    """
+
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+
+    importances_records = []
+    performance_records = []
+
+    for fold, (train_idx, test_idx) in enumerate(skf.split(X, y), 1):
+        print(f"\n=== FOLD {fold}/{cv_splits} ===")
+        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y[train_idx], y[test_idx]
+
+        p = X.shape[1]
+        m_vars = np.floor(np.sqrt(p))
+
+        (importances_norm, importances, count_vars,removed_vars, fixed_vars,
+            permanently_removed, permanently_fixed,imp_df) = distributed_complexity_random_neg_out_high_fixed(
+            X_train, y_train, dataset_name, n_replicas, m_vars,
+            measures=measures, filter_corr=True, corr_th=0.9,
+            corr_method="pearson", random_state=random_state,
+            save_csv=False, tau=tau)
+
+        # Añadimos info del fold
+        imp_df = imp_df.reset_index().rename(columns={"index": "feature"})
+        imp_df["fold"] = fold
+        importances_records.append(imp_df)
+
+        # Info de variables eliminadas y fijas
+        removed_fixed_record = {m: {"removed": list(permanently_removed[m]),
+                                    "fixed": list(permanently_fixed[m])} for m in measures}
+
+        # top-k variables por medida
+        measures_norm = [s + '_importances_norm' for s in measures]
+        for measure, m_name in zip(measures_norm, measures):
+            imp_m = imp_df[measure]
+            top_feats = (imp_m.sort_values(ascending=False).index.tolist())[:k]
+            feats = imp_df.loc[top_feats, 'feature']
+
+            # Entrenamos modelo
+            X_train_sel = X_train[feats]
+            X_test_sel = X_test[feats]
+
+            datos = pd.DataFrame(X_train_sel)
+            datos['y'] = y_train
+            _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+            subset_complexity = df_classes.loc["dataset", measures].to_dict()
+
+            model.fit(X_train_sel, y_train)
+
+            # Métricas train/test
+            y_pred_train = model.predict(X_train_sel)
+            acc_train = accuracy_score(y_train, y_pred_train)
+            gps_train = compute_gps(y_train, y_pred_train)
+
+            y_pred_test = model.predict(X_test_sel)
+            acc_test = accuracy_score(y_test, y_pred_test)
+            gps_test = compute_gps(y_test, y_pred_test)
+
+            performance_records.append({
+                "fold": fold,
+                "measure": measure,
+                "n_features": k,
+                "top_features": list(feats),
+                "acc_train": acc_train,
+                "gps_train": gps_train,
+                "acc_test": acc_test,
+                "gps_test": gps_test,
+                **{f"complexity_{m}": subset_complexity[m] for m in measures},
+                # Nuevas columnas para rastrear
+                "removed_features": removed_fixed_record[m_name]["removed"],
+                "fixed_features": removed_fixed_record[m_name]["fixed"]
+            })
+
+    importances_df = pd.concat(importances_records, ignore_index=True)
+    performance_df = pd.DataFrame(performance_records)
+
+    return importances_df, performance_df
+
+# model = KNeighborsClassifier()
+# k=3
+# importances_df, performance_df= evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
+#                                 cv_splits=3, random_state=0, n_replicas=2,tau=0.01)
+
+
+
+
+
+def run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=200, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=False):
+
+    k = len(dict_info_feature["informative"])  # nº de variables informativas
+
+    all_importances = []
+    all_performance = []
+
+    for model_name, model in models_dict.items():
+        print(f"\n Model: {model_name}")
+
+        imp_df, perf_df = evaluate_distributed_fs_cv2(
+            X=X, y=y, k=k, model=model,
+            dataset_name=dataset_name, measures=measures,
+            cv_splits=cv_splits, random_state=random_state,
+            n_replicas=n_replicas, tau=tau
+        )
+
+        # Añadir nombre del modelo
+        imp_df["model"] = model_name
+        perf_df["model"] = model_name
+
+        all_importances.append(imp_df)
+        all_performance.append(perf_df)
+
+    # Concatenar todos los resultados
+    importances_all = pd.concat(all_importances, ignore_index=True)
+    performance_all = pd.concat(all_performance, ignore_index=True)
+
+    # Resumen por modelo y medida
+    summary = (
+        performance_all
+        .groupby(["model", "measure"])
+        .agg({
+            "acc_train": ["mean", "std", "max"],
+            "gps_train": ["mean", "std", "max"],
+            "acc_test": ["mean", "std", "max"],
+            "gps_test": ["mean", "std", "max"],
+            "complexity_Hostility": ["mean", "std"],
+            "complexity_N1": ["mean", "std"],
+            "complexity_kDN": ["mean", "std"]
+        })
+    )
+
+    summary.columns = ["_".join(col).strip() for col in summary.columns.values]
+    summary = summary.reset_index()
+
+    # Guardado opcional
+    if save_csv:
+        os.makedirs(path, exist_ok=True)
+        name_csv1 = f"{path}/{dataset_name}_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv"
+        importances_all.to_csv(name_csv1, index=False)
+        name_csv2 = f"{path}/{dataset_name}_DistributedCVRandom_OutHigh_Performance_Folds.csv"
+        performance_all.to_csv(name_csv2, index=False)
+        name_csv3 = f"{path}/{dataset_name}_DistributedCVRandom_OutHigh_SummaryResults.csv"
+        summary.to_csv(name_csv3, index=False)
+
+    return importances_all, performance_all, summary
+
+
+
+
+models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+    # "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier()
+    # "NaiveBayes": GaussianNB(),
+    # "DecisionTree": DecisionTreeClassifier(random_state=0),
+    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    }
+
+
+n_replicas = 200
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=200, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+
+
+#### Dataset 7
+dataset_name = 'ArtificialDataset7'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=589,noise_std=0.05)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+
+
+
+#### Dataset 12
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+
+#### Dataset 14
+dataset_name = 'ArtificialDataset14'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 18
+dataset_name = 'ArtificialDataset18'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 20
+dataset_name = 'ArtificialDataset20'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+                                         n_redundant_linear=60,n_redundant_nonlinear=60,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+#### Dataset 21
+dataset_name = 'ArtificialDataset21'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+                                         n_redundant_linear=100,n_redundant_nonlinear=100,
+                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+                                                     random_state=996,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
