@@ -1010,6 +1010,7 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
         for m in measures:
             # print(f"[{m}] Réplica {rep + 1}/{n_replicas}")
 
+
             # Variables disponibles (ni eliminadas ni fijadas)
             available_vars = list(active_vars[m] - permanently_removed[m])
             # print('Available variables:')
@@ -1059,9 +1060,13 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
                     permanently_removed[m].add(to_remove)
                     active_vars[m].discard(to_remove)
                     removed_vars[m][to_remove] += 1
+                    # Si estaba en fixed, la sacamos porque preferimos darle más fuerza a lo negativo y cargárnosla
+                    if to_remove in permanently_fixed[m]:
+                        permanently_fixed[m].remove(to_remove)
+                        fixed_vars[m][to_remove] -= 1  # guardamos quee la quitamos
 
-                # Si delta > tau: fijar variable
-                elif delta >= tau:
+                # Si delta > tau: fijar variable. Exigimos tb que no esté en las eliminadas por delta negativo
+                elif ((delta >= tau) and (to_remove not in permanently_removed[m])):
                     # print('Se fija:')
                     # print(to_remove)
                     # print('Delta de la que se fija:')
@@ -1070,7 +1075,7 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
                     fixed_vars[m][to_remove] += 1
 
                 base_complexity = new_complexity
-                # count_vars[current_vars] += 1
+            permanently_fixed[m] -= permanently_removed[m]  # por si acaso
 
     # Normalización
     count_vars = count_vars.replace(0, np.nan)
@@ -1277,7 +1282,7 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
     }
 
 
-n_replicas = 200
+n_replicas = 100
 ### Dataset 2
 dataset_name = 'ArtificialDataset2'
 X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
@@ -1286,7 +1291,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                                      random_state=0,noise_std=0.01)
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=200, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=200, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
@@ -1300,7 +1305,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                                      random_state=589,noise_std=0.05)
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
@@ -1316,7 +1321,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
 
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
@@ -1329,7 +1334,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                                      random_state=95,noise_std=0.5)
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
@@ -1341,7 +1346,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                                      random_state=9462,noise_std=0.5)
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
@@ -1353,7 +1358,7 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                                      random_state=4556,noise_std=0.5)
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 #### Dataset 21
@@ -1364,6 +1369,6 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
                                                      random_state=996,noise_std=0.5)
 
 run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["Hostility", "N1", "kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
