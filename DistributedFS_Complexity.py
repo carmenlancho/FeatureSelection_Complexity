@@ -1247,8 +1247,8 @@ def run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, m
             "gps_train": ["mean", "std", "max"],
             "acc_test": ["mean", "std", "max"],
             "gps_test": ["mean", "std", "max"],
-            "complexity_Hostility": ["mean", "std"],
-            "complexity_N1": ["mean", "std"],
+            # "complexity_Hostility": ["mean", "std"],
+            # "complexity_N1": ["mean", "std"],
             "complexity_kDN": ["mean", "std"]
         })
     )
