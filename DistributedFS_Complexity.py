@@ -1271,6 +1271,95 @@ def run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, m
 
 
 
+
+
+###############################################################################################################
+#####                          PLOT COMPLEXITY RESULTADOS VERSION CV                                      #####
+###############################################################################################################
+# Hacemos un plot tipo importancia de variables en RF
+
+
+
+def plot_complexity_importances_by_model(df, dataset_name="Dataset", save_path=None):
+    """
+    Produce para cada modelo:
+    1) Gráfico de barras de kDN_importances_norm agregadas por feature (mean ± std)
+    2) Gráfico de frecuencias (count_vars sumado)
+    """
+
+    sns.set(style="whitegrid", font_scale=1.1)
+    modelos = df["model"].unique()
+    n_models = len(modelos)
+
+    # GRID: una fila por modelo, dos columnas (importancia, frecuencias)
+    fig, axes = plt.subplots(n_models, 2, figsize=(14, 5 * n_models))
+    if n_models == 1:
+        axes = np.array([axes])
+
+    for i, model in enumerate(modelos):
+
+        df_model = df[df["model"] == model]
+
+        # agregamos por fold
+        agg_df = (
+            df_model.groupby("feature")
+                     .agg(
+                         kdn_mean=("kDN_importances_norm", "mean"),
+                         kdn_median=("kDN_importances_norm", "median"),
+                         kdn_std=("kDN_importances_norm", "std"),
+                         count_total=("count_vars", "sum")
+                     )
+                     .sort_values("kdn_mean", ascending=False)
+        )
+        agg_df["kdn_std"] = agg_df["kdn_std"].fillna(0) # Evitar NaN en std cuando solo hay 1 fold
+
+        # IMPORTANCIAS (mean ± std)
+        ax1 = axes[i, 0]
+        ax1.bar(
+            agg_df.index,
+            agg_df["kdn_mean"],
+            yerr=agg_df["kdn_std"],
+            capsize=4
+        )
+        ax1.axhline(0, color="black", linewidth=1)
+        ax1.set_title(f"{model} — kDN importance (mean ± std)")
+        ax1.set_xlabel("Variable")
+        ax1.set_ylabel("Importance")
+        ax1.tick_params(axis="x", rotation=45)
+
+        # FRECUENCIA de aparición
+        ax2 = axes[i, 1]
+        ax2.bar(agg_df.index, agg_df["count_total"])
+        ax2.set_title(f"{model} — Variable occurrence count")
+        ax2.set_xlabel("Variable")
+        ax2.set_ylabel("Count")
+        ax2.tick_params(axis="x", rotation=45)
+
+    plt.suptitle(f"{dataset_name} — Complexity Random FS", fontsize=16, y=1.02)
+    plt.tight_layout()
+
+    # if save_path:
+    #     plt.savefig(f"{save_path}/{dataset_name}_Complexity_Grid.png",
+    #                 dpi=300, bbox_inches="tight")
+
+    plt.show()
+
+
+
+
+
+# df_random = pd.read_csv("Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv", index_col=0)
+# # df = df_random
+#
+# plot_complexity_importances_by_model(df_random, dataset_name="Dataset2")
+#
+
+
+
+
+
+
+
 models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
     # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
