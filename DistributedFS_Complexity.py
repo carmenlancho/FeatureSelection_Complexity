@@ -1361,14 +1361,14 @@ n_replicas = 100
 #     measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
 #     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
-#### Dataset 21
-dataset_name = 'ArtificialDataset21'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
-                                         n_redundant_linear=100,n_redundant_nonlinear=100,
-                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
-                                                     random_state=996,noise_std=0.5)
-
-run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
-    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
-    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
-
+# #### Dataset 21
+# dataset_name = 'ArtificialDataset21'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+#                                          n_redundant_linear=100,n_redundant_nonlinear=100,
+#                                         flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+#                                                      random_state=996,noise_std=0.5)
+#
+# run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+#     measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+#     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+#
