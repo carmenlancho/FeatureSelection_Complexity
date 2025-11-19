@@ -1354,7 +1354,18 @@ df_all_order = df_all[[
     'n_features','type','filter_corr'
 ]]
 
-df_all_order.sort_values(by='dataset', inplace=True)
+# Orden
+method_order = ["all","informative","informative+redundant","informative+redundant_nonLinear",
+    "informative+rand_extra","informative+noise","f_classif", "mutual_info", "relief", "rf", "xgb",
+     "Hostility_importances_norm","N1_importances_norm","kDN_importances_norm"]
 
-# out_path = 'Results_ComparisonDistributed_SOTA'
-# df_all_order.to_csv(f'{out_path}/AllArtificialDatasets_ComparisonTable_CV_neg_high.csv', index=False)
+# categoría ordenada
+df_all_order["method"] = pd.Categorical(df_all_order["method"], categories=method_order, ordered=True)
+
+# Orden: dataset → model → method
+df_all_order = df_all_order.sort_values(by=["dataset", "model", "method"]).reset_index(drop=True)
+
+# df_all_order.sort_values(by='dataset', inplace=True)
+
+out_path = 'Results_ComparisonDistributed_SOTA'
+df_all_order.to_csv(f'{out_path}/AllArtificialDatasets_ComparisonTable_CV_neg_high.csv', index=False)
