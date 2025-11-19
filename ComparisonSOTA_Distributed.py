@@ -764,6 +764,167 @@ def FS_complexity_experiment_with_distributed(X, y, dict_info_feature, dataset_n
 ########################################################################################################################
 ####################                            VERSION CV                                          ####################
 ########################################################################################################################
+
+
+### Comenzamos ejecutando los subsets con CV
+
+# Función para generar los subconjuntos de interés para cada dataset
+def build_subsets(feature_names, feature_types,k_random=3, random_state=0):
+    rng = np.random.RandomState(random_state)
+    subsets = {}
+
+    subsets['all'] = list(feature_names)
+    inform = [f for f, t in feature_types.items() if t == 'informative']
+    noise = [f for f, t in feature_types.items() if t == 'noise']
+    redun = [f for f, t in feature_types.items() if t == 'redundant_linear']
+    redun_nonlineal = [f for f, t in feature_types.items() if t == 'redundant_nonlinear']
+
+    subsets['informative'] = inform
+    subsets['informative+redundant'] = inform + redun
+    subsets['informative+redundant_nonLinear'] = inform + redun_nonlineal
+    subsets['informative+noise'] = inform + noise
+
+    # selección aleatoria (informativas + ruido/redundantes al azar)
+    pool_extra = noise + redun + redun_nonlineal
+    if pool_extra and k_random > 0:
+        ksel = min(k_random, len(pool_extra))
+        rand_pick = rng.choice(pool_extra, size=ksel, replace=False).tolist()
+        subsets['informative+rand_extra'] = inform + rand_pick
+
+
+    return subsets
+
+
+
+def evaluate_subsets_cv(X, y, subsets, models, dataset_name,n_splits=5, random_state=0):
+    """
+    Calcula accuracy y GPS para TODOS los subsets y modelos usando CV.
+    """
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+
+    results = []
+
+    for subset_name, feat_list in subsets.items():
+        cols = [c for c in feat_list if c in X.columns]
+
+        for model_name, model in models.items():
+            fold_idx = 0
+
+            for train_idx, test_idx in skf.split(X, y):
+                X_train = X.iloc[train_idx][cols]
+                X_test  = X.iloc[test_idx][cols]
+                y_train = y[train_idx]
+                y_test  = y[test_idx]
+
+                # Entrenar
+                clf = model
+                clf.fit(X_train, y_train)
+
+                # Predicciones
+                pred_train = clf.predict(X_train)
+                pred_test = clf.predict(X_test)
+
+                # Métricas
+                acc_train = accuracy_score(y_train, pred_train)
+                acc_test  = accuracy_score(y_test, pred_test)
+                gps_train = compute_gps(y_train, pred_train)
+                gps_test  = compute_gps(y_test, pred_test)
+
+                # COMPLEJIDAd DEL SUBSET
+                data_comp = pd.DataFrame(X_train, columns=cols)
+                data_comp["y"] = y_train
+
+                _, df_classes, _ = all_measures_FS(data_comp, save_csv=False, path_to_save=None, name_data=None)
+
+                Hostility = df_classes.loc["dataset", "Hostility"]
+                kDN = df_classes.loc["dataset", "kDN"]
+                N1 = df_classes.loc["dataset", "N1"]
+
+                # Guardamos registro del fold
+                results.append({
+                    "dataset": dataset_name,
+                    "subset": subset_name,
+                    "model": model_name,
+                    "fold": fold_idx,
+                    "n_features": len(cols),
+
+                    # performance
+                    "acc_train": acc_train,
+                    "gps_train": gps_train,
+                    "acc_test": acc_test,
+                    "gps_test": gps_test,
+
+                    # complexity
+                    "Hostility": Hostility,
+                    "kDN": kDN,
+                    "N1": N1
+                })
+
+                fold_idx += 1
+
+    results_df = pd.DataFrame(results)
+
+    return results_df
+
+
+
+
+# df_folds = df_perf
+
+def summarize_subset_results(df_folds, save_csv=False, name_data=None, path_to_save="Results_Subsets_Artificial_CV"):
+    """
+    Agrupa y promedia:
+    acc_train, acc_test, gps_train, gps_test, Hostility, kDN, N1
+    """
+
+    metrics = ["acc_train", "acc_test", "gps_train", "gps_test",
+        "Hostility", "kDN", "N1"]
+
+    df_summary = df_folds.groupby(["dataset", "subset", "model", "n_features"]
+    )[metrics].agg(["mean", "std"])
+
+    # Quitamos MultiIndex
+    df_summary.columns = [f"{metric}_{stat}" for metric, stat in df_summary.columns]
+    df_summary.reset_index(inplace=True)
+
+    if save_csv:
+        folds_path = f"{path_to_save}/{name_data}_Subsets_Folds_Performance_Complexity.csv"
+        summ_path  = f"{path_to_save}/{name_data}_Subsets_Summary_Performance_Complexity.csv"
+        df_folds.to_csv(folds_path, index=False)
+        df_summary.to_csv(summ_path, index=False)
+
+    return df_summary
+
+
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+models = {
+    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+    # "KNN": KNeighborsClassifier(),
+    # "RF": RandomForestClassifier(random_state=0)
+}
+
+# Construir subconjuntos
+feature_types = {}
+for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+feature_names = X.columns.tolist()
+fs_list = None
+
+subsets = build_subsets(feature_names, feature_types)
+
+
+df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name="ArtificialDataset2",
+    n_splits=5,random_state=0)
+
+
 import glob
 
 ## Leemos los subsets de orientación que están en Results_ComparisonDistributed_SOTA en los archivos ComparisonTable
@@ -814,7 +975,7 @@ def load_custom_results_from_comparison_table():
     })
 
     # Añadir columnas para consistencia con los otros conjuntos
-    df_subsets["model"] = "mean_model"  # porque tus resultados ya están promediados
+    df_subsets["model"] = "mean_model"  # porque los resultados ya están promediados
     df_subsets["type"] = "Custom"
     df_subsets["filter_corr"] = True
     df_subsets["acc_train_mean"] = np.nan
