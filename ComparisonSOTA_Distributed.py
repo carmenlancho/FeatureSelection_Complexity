@@ -27,7 +27,7 @@ import numpy as np
 from All_measures import *
 from sklearn.datasets import make_classification
 
-
+import glob
 
 
 # Función para generar datos sintéticos
@@ -909,206 +909,196 @@ models = {
 }
 
 
-### Dataset 2
-dataset_name = 'ArtificialDataset2'
-
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-#### Dataset 7
-dataset_name = 'ArtificialDataset7'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
-                                         n_redundant_linear=10,n_redundant_nonlinear=10,
-                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
-                                                     random_state=589,noise_std=0.05)
-
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-
-
-#### Dataset 12
-dataset_name = 'ArtificialDataset12'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
-                                         n_redundant_linear=30,n_redundant_nonlinear=30,
-                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-                                                     random_state=987,noise_std=0.5)
-
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-
-#### Dataset 14
-dataset_name = 'ArtificialDataset14'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
-                                         n_redundant_linear=30,n_redundant_nonlinear=40,
-                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
-                                                     random_state=95,noise_std=0.5)
-
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-
-
-#### Dataset 18
-dataset_name = 'ArtificialDataset18'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
-                                         n_redundant_linear=40,n_redundant_nonlinear=40,
-                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-                                                     random_state=9462,noise_std=0.5)
-
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-
-
-#### Dataset 20
-dataset_name = 'ArtificialDataset20'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
-                                         n_redundant_linear=60,n_redundant_nonlinear=60,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=4556,noise_std=0.5)
-
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-
-#### Dataset 21
-dataset_name = 'ArtificialDataset21'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
-                                         n_redundant_linear=100,n_redundant_nonlinear=100,
-                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
-                                                     random_state=996,noise_std=0.5)
-
-
-feature_names = X.columns.tolist()
-
-# Construir subconjuntos
-feature_types = {}
-for f in dict_info_feature["informative"]: feature_types[f] = "informative"
-for f in dict_info_feature["noise"]: feature_types[f] = "noise"
-for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
-for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
-feature_names = X.columns.tolist()
-fs_list = None
-
-subsets = build_subsets(feature_names, feature_types)
-
-
-df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
-    n_splits=5,random_state=0)
-summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
-
-
-
-
-
-
-
-
-
-
-
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+#
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+# #### Dataset 7
+# dataset_name = 'ArtificialDataset7'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+#                                          n_redundant_linear=10,n_redundant_nonlinear=10,
+#                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+#                                                      random_state=589,noise_std=0.05)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+#
+# #### Dataset 12
+# dataset_name = 'ArtificialDataset12'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+# #### Dataset 14
+# dataset_name = 'ArtificialDataset14'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=40,
+#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+#                                                      random_state=95,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+#
+# #### Dataset 18
+# dataset_name = 'ArtificialDataset18'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+#
+# #### Dataset 20
+# dataset_name = 'ArtificialDataset20'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+#                                          n_redundant_linear=60,n_redundant_nonlinear=60,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+# #### Dataset 21
+# dataset_name = 'ArtificialDataset21'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+#                                          n_redundant_linear=100,n_redundant_nonlinear=100,
+#                                         flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+#                                                      random_state=996,noise_std=0.5)
+#
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
 
 
 
@@ -1136,67 +1126,72 @@ import glob
 #
 # folder_path = 'Results_FS_ComplexityEvaluation'
 
-def load_custom_results_from_comparison_table():
-    """
-    Carga los resultados de subsets personalizados desde el ComparisonTable existente
-    y los adapta al formato estándar usado en la tabla combinada final.
-    """
 
-    # all_files = glob.glob(f"{folder_path}/*_comparisonTable.csv")
-    all_files = ['Results_FS_ComplexityEvaluation/ArtificialDataset12_comparisonTable.csv',
-    'Results_FS_ComplexityEvaluation/ArtificialDataset2_comparisonTable.csv',
-    'Results_FS_ComplexityEvaluation/ArtificialDataset14_comparisonTable.csv',
-         'Results_FS_ComplexityEvaluation/ArtificialDataset18_comparisonTable.csv',
-         'Results_FS_ComplexityEvaluation/ArtificialDataset20_comparisonTable.csv',
-         'Results_FS_ComplexityEvaluation/ArtificialDataset21_comparisonTable.csv',
-    'Results_FS_ComplexityEvaluation/ArtificialDataset7_comparisonTable.csv']
-    dfs = []
-    for f in all_files:
-        df = pd.read_csv(f)
-        dfs.append(df)
-    df_subsets = pd.concat(dfs, ignore_index=True)
-
-    # Renombrar columnas clave
-    df_subsets = df_subsets.rename(columns={
-        "Dataset": "dataset",
-        "Subset": "method",
-        "mean_acc_mean": "acc_test_mean",
-        "mean_gps_mean": "gps_test_mean",
-        "n_features": "n_features",
-        "Hostility": "Hostility_mean",
-        "kDN": "kDN_mean",
-        "N1": "N1_mean"
-    })
-
-    # Añadir columnas para consistencia con los otros conjuntos
-    df_subsets["model"] = "mean_model"  # porque los resultados ya están promediados
-    df_subsets["type"] = "Custom"
-    df_subsets["filter_corr"] = True
-    df_subsets["acc_train_mean"] = np.nan
-    df_subsets["gps_train_mean"] = np.nan
-    df_subsets["acc_train_std"] = np.nan
-    df_subsets["gps_train_std"] = np.nan
-    df_subsets["acc_test_std"] = 0
-    df_subsets["gps_test_std"] = 0
-    df_subsets["Hostility_std"] = np.nan
-    df_subsets["kDN_std"] = np.nan
-    df_subsets["N1_std"] = np.nan
-
-    #Seleeccionamos columnas
-    df_final = df_subsets[['dataset',
-        "model", "method", "filter_corr", "n_features",
-        "acc_train_mean", "gps_train_mean", "acc_train_std", "gps_train_std",
-        "acc_test_mean", "gps_test_mean","acc_test_std", "gps_test_std",
-        "Hostility_mean","Hostility_std", "N1_mean", "N1_std","kDN_mean","kDN_std", "type"
-    ]].copy()
-
-    valid_methods = ['all','informative','informative+redundant',
-                                   'informative+redundant_nonLinear',
-                                   'informative+noise',
-                                   'informative+rand_extra']
-    df_final = df_final[df_final['method'].isin(valid_methods)]
-
-    return df_final
+### Esta función era para leer los resultados de performance y de complexity de los subsets de
+### interés que creamos nosotros (informative, informative+redundant, etc)
+### cuando solo se habían ejecutado 1 vez
+# Se queda obsoleta porque ahora hacemos cross validation
+# def load_custom_results_from_comparison_table():
+#     """
+#     Carga los resultados de subsets personalizados desde el ComparisonTable existente
+#     y los adapta al formato estándar usado en la tabla combinada final.
+#     """
+#
+#     # all_files = glob.glob(f"{folder_path}/*_comparisonTable.csv")
+#     all_files = ['Results_FS_ComplexityEvaluation/ArtificialDataset12_comparisonTable.csv',
+#     'Results_FS_ComplexityEvaluation/ArtificialDataset2_comparisonTable.csv',
+#     'Results_FS_ComplexityEvaluation/ArtificialDataset14_comparisonTable.csv',
+#          'Results_FS_ComplexityEvaluation/ArtificialDataset18_comparisonTable.csv',
+#          'Results_FS_ComplexityEvaluation/ArtificialDataset20_comparisonTable.csv',
+#          'Results_FS_ComplexityEvaluation/ArtificialDataset21_comparisonTable.csv',
+#     'Results_FS_ComplexityEvaluation/ArtificialDataset7_comparisonTable.csv']
+#     dfs = []
+#     for f in all_files:
+#         df = pd.read_csv(f)
+#         dfs.append(df)
+#     df_subsets = pd.concat(dfs, ignore_index=True)
+#
+#     # Renombrar columnas clave
+#     df_subsets = df_subsets.rename(columns={
+#         "Dataset": "dataset",
+#         "Subset": "method",
+#         "mean_acc_mean": "acc_test_mean",
+#         "mean_gps_mean": "gps_test_mean",
+#         "n_features": "n_features",
+#         "Hostility": "Hostility_mean",
+#         "kDN": "kDN_mean",
+#         "N1": "N1_mean"
+#     })
+#
+#     # Añadir columnas para consistencia con los otros conjuntos
+#     df_subsets["model"] = "mean_model"  # porque los resultados ya están promediados
+#     df_subsets["type"] = "Custom"
+#     df_subsets["filter_corr"] = True
+#     df_subsets["acc_train_mean"] = np.nan
+#     df_subsets["gps_train_mean"] = np.nan
+#     df_subsets["acc_train_std"] = np.nan
+#     df_subsets["gps_train_std"] = np.nan
+#     df_subsets["acc_test_std"] = 0
+#     df_subsets["gps_test_std"] = 0
+#     df_subsets["Hostility_std"] = np.nan
+#     df_subsets["kDN_std"] = np.nan
+#     df_subsets["N1_std"] = np.nan
+#
+#     #Seleeccionamos columnas
+#     df_final = df_subsets[['dataset',
+#         "model", "method", "filter_corr", "n_features",
+#         "acc_train_mean", "gps_train_mean", "acc_train_std", "gps_train_std",
+#         "acc_test_mean", "gps_test_mean","acc_test_std", "gps_test_std",
+#         "Hostility_mean","Hostility_std", "N1_mean", "N1_std","kDN_mean","kDN_std", "type"
+#     ]].copy()
+#
+#     valid_methods = ['all','informative','informative+redundant',
+#                                    'informative+redundant_nonLinear',
+#                                    'informative+noise',
+#                                    'informative+rand_extra']
+#     df_final = df_final[df_final['method'].isin(valid_methods)]
+#
+#     return df_final
 
 
 # folder_path = 'Results_FS_SOTA_CV'
@@ -1236,12 +1231,12 @@ def load_distributed_results(folder_path):
     Carga los summaryResults_*.csv del métod Distributed,
     y genera un DataFrame comparable con el del SOTA.
     """
-    all_files = glob.glob(f"{folder_path}/*_SummaryResults.csv")
+    all_files = glob.glob(f"{folder_path}/*_DistributedCVRandom_OutHigh_SummaryResults.csv")
     dfs = []
 
     for f in all_files:
         df = pd.read_csv(f)
-        dataset_name = os.path.basename(f).split('_DistributedCVRandom')[0]
+        dataset_name = os.path.basename(f).split('_DistributedCVRandom_OutHigh_SummaryResults')[0]
         df["dataset"] = dataset_name
         dfs.append(df)
     df_dist = pd.concat(dfs, ignore_index=True)
@@ -1269,29 +1264,97 @@ def load_distributed_results(folder_path):
 
 # df_dist.columns
 
+# # Unimos tod
+# folder_sota = 'Results_FS_SOTA_CV'
+# sota = load_sota_results(folder_sota)
+# folder_dist = 'Results_FS_Distributed_CV'
+# dist = load_distributed_results(folder_dist)
+# subsets_reference = load_custom_results_from_comparison_table()
+#
+# dfs = [sota, dist, subsets_reference]
+# all_cols = sorted(set().union(*[df.columns for df in dfs]))
+#
+# for i, df in enumerate(dfs):
+#     dfs[i] = df.reindex(columns=all_cols)
+#
+# df_all = pd.concat(dfs, ignore_index=True)
+# df_all_order = df_all[['dataset','method', 'model','acc_train_mean', 'acc_train_std',
+#                        'acc_test_mean','acc_test_std','gps_train_mean', 'gps_train_std',
+#                         'gps_test_mean', 'gps_test_std',
+#                     'Hostility_mean', 'Hostility_std', 'N1_mean', 'N1_std',
+#                     'kDN_mean', 'kDN_std','n_features','type','filter_corr']]
+# df_all_order.sort_values(by='dataset',inplace=True)
+# # out_path = 'Results_ComparisonDistributed_SOTA'
+# # df_all_order.to_csv('Results_ComparisonDistributed_SOTA/AllArtificialDatasets_ComparisonTable_CV.csv', index=False)
+# # #
+# # sota.columns
+# # dist.columns
+# # subsets_reference.columns
+
+
+
+
+def load_subsets_results(folder_path):
+    """
+    Carga los <dataset>_Subsets_Summary.csv generados con evaluate_subsets_cv(),
+    normaliza nombres de columnas y devuelve un DF comparable a SOTA y Distributed.
+    """
+    all_files = glob.glob(f"{folder_path}/*_Subsets_Summary_Performance_Complexity.csv")
+    dfs = []
+
+    for f in all_files:
+        df = pd.read_csv(f)
+
+        # dataset name
+        dataset_name = os.path.basename(f).replace("_Subsets_Summary_Performance_Complexity.csv", "")
+        df["dataset"] = dataset_name
+
+        dfs.append(df)
+
+    df_sub = pd.concat(dfs, ignore_index=True)
+
+    # Aseguramos que existen columnas comunes
+    df_sub["type"] = "Subsets"
+    df_sub["filter_corr"] = np.nan
+
+    df_sub = df_sub.rename(columns={"subset": "method"})
+
+    return df_sub
+
+
+
+
+
+
 # Unimos tod
+folder_path = 'Results_Subsets_Artificial_CV'
+subsets_reference = load_subsets_results(folder_path)
 folder_sota = 'Results_FS_SOTA_CV'
 sota = load_sota_results(folder_sota)
 folder_dist = 'Results_FS_Distributed_CV'
-dist = load_distributed_results(folder_dist)
-subsets_reference = load_custom_results_from_comparison_table()
+distributed = load_distributed_results(folder_dist)
 
-dfs = [sota, dist, subsets_reference]
+dfs = [sota, distributed, subsets_reference]
 all_cols = sorted(set().union(*[df.columns for df in dfs]))
 
 for i, df in enumerate(dfs):
     dfs[i] = df.reindex(columns=all_cols)
 
 df_all = pd.concat(dfs, ignore_index=True)
-df_all_order = df_all[['dataset','method', 'model','acc_train_mean', 'acc_train_std',
-                       'acc_test_mean','acc_test_std','gps_train_mean', 'gps_train_std',
-                        'gps_test_mean', 'gps_test_std',
-                    'Hostility_mean', 'Hostility_std', 'N1_mean', 'N1_std',
-                    'kDN_mean', 'kDN_std','n_features','type','filter_corr']]
-df_all_order.sort_values(by='dataset',inplace=True)
+
+df_all_order = df_all[[
+    'dataset','method','model',
+    'acc_train_mean','acc_train_std',
+    'acc_test_mean','acc_test_std',
+    'gps_train_mean','gps_train_std',
+    'gps_test_mean','gps_test_std',
+    'Hostility_mean','Hostility_std',
+    'N1_mean','N1_std',
+    'kDN_mean','kDN_std',
+    'n_features','type','filter_corr'
+]]
+
+df_all_order.sort_values(by='dataset', inplace=True)
+
 # out_path = 'Results_ComparisonDistributed_SOTA'
-# df_all_order.to_csv('Results_ComparisonDistributed_SOTA/AllArtificialDatasets_ComparisonTable_CV.csv', index=False)
-# #
-# sota.columns
-# dist.columns
-# subsets_reference.columns
+# df_all_order.to_csv(f'{out_path}/AllArtificialDatasets_ComparisonTable_CV_neg_high.csv', index=False)
