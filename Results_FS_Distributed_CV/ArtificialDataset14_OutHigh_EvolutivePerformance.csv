@@ -1,4 +1,4 @@
-dataset,fold,measure,k,n_available_features,model,acc,gps
+dataset,fold,measure,k,n_available_features,model,acc_test,gps_test
 ArtificialDataset14,1,kDN_importances_norm,1,13,SVM-rbf,0.6533333333333333,0.036855036855036855
 ArtificialDataset14,1,kDN_importances_norm,1,13,KNN,0.5916666666666667,0.4201628010853406
 ArtificialDataset14,1,kDN_importances_norm,2,13,SVM-rbf,0.6533333333333333,0.036855036855036855
