@@ -1629,6 +1629,8 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
                                                      random_state=9462,noise_std=0.5)
 
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18_OutHigh_EvolutivePerformance.csv',index=False)
 
 
 #### Dataset 20
@@ -1651,5 +1653,104 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informativ
 
 perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
 perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset21_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+###3 Plot de performance evolutiva
+def plot_incremental_performance(performance_df, importances_df, dataset, measure="acc_test"):
+    """
+    measure = 'acc_test' o 'gps_test'
+    """
+
+    df = performance_df.copy()
+    df = df[df["dataset"] == dataset]
+    models = df["model"].unique()
+    folds = df["fold"].unique()
+
+    # Colores por modelo
+    colors = plt.cm.tab10(np.linspace(0, 1, len(models)))
+    model_color = {m: c for m, c in zip(models, colors)}
+
+    # Estilos por fold
+    line_styles = ["solid", "dashed", "dotted", "dashdot"]
+    fold_style = {f: line_styles[(f-1) % len(line_styles)] for f in folds}
+
+    # mapa de negativo por fold
+    negative_k = {}
+    for fold in folds:
+        imp_f = importances_df[importances_df["fold"] == fold]
+        imp_sorted = imp_f.sort_values("kDN_importances_norm", ascending=False)
+        neg_idx = np.where(imp_sorted["kDN_importances_norm"].values < 0)[0]
+        negative_k[fold] = neg_idx[0] + 1 if len(neg_idx) > 0 else None
+
+    plt.figure(figsize=(13, 8))
+
+    for model in models:
+        df_m = df[df["model"] == model]
+
+        for fold in folds:
+            df_f = df_m[df_m["fold"] == fold].sort_values("k")
+            k = df_f["k"].values
+            y = df_f[measure].values
+
+            k_neg = negative_k[fold]
+
+            # colores/estilos
+            col = model_color[model]
+            ls = fold_style[fold]
+
+            # trozo principal (antes de k negativo)
+            if k_neg is None:
+                # Nada negativo: toda la curva normal
+                plt.plot(k, y, marker="o", color=col, linestyle=ls,
+                         alpha=0.8, label=f"{model} – fold {fold}")
+            else:
+                # tramo coloreado (hasta k_neg)
+                idx_color = k <= k_neg
+                plt.plot(k[idx_color], y[idx_color], marker="o",
+                         color=col, linestyle=ls, alpha=0.8,
+                         label=f"{model} – fold {fold}")
+
+                # tramo gris
+                idx_grey = k >= k_neg
+                if np.any(idx_grey):
+                    plt.plot(k[idx_grey], y[idx_grey], marker="o",
+                             color="grey", linestyle=ls, alpha=0.6)
+
+            # máximo
+            max_row = df_f.loc[df_f[measure].idxmax()]
+            plt.scatter(max_row["k"], max_row[measure],
+                        s=80, edgecolor="black", facecolor="yellow", zorder=5)
+
+            plt.text(max_row["k"], max_row[measure],
+                     f"{max_row[measure]:.3f}",
+                     fontsize=9, verticalalignment="bottom")
+
+    plt.title(f"{dataset} – Evolución de {measure.replace('_',' ').upper()} con nº de variables")
+    plt.xlabel("Número de variables usadas (k)")
+    plt.ylabel(measure.replace("_"," ").upper())
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.legend()
+    plt.show()
+
+
+importances_dict = load_importances_per_fold(path_csv)
+importances_all = pd.concat([v["kDN_importances_norm"] for v in importances_dict.values()],ignore_index=True)
+dfs = []
+for fold, v in importances_dict.items():
+    df = v["kDN_importances_norm"].copy()
+    df["fold"] = fold
+    dfs.append(df)
+
+importances_all = pd.concat(dfs, ignore_index=True)
+
+importances_df = importances_all
+performance_df = perf_final
+
+plot_incremental_performance(performance_df, importances_df,
+                             dataset="ArtificialDataset21",
+                             measure="acc_test")
+
+
 
 
