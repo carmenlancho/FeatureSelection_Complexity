@@ -1105,14 +1105,16 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
         permanently_removed,permanently_fixed,results_complete)
 
 
-# dataset_name = 'ArtificialDataset12'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
-#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
-#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-#                                                      random_state=987,noise_std=0.5)
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
 
 
-
+measures = ['kDN']
+dataset_name = 'prueba'
+n_replicas=2
 def evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
                                 cv_splits=5, random_state=0, n_replicas=200,tau=0.01):
     """
@@ -1148,10 +1150,12 @@ def evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostilit
         imp_df["fold"] = fold
         importances_records.append(imp_df)
 
+
+
         # Info de variables eliminadas y fijas
         removed_fixed_record = {m: {"removed": list(permanently_removed[m]),
                                     "fixed": list(permanently_fixed[m])} for m in measures}
-
+        imp_df.sort_values(by=["kDN_importances_norm"], ascending=False)
         # top-k variables por medida
         measures_norm = [s + '_importances_norm' for s in measures]
         for measure, m_name in zip(measures_norm, measures):
@@ -1199,10 +1203,10 @@ def evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostilit
 
     return importances_df, performance_df
 
-# model = KNeighborsClassifier()
-# k=3
-# importances_df, performance_df= evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
-#                                 cv_splits=3, random_state=0, n_replicas=2,tau=0.01)
+model = KNeighborsClassifier()
+k=3
+importances_df, performance_df= evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
+                                cv_splits=3, random_state=0, n_replicas=2,tau=0.01)
 
 
 
@@ -1460,4 +1464,192 @@ n_replicas = 100
 # run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
 #     measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
 #     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
-#
+
+
+
+############################################################################
+######        PERFORMANCE POR FOLD SIGUIENDO RANKING out y high       ######
+############################################################################
+# Ya tenemos el ranking con kdn con neg out y high fixed por fold
+# Ahora vamos a sacar la performance de los modelo según vamos añadiendo variables
+
+
+# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset12_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+
+def load_importances_per_fold(path_csv, measures=["kDN_importances_norm"]):
+    """
+    Lee el archivo CSV con importancias por fold.
+    Devuelve: dict[fold][measure] = DataFrame con columnas (feature, importance)
+    Solo incluye las variables que tengan valor (no NaN).
+    """
+    df = pd.read_csv(path_csv)
+
+    df = df.loc[df.model == 'KNN',:]
+
+    result = {}
+
+    for fold in sorted(df["fold"].unique()):
+        df_f = df[df["fold"] == fold]
+
+        result[fold] = {}
+
+        for m in measures:
+
+            df_m = df_f[["feature", m]].dropna(subset=[m])  # elimina variables que quitamos por alta correlación
+
+            # Orden descendente: mayor importancia primero
+            df_m = df_m.sort_values(m, ascending=False)
+
+            result[fold][m] = df_m.reset_index(drop=True)
+
+    return result
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+
+# Función para evaluar rendimiento metiendo variables modo forward siguiendo el ranking
+# establecido por la complejidad modo neg out high fixed
+def evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0):
+    """
+    Para cada fold, measure y modelo:
+      evalúa rendimiento con k = 1..K variables ordenadas por importancia.
+    """
+
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+
+    rows = []
+
+    for fold_id, (train_idx, test_idx) in enumerate(skf.split(X, y), 1):
+
+        X_train_base, X_test_base = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y[train_idx], y[test_idx]
+
+        for measure, df_m in importances_dict[fold_id].items():
+
+            features_ranked = df_m["feature"].tolist()
+            K = len(features_ranked)
+
+            for k in range(1, K + 1):
+
+                selected = features_ranked[:k]
+
+                Xt = X_train_base[selected]
+                Xs = X_test_base[selected]
+
+                for model_name, model in models.items():
+
+                    clf = model
+                    clf.fit(Xt, y_train)
+                    pred = clf.predict(Xs)
+
+                    acc = accuracy_score(y_test, pred)
+                    gps = compute_gps(y_test, pred)
+
+                    rows.append({
+                        "dataset": dataset_name,
+                        "fold": fold_id,
+                        "measure": measure,
+                        "k": k,
+                        "n_available_features": K,
+                        "model": model_name,
+                        "acc_test": acc,
+                        "gps_test": gps})
+
+    perf_final = pd.DataFrame(rows)
+
+    return perf_final
+
+models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+    # "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier()
+    # "NaiveBayes": GaussianNB(),
+    # "DecisionTree": DecisionTreeClassifier(random_state=0),
+    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    }
+
+
+
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset2_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 7
+dataset_name = 'ArtificialDataset7'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=589,noise_std=0.05)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset7_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+
+
+
+#### Dataset 12
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset12_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+
+#### Dataset 14
+dataset_name = 'ArtificialDataset14'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset14_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 18
+dataset_name = 'ArtificialDataset18'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+
+
+#### Dataset 20
+dataset_name = 'ArtificialDataset20'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+                                         n_redundant_linear=60,n_redundant_nonlinear=60,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+#### Dataset 21
+dataset_name = 'ArtificialDataset21'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+                                         n_redundant_linear=100,n_redundant_nonlinear=100,
+                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+                                        random_state=996,noise_std=0.5)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset21_OutHigh_EvolutivePerformance.csv',index=False)
+
+
