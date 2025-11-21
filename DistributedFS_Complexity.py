@@ -1112,9 +1112,9 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informativ
                                                      random_state=987,noise_std=0.5)
 
 
-measures = ['kDN']
-dataset_name = 'prueba'
-n_replicas=2
+# measures = ['kDN']
+# dataset_name = 'prueba'
+# n_replicas=2
 def evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
                                 cv_splits=5, random_state=0, n_replicas=200,tau=0.01):
     """
@@ -1203,11 +1203,11 @@ def evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostilit
 
     return importances_df, performance_df
 
-model = KNeighborsClassifier()
-k=3
-importances_df, performance_df= evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
-                                cv_splits=3, random_state=0, n_replicas=2,tau=0.01)
-
+# model = KNeighborsClassifier()
+# k=3
+# importances_df, performance_df= evaluate_distributed_fs_cv2(X, y, k, model, dataset_name,measures=["Hostility", "N1", "kDN"],
+#                                 cv_splits=3, random_state=0, n_replicas=2,tau=0.01)
+#
 
 
 
@@ -1504,8 +1504,8 @@ def load_importances_per_fold(path_csv, measures=["kDN_importances_norm"]):
 
     return result
 
-path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-importances_dict = load_importances_per_fold(path_csv)
+# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+# importances_dict = load_importances_per_fold(path_csv)
 
 
 # Función para evaluar rendimiento metiendo variables modo forward siguiendo el ranking
