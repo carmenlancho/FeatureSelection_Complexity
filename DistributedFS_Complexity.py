@@ -1503,6 +1503,14 @@ def load_importances_per_fold(path_csv, measures=["kDN_importances_norm"]):
 
 # path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
 # importances_dict = load_importances_per_fold(path_csv)
+#
+# dfs = []
+# for fold, v in importances_dict.items():
+#     df = v["kDN_importances_norm"].copy()
+#     df["fold"] = fold
+#     dfs.append(df)
+#
+# importances_all = pd.concat(dfs, ignore_index=True)
 
 
 # Función para evaluar rendimiento metiendo variables modo forward siguiendo el ranking
@@ -1776,3 +1784,139 @@ def plot_incremental_performance(performance_df, importances_df, dataset, measur
 
 
 
+###########################################################################################
+####                   ESTUDIO CARACTERÍSTICAS DE LAS VARIABLES                        ####
+###########################################################################################
+# Hacemos un script que caracterice el tipo de variable para ver cómo nos va quedando el ranking
+
+
+# Función para extraer dependencias entre variables
+def extract_dependencies(formula):
+    """
+    Extrae todas las variables f### que aparecen en la fórmula.
+    """
+    return re.findall(r"f\d+", formula)
+
+# Diccionario  de dependeencias
+def build_dependencies(dict_info_feature):
+    deps = {}
+
+    # Fórmulas lineales
+    for var, formula in dict_info_feature["formulas_linear"].items():
+        deps[var] = extract_dependencies(formula)
+
+    # Fórmulas no lineales
+    for var, formula in dict_info_feature["formulas_nonlinear"].items():
+        deps[var] = extract_dependencies(formula)
+
+    return deps
+
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+dep2 = build_dependencies(dict_info_feature)
+
+
+# poner tipo de cada variable en formato diccionario
+def build_type_dict(dict_info_feature):
+    type_dict = {}
+
+    for v in dict_info_feature["informative"]:
+        type_dict[v] = "informative"
+
+    for v in dict_info_feature["noise"]:
+        type_dict[v] = "noise"
+
+    for v in dict_info_feature["redundant_linear"]:
+        type_dict[v] = "redundant_linear"
+
+    for v in dict_info_feature["redundant_nonlinear"]:
+        type_dict[v] = "redundant_nonlinear"
+
+    return type_dict
+
+type_dict2 = build_type_dict(dict_info_feature)
+
+
+
+def caracterize_features_ranking(ranking, type_dict, dependencies):
+    """
+    ranking: lista ordenada de variables según importancia
+    """
+    selected = set()
+    results = []
+
+    for var in ranking:
+        t = type_dict.get(var, "unknown")
+        deps = dependencies.get(var, [])
+
+        # Variable ruidosa
+        if t == "noise":
+            label = "noise"
+        # lineal o no lineal
+        elif t in ["redundant_linear", "redundant_nonlinear"]:
+            if all(d in selected for d in deps) and len(deps) > 0:
+                # Totalmente redundante
+                label = t  # redundant_linear o redundant_nonlinear
+            else:
+                # Aún aporta algo
+                label = "informative_derived"
+
+        # Informativa original
+        elif t == "informative":
+            # PERO puede ser redundante
+            # Si ya tenemos sus dependientes en selected
+            redundant_now = False
+            redundant_type = None
+            for dep_var, dep_sources in dependencies.items(): # dep_var es la que depende de la informativa
+                # si var participa en la formula
+                if var in dep_sources and dep_var in selected: # la dependiente se ha seleccionado
+
+                    # todas las otras fuentes necesarias para reconstruir var
+                    other_sources = set(dep_sources) - {var}
+
+                    # si TODAS ya están seleccionadas, la info de var está cubierta
+                    if other_sources.issubset(selected):
+                        redundant_now = True
+                        redundant_type = type_dict.get(dep_var, None)
+                        break
+
+            if redundant_now:
+                # convertimos informativa en redundante
+                if redundant_type == "redundant_linear":
+                    label = "informative_redundant_linear"
+                else:
+                    label = "informative_redundant_nonlinear"
+            else:
+                label = "informative"
+        # no sabemos
+        else:
+            label = "unknown"
+
+        results.append((var, label))
+        selected.add(var)
+
+    return results
+
+
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+dfs = []
+for fold, v in importances_dict.items():
+    df = v["kDN_importances_norm"].copy()
+    df["fold"] = fold
+    dfs.append(df)
+
+importances_all = pd.concat(dfs, ignore_index=True)
+
+
+ranking = importances_all.loc[importances_all.fold==1]
+dep2 = build_dependencies(dict_info_feature)
+type_dict2 = build_type_dict(dict_info_feature)
+results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
