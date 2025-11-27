@@ -1811,14 +1811,14 @@ def build_dependencies(dict_info_feature):
 
     return deps
 
-### Dataset 2
-dataset_name = 'ArtificialDataset2'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
-
-dep2 = build_dependencies(dict_info_feature)
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+# dep2 = build_dependencies(dict_info_feature)
 
 
 # poner tipo de cada variable en formato diccionario
@@ -1839,7 +1839,7 @@ def build_type_dict(dict_info_feature):
 
     return type_dict
 
-type_dict2 = build_type_dict(dict_info_feature)
+# type_dict2 = build_type_dict(dict_info_feature)
 
 
 
@@ -1904,22 +1904,6 @@ def caracterize_features_ranking(ranking, type_dict, dependencies):
 
 
 
-path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-importances_dict = load_importances_per_fold(path_csv)
-
-dfs = []
-for fold, v in importances_dict.items():
-    df = v["kDN_importances_norm"].copy()
-    df["fold"] = fold
-    dfs.append(df)
-
-importances_all = pd.concat(dfs, ignore_index=True)
-
-
-ranking = importances_all.loc[importances_all.fold==1]
-dep2 = build_dependencies(dict_info_feature)
-type_dict2 = build_type_dict(dict_info_feature)
-results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
 
 
 
@@ -1978,99 +1962,48 @@ def analyze_topk_with_labels(df_rankings, type_dict, dependencies, k_real, datas
 
     return summary, df_folds, unique_labels
 
-
-summary, df_folds, labels = analyze_topk_with_labels(
-    df_rankings=importances_all,
-    type_dict=type_dict2,
-    dependencies=dep2,
-    k_real=10)
-
-
-path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-importances_dict = load_importances_per_fold(path_csv)
-
-
-ranking = importances_all.loc[importances_all.fold==1]
-dep2 = build_dependencies(dict_info_feature)
-type_dict2 = build_type_dict(dict_info_feature)
-results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
-
-
-
-def position_distribution_boxviolin(rankings, labels_by_fold, max_pos=None, show_violin=True):
-    """
-    rankings: lista de listas → ranking por fold (list of variables)
-    labels_by_fold: lista paralela donde cada elemento es:
-        dict {var: label}  (o lista de (var,label) que será convertido a dict)
-    max_pos: máximo de posiciones a considerar (útil para rankings grandes)
-
-    Devuelve:
-        - df_pos: DataFrame con columnas ['variable','label','pos','fold']
-        - fig: figura matplotlib
-    """
-
-    records = []
-
-    for f_idx, ranking in enumerate(rankings):
-        lablist = labels_by_fold[f_idx]
-
-        # Convertir a diccionario si viene como lista de tuplas
-        if isinstance(lablist, dict):
-            label_dict = lablist
-        else:
-            label_dict = {v: l for v, l in lablist}
-
-        # recorrer ranking
-        for pos, var in enumerate(ranking, start=1):
-
-            if max_pos and pos > max_pos:
-                break
-
-            label = label_dict.get(var, "unknown")
-
-            records.append({
-                "variable": var,
-                "label": label,
-                "pos": pos,
-                "fold": f_idx + 1
-            })
-
-    df_pos = pd.DataFrame(records)
-
-    # ORDENAR  labels por mediana de su posición
-    order = df_pos.groupby("label")["pos"].median().sort_values().index.tolist()
-
-    # --------- Gráfico ----------
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    if show_violin:
-        sns.violinplot(
-            data=df_pos,
-            x="label",
-            y="pos",
-            order=order,
-            inner=None,
-            ax=ax
-        )
-
-    sns.boxplot(
-        data=df_pos,
-        x="label",
-        y="pos",
-        order=order,
-        width=0.2,
-        showcaps=True,
-        boxprops={'facecolor': 'none'},
-        ax=ax
-    )
-
-    ax.set_ylabel("Posición en el ranking (menor = mejor)")
-    ax.set_xlabel("Tipo de variable (label exacta)")
-    ax.set_title("Distribución de posiciones por tipo de variable (exact labels)")
-    plt.xticks(rotation=40)
-    plt.tight_layout()
-
-    return df_pos, fig
+#
+# summary, df_folds, labels = analyze_topk_with_labels(
+#     df_rankings=importances_all,
+#     type_dict=type_dict2,
+#     dependencies=dep2,
+#     k_real=10)
+#
+#
+# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+# importances_dict = load_importances_per_fold(path_csv)
+#
+#
+# importances_all = pd.concat(dfs, ignore_index=True)
+# ranking = importances_all.loc[importances_all.fold==1]
+# dep2 = build_dependencies(dict_info_feature)
+# type_dict2 = build_type_dict(dict_info_feature)
+# results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
+#
 
 
-
+# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+# importances_dict = load_importances_per_fold(path_csv)
+#
+# dfs = []
+# for fold, v in importances_dict.items():
+#     df = v["kDN_importances_norm"].copy()
+#     df["fold"] = fold
+#     dfs.append(df)
+#
+# importances_all = pd.concat(dfs, ignore_index=True)
+#
+#
+# ranking = importances_all.loc[importances_all.fold==1]
+# dep2 = build_dependencies(dict_info_feature)
+# type_dict2 = build_type_dict(dict_info_feature)
+# results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
+#
+#
+# summary, df_folds, labels = analyze_topk_with_labels(
+#     df_rankings=importances_all,
+#     type_dict=type_dict2,
+#     dependencies=dep2,
+#     k_real=10)
+#
+#
