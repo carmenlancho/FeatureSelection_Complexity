@@ -1920,3 +1920,157 @@ ranking = importances_all.loc[importances_all.fold==1]
 dep2 = build_dependencies(dict_info_feature)
 type_dict2 = build_type_dict(dict_info_feature)
 results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
+
+
+
+def analyze_topk_with_labels(df_rankings, type_dict, dependencies, k_real, dataset_name="dataset"):
+    """
+    df_rankings: dataframe con columnas:
+        - feature
+        - kDN_importances_norm
+        - fold
+
+    type_dict: {feature: tipo_base}
+    dependencies: {feature: [sources]}
+    k_real: nº real de variables informativas
+    """
+
+    all_folds = sorted(df_rankings["fold"].unique())
+    fold_results = []   # filas por fold
+    all_labels = []     # para saber qué etiquetas existen
+
+    for fold in all_folds:
+        df_fold = df_rankings[df_rankings["fold"] == fold]
+        df_sorted = df_fold.sort_values("kDN_importances_norm", ascending=False)
+
+        ranking = df_sorted["feature"].tolist()
+        labelled = caracterize_features_ranking(ranking, type_dict, dependencies)
+
+        # guardar todas las labels para conocer el universo
+        all_labels.extend([lab for _, lab in labelled])
+
+        # LIMITAR AL TOP-k
+        topk = labelled[:k_real]
+
+        # contaje
+        counts = {}
+        for _, lab in topk:
+            counts[lab] = counts.get(lab, 0) + 1
+
+        # normalizar a porcentajes
+        counts_pct = {f"pct_{lab}": counts.get(lab, 0) / k_real for lab in counts}
+
+        counts_pct["fold"] = fold
+        fold_results.append(counts_pct)
+
+    # dataframe por fold
+    df_folds = pd.DataFrame(fold_results).fillna(0)
+
+    # labels globales
+    unique_labels = sorted(set(all_labels))
+    pct_cols = [c for c in df_folds.columns if c.startswith("pct_")]
+
+    # resumen promedio por dataset
+    summary = df_folds[pct_cols].mean().to_frame().T
+    summary["dataset"] = dataset_name
+    summary["k_real"] = k_real
+
+
+    return summary, df_folds, unique_labels
+
+
+summary, df_folds, labels = analyze_topk_with_labels(
+    df_rankings=importances_all,
+    type_dict=type_dict2,
+    dependencies=dep2,
+    k_real=10)
+
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+
+ranking = importances_all.loc[importances_all.fold==1]
+dep2 = build_dependencies(dict_info_feature)
+type_dict2 = build_type_dict(dict_info_feature)
+results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
+
+
+
+def position_distribution_boxviolin(rankings, labels_by_fold, max_pos=None, show_violin=True):
+    """
+    rankings: lista de listas → ranking por fold (list of variables)
+    labels_by_fold: lista paralela donde cada elemento es:
+        dict {var: label}  (o lista de (var,label) que será convertido a dict)
+    max_pos: máximo de posiciones a considerar (útil para rankings grandes)
+
+    Devuelve:
+        - df_pos: DataFrame con columnas ['variable','label','pos','fold']
+        - fig: figura matplotlib
+    """
+
+    records = []
+
+    for f_idx, ranking in enumerate(rankings):
+        lablist = labels_by_fold[f_idx]
+
+        # Convertir a diccionario si viene como lista de tuplas
+        if isinstance(lablist, dict):
+            label_dict = lablist
+        else:
+            label_dict = {v: l for v, l in lablist}
+
+        # recorrer ranking
+        for pos, var in enumerate(ranking, start=1):
+
+            if max_pos and pos > max_pos:
+                break
+
+            label = label_dict.get(var, "unknown")
+
+            records.append({
+                "variable": var,
+                "label": label,
+                "pos": pos,
+                "fold": f_idx + 1
+            })
+
+    df_pos = pd.DataFrame(records)
+
+    # ORDENAR  labels por mediana de su posición
+    order = df_pos.groupby("label")["pos"].median().sort_values().index.tolist()
+
+    # --------- Gráfico ----------
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    if show_violin:
+        sns.violinplot(
+            data=df_pos,
+            x="label",
+            y="pos",
+            order=order,
+            inner=None,
+            ax=ax
+        )
+
+    sns.boxplot(
+        data=df_pos,
+        x="label",
+        y="pos",
+        order=order,
+        width=0.2,
+        showcaps=True,
+        boxprops={'facecolor': 'none'},
+        ax=ax
+    )
+
+    ax.set_ylabel("Posición en el ranking (menor = mejor)")
+    ax.set_xlabel("Tipo de variable (label exacta)")
+    ax.set_title("Distribución de posiciones por tipo de variable (exact labels)")
+    plt.xticks(rotation=40)
+    plt.tight_layout()
+
+    return df_pos, fig
+
+
+
