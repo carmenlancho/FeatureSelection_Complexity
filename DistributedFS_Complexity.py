@@ -1905,7 +1905,8 @@ def caracterize_features_ranking(ranking, type_dict, dependencies):
 
 
 
-
+# Con esta función contestamos a la pregunta: Cuál es la distribución de la tipología de variable
+# de las k primeras variables siguiendo elranking?
 
 def analyze_topk_with_labels(df_rankings, type_dict, dependencies, k_real, dataset_name="dataset"):
     """
@@ -2007,3 +2008,66 @@ def analyze_topk_with_labels(df_rankings, type_dict, dependencies, k_real, datas
 #     k_real=10)
 #
 #
+
+
+def analyze_position_distribution(df_rankings, type_dict, dependencies):
+    """
+    Devuelve:
+      - df_positions: DataFrame largo con columnas [feature, label, pos, fold]
+      - pos_by_type: diccionario con listas de posiciones por tipo, agregando todos los folds
+      - unique_labels: todas las etiquetas generadas por caracterize_features_ranking
+
+    df_rankings: DataFrame con columnas:
+        - feature
+        - kDN_importances_norm
+        - fold
+    """
+
+    all_folds = sorted(df_rankings["fold"].unique())
+    records = []
+    all_labels = []
+    pos_by_type = {}
+
+    for fold in all_folds:
+        df_fold = df_rankings[df_rankings["fold"] == fold]
+        df_sorted = df_fold.sort_values("kDN_importances_norm", ascending=False)
+
+        ranking = df_sorted["feature"].tolist()
+
+        # Clasificar usando tu función
+        labelled = caracterize_features_ranking(ranking, type_dict, dependencies)
+
+        for pos, (feat, label) in enumerate(labelled, start=1):
+            records.append({
+                "feature": feat,
+                "label": label,
+                "pos": pos,
+                "fold": fold
+            })
+            all_labels.append(label)
+
+            # Guardar posición por tipo
+            if label not in pos_by_type:
+                pos_by_type[label] = []
+            pos_by_type[label].append(pos)
+
+    df_positions = pd.DataFrame(records)
+    unique_labels = sorted(set(all_labels))
+
+    return df_positions, pos_by_type, unique_labels
+
+
+# df_positions, pos_by_type, labels = analyze_position_distribution(
+#     df_rankings=importances_all,
+#     type_dict=type_dict2,
+#     dependencies=dep2
+# )
+#
+#
+# plt.figure(figsize=(10,5))
+# sns.boxplot(data=df_positions, x="label", y="pos", width=0.2, boxprops={'facecolor':'none'})
+# plt.title("Distribución de posiciones por tipo de variable")
+# plt.ylabel("Posición en el ranking (menor = mejor)")
+# plt.xticks(rotation=25)
+# plt.tight_layout()
+# plt.show()
