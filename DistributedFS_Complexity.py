@@ -1105,11 +1105,11 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
         permanently_removed,permanently_fixed,results_complete)
 
 
-dataset_name = 'ArtificialDataset12'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
-                                         n_redundant_linear=30,n_redundant_nonlinear=30,
-                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-                                                     random_state=987,noise_std=0.5)
+# dataset_name = 'ArtificialDataset12'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
 
 
 # measures = ['kDN']
@@ -1461,6 +1461,109 @@ n_replicas = 100
 # run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
 #     measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
 #     tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+
+#### Dataset 18a
+dataset_name = 'ArtificialDataset18a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=50,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+#### Dataset 18b
+dataset_name = 'ArtificialDataset18b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=40,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 18c
+dataset_name = 'ArtificialDataset18c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+
+
+
+#### Dataset 20a
+dataset_name = 'ArtificialDataset20a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 20b
+dataset_name = 'ArtificialDataset20b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=60,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 20c
+dataset_name = 'ArtificialDataset20c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
+                                         n_redundant_linear=15,n_redundant_nonlinear=15,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 12a
+dataset_name = 'ArtificialDataset12a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=50,n_noise=45,
+                                         n_redundant_linear=45,n_redundant_nonlinear=45,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+#### Dataset 14a
+dataset_name = 'ArtificialDataset14a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=70,n_noise=60,
+                                         n_redundant_linear=50,n_redundant_nonlinear=60,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+
+run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
+    measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+    tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+
+
+
+
 
 
 
