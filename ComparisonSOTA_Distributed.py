@@ -1100,13 +1100,174 @@ models = {
 # summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
 #
 
+#
+#
+# #### Dataset 18a
+# dataset_name = 'ArtificialDataset18a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=50,n_noise=30,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+# #### Dataset 18b
+# dataset_name = 'ArtificialDataset18b'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=40,n_noise=20,
+#                                          n_redundant_linear=20,n_redundant_nonlinear=20,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+#
+# #### Dataset 18c
+# dataset_name = 'ArtificialDataset18c'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=20,n_noise=10,
+#                                          n_redundant_linear=10,n_redundant_nonlinear=10,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+#
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+#
+# #### Dataset 20a
+# dataset_name = 'ArtificialDataset20a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+# #### Dataset 20b
+# dataset_name = 'ArtificialDataset20b'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=60,n_noise=20,
+#                                          n_redundant_linear=20,n_redundant_nonlinear=20,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
+#
+#
+# #### Dataset 20c
+# dataset_name = 'ArtificialDataset20c'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
+#                                          n_redundant_linear=15,n_redundant_nonlinear=15,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+#
+# feature_names = X.columns.tolist()
+#
+# # Construir subconjuntos
+# feature_types = {}
+# for f in dict_info_feature["informative"]: feature_types[f] = "informative"
+# for f in dict_info_feature["noise"]: feature_types[f] = "noise"
+# for f in dict_info_feature["redundant_linear"]: feature_types[f] = "redundant_linear"
+# for f in dict_info_feature["redundant_nonlinear"]: feature_types[f] = "redundant_nonlinear"
+# feature_names = X.columns.tolist()
+# fs_list = None
+#
+# subsets = build_subsets(feature_names, feature_types)
+#
+#
+# df_perf = evaluate_subsets_cv(X, y,subsets=subsets,models=models,dataset_name=dataset_name,
+#     n_splits=5,random_state=0)
+# summarize_subset_results(df_perf, save_csv=True, name_data=dataset_name, path_to_save="Results_Subsets_Artificial_CV")
+#
 
 
 
 
-
-
-####### AQUÍ ME QUEDO
 
 
 import glob
@@ -1369,3 +1530,6 @@ df_all_order = df_all_order.sort_values(by=["dataset", "model", "method"]).reset
 
 out_path = 'Results_ComparisonDistributed_SOTA'
 df_all_order.to_csv(f'{out_path}/AllArtificialDatasets_ComparisonTable_CV_neg_high.csv', index=False)
+# df_all_order.to_csv(f'{out_path}/AllArtificialDatasets_ComparisonTable_CV_neg_high_DatasetVersions.csv', index=False)
+# este cuando ejecutamos los resultados para distintas versiones de los datasets 18 y 20 para ver
+# si los resultados se deben a la complejidad o al métod que estamos construyendo
