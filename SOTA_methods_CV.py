@@ -497,6 +497,76 @@ k = len(dict_info_feature["informative"])  # nº de variables informativas
 run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
 
 
+# # Distintas versiones de los mismos datos para ver si, donde fallamos, fallamos porque los datos son difíciles o por otra cosa
+
+#### Dataset 18a
+dataset_name = 'ArtificialDataset18a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=50,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+#### Dataset 18b
+dataset_name = 'ArtificialDataset18b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=40,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+#### Dataset 18c
+dataset_name = 'ArtificialDataset18c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+
+#### Dataset 20a
+dataset_name = 'ArtificialDataset20a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+
+#### Dataset 20b
+dataset_name = 'ArtificialDataset20b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=60,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+
+
+#### Dataset 20c
+dataset_name = 'ArtificialDataset20c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
+                                         n_redundant_linear=15,n_redundant_nonlinear=15,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+k = len(dict_info_feature["informative"])  # nº de variables informativas
+run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
 
 
 
