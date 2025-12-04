@@ -236,99 +236,99 @@ def generate_synthetic_dataset(n_samples, n_informative, n_noise,n_redundant_lin
 
 
 
-
-# n_replicas = 5
-# m_vars = 5
-def distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=False, path='Results_FS_Distributed'):
-
-    np.random.seed(random_state)
-    random.seed(random_state)
-
-    # Filtro previo opcional de eliminación de variables con correelación > corr_th
-    if filter_corr:
-        corr = X.corr(method=corr_method).abs()
-        upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
-        to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
-        if len(to_drop) > 0:
-            X = X.drop(columns=to_drop)
-
-
-    variables = X.columns.tolist()
-    importances = {m: pd.Series(0.0, index=variables) for m in measures} # diccionario para cada complexity measure
-    importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}  # diccionario para cada complexity measure
-    count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
-
-
-    # rep = 0
-    for rep in range(n_replicas):
-        # print(rep)
-        m_vars = int(m_vars)
-        subset_vars = random.choices(variables, k=m_vars)  # sampling WITH replacement
-        Xsub = X[subset_vars]
-
-        # Multivariate complexity
-        datos = pd.DataFrame(Xsub)
-        datos['y'] = y
-        _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
-        base_complexity = df_classes.loc['dataset',measures]
-
-        current_vars = subset_vars.copy()
-        while len(current_vars) > 1: # hasta que nos quedemos sin vars
-            # Conteo de variables participantes
-            count_vars[current_vars] += 1
-
-            # elegir variable a quitar randomly
-            to_remove = random.choice(current_vars)
-
-            current_vars.remove(to_remove)
-            Xtemp = X[current_vars]
-
-            # Complexity removing one variable from previous subset
-            datos_temp = pd.DataFrame(Xtemp)
-            datos_temp['y'] = y
-            _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
-            new_complexity = df_classes_temp.loc['dataset',measures]
-
-            # Cambio de complejidad
-            delta = new_complexity - base_complexity # mee interesan diferencias positivas, es decir,
-            # quitar la variable aumenta la complejidad, luego la variable es útil
-            # Las diferencias negativas me dicen que esa variable aumentaba la complejidad, luego no la quiero
-            for m in measures:
-                importances[m][to_remove] += delta[m]
-
-            # Actualizamos base_complexity para próximo paso
-            base_complexity = new_complexity
-            # Conteo de variables participantes
-            count_vars[current_vars] += 1
-
-    # Normalizamos importancias
-    count_vars = count_vars.replace(0, np.nan) # para no tener problemas con los 0 en la división
-    for m in measures:
-        # importances[m] = importances[m] / n_replicas # esta opción no la veo justa
-        importances_norm[m] = importances[m] / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
-        importances_norm[m].sort_values(ascending=False, inplace=True)
-
-    results_norm = pd.DataFrame.from_dict(importances_norm)
-    results_norm = results_norm.add_suffix('_importances_norm')
-    results = pd.DataFrame.from_dict(importances)
-    results = results.add_suffix('_importances')
-    results_count = pd.DataFrame.from_dict(count_vars)
-    results_count.columns = ['count_vars']
-    results_complete = pd.concat([results, results_norm, results_count], axis=1)
-
-    if filter_corr: # aclaramos las que se hayan quitado por correlación
-        results_complete = results_complete.reindex(results_complete.index.union(to_drop))
-        results_complete.loc[to_drop,:] = np.nan
-
-    if save_csv:
-        name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed.csv"
-        results_complete.to_csv(name_csv, index=True)
-
-
-    return importances_norm, importances, count_vars, results_complete
+#
+# # n_replicas = 5
+# # m_vars = 5
+# def distributed_variable_selection_complexity_random(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=False, path='Results_FS_Distributed'):
+#
+#     np.random.seed(random_state)
+#     random.seed(random_state)
+#
+#     # Filtro previo opcional de eliminación de variables con correelación > corr_th
+#     if filter_corr:
+#         corr = X.corr(method=corr_method).abs()
+#         upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+#         to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
+#         if len(to_drop) > 0:
+#             X = X.drop(columns=to_drop)
+#
+#
+#     variables = X.columns.tolist()
+#     importances = {m: pd.Series(0.0, index=variables) for m in measures} # diccionario para cada complexity measure
+#     importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}  # diccionario para cada complexity measure
+#     count_vars = pd.Series(0.0, index=variables) # cuántas veces aparece cada var para normalización
+#
+#
+#     # rep = 0
+#     for rep in range(n_replicas):
+#         # print(rep)
+#         m_vars = int(m_vars)
+#         subset_vars = random.choices(variables, k=m_vars)  # sampling WITH replacement
+#         Xsub = X[subset_vars]
+#
+#         # Multivariate complexity
+#         datos = pd.DataFrame(Xsub)
+#         datos['y'] = y
+#         _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+#         base_complexity = df_classes.loc['dataset',measures]
+#
+#         current_vars = subset_vars.copy()
+#         while len(current_vars) > 1: # hasta que nos quedemos sin vars
+#             # Conteo de variables participantes
+#             count_vars[current_vars] += 1
+#
+#             # elegir variable a quitar randomly
+#             to_remove = random.choice(current_vars)
+#
+#             current_vars.remove(to_remove)
+#             Xtemp = X[current_vars]
+#
+#             # Complexity removing one variable from previous subset
+#             datos_temp = pd.DataFrame(Xtemp)
+#             datos_temp['y'] = y
+#             _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+#             new_complexity = df_classes_temp.loc['dataset',measures]
+#
+#             # Cambio de complejidad
+#             delta = new_complexity - base_complexity # mee interesan diferencias positivas, es decir,
+#             # quitar la variable aumenta la complejidad, luego la variable es útil
+#             # Las diferencias negativas me dicen que esa variable aumentaba la complejidad, luego no la quiero
+#             for m in measures:
+#                 importances[m][to_remove] += delta[m]
+#
+#             # Actualizamos base_complexity para próximo paso
+#             base_complexity = new_complexity
+#             # Conteo de variables participantes
+#             count_vars[current_vars] += 1
+#
+#     # Normalizamos importancias
+#     count_vars = count_vars.replace(0, np.nan) # para no tener problemas con los 0 en la división
+#     for m in measures:
+#         # importances[m] = importances[m] / n_replicas # esta opción no la veo justa
+#         importances_norm[m] = importances[m] / count_vars # por probabilidad, con n_replicas grande, deben ser similares estos números
+#         importances_norm[m].sort_values(ascending=False, inplace=True)
+#
+#     results_norm = pd.DataFrame.from_dict(importances_norm)
+#     results_norm = results_norm.add_suffix('_importances_norm')
+#     results = pd.DataFrame.from_dict(importances)
+#     results = results.add_suffix('_importances')
+#     results_count = pd.DataFrame.from_dict(count_vars)
+#     results_count.columns = ['count_vars']
+#     results_complete = pd.concat([results, results_norm, results_count], axis=1)
+#
+#     if filter_corr: # aclaramos las que se hayan quitado por correlación
+#         results_complete = results_complete.reindex(results_complete.index.union(to_drop))
+#         results_complete.loc[to_drop,:] = np.nan
+#
+#     if save_csv:
+#         name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed.csv"
+#         results_complete.to_csv(name_csv, index=True)
+#
+#
+#     return importances_norm, importances, count_vars, results_complete
 
 # n_replicas = 200
 # ### Dataset 2
@@ -353,118 +353,118 @@ def distributed_variable_selection_complexity_random(X, y, dataset_name, n_repli
 ## Una primera selección de datos es: 2,3,7,8,10,11,12,14,16,17,18,19,20,21
 
 
-
-
-def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
-                                   measures=["Hostility", "N1", "kDN"],
-                                   filter_corr=True, corr_th=0.9, corr_method="pearson",
-                                   random_state=0, save_csv=False, path='Results_FS_Distributed'):
-    np.random.seed(random_state)
-    random.seed(random_state)
-
-    # Filtro correlación
-    if filter_corr:
-        corr = X.corr(method=corr_method).abs()
-        upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
-        to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
-        X = X.drop(columns=to_drop)
-
-    variables = X.columns.tolist()
-
-    # Dicts para guardar
-    importances = {m: pd.Series(0.0, index=variables) for m in measures}
-    importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}
-    count_vars = pd.Series(0.0, index=variables)
-    removed_vars = {m: pd.Series(0.0, index=variables) for m in measures} # las que quitamos por negativas
-
-    # Cada medida tiene su propio conjunto de variables activas
-    active_vars = {m: set(variables) for m in measures}
-    permanently_removed = {m: set() for m in measures}
-
-    # Main loop
-    # rep=0
-    for rep in range(n_replicas):
-        # m_vars = int(m_vars)
-
-        # m = 'Hostility'
-        for m in measures:
-            print(m)
-            # # Si ya se eliminaron todas las variables, saltamos
-            # if len(active_vars[m]) < 2:
-            #     continue
-            available_vars = list(active_vars[m] - permanently_removed[m])
-            print(available_vars)
-            # p = len(available_vars)
-            m_vars = int(np.floor(np.sqrt(p)))
-            subset_vars = random.sample(available_vars, k=m_vars) # sin remplazamiento
-            Xsub = X[subset_vars]
-
-            datos = pd.DataFrame(Xsub)
-            datos['y'] = y
-            _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
-            base_complexity = df_classes.loc['dataset', m]
-
-            current_vars = subset_vars.copy()
-            while len(current_vars) > 1:
-                # print('Current vars')
-                # print(current_vars)
-                count_vars[current_vars] += 1
-                to_remove = random.choice(current_vars)
-                current_vars.remove(to_remove)
-
-                Xtemp = X[current_vars]
-                datos_temp = pd.DataFrame(Xtemp)
-                datos_temp['y'] = y
-                _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
-                new_complexity = df_classes_temp.loc['dataset', m]
-
-                # cambio de complejidad
-                delta = new_complexity - base_complexity
-
-                importances[m][to_remove] += delta
-                # print(delta)
-
-                # Si la complejidad baja (delta < 0), eliminamos la variable de las opciones de esta medida
-                if delta < -1e-3: # le ponemos un margen de tolerancia
-                    active_vars[m].remove(to_remove)
-                    permanently_removed[m].add(to_remove)
-                    removed_vars[m][to_remove] += 1
-                    # print(delta)
-                    # print(to_remove)
-
-
-                base_complexity = new_complexity
-                count_vars[current_vars] += 1
-
-    # Normalizamos aparición variables (POR PENSAR SERIAMNTE)
-    count_vars = count_vars.replace(0, np.nan)
-    for m in measures:
-        importances_norm[m] = importances[m] / count_vars
-        importances_norm[m].sort_values(ascending=False, inplace=True)
-
-    # Formato resultados
-    results_norm = pd.DataFrame.from_dict(importances_norm)
-    results_norm = results_norm.add_suffix('_importances_norm')
-
-    results = pd.DataFrame.from_dict(importances)
-    results = results.add_suffix('_importances')
-
-    results_count = pd.DataFrame(count_vars, columns=['count_vars'])
-
-    removed_df = pd.DataFrame.from_dict(removed_vars)
-    removed_df = removed_df.add_suffix('_removed_count')
-
-    results_complete = pd.concat([results, results_norm, results_count, removed_df], axis=1)
-
-    if filter_corr: # aclaramos las que se hayan quitado por correlación
-        results_complete = results_complete.reindex(results_complete.index.union(to_drop))
-        results_complete.loc[to_drop, :] = np.nan
-
-    if save_csv:
-        name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed_NegOut.csv"
-        results_complete.to_csv(name_csv, index=True)
-
-    return importances_norm, importances, count_vars, removed_vars, results_complete
+#
+#
+# def distributed_complexity_random_neg_out(X, y, dataset_name, n_replicas, m_vars,
+#                                    measures=["Hostility", "N1", "kDN"],
+#                                    filter_corr=True, corr_th=0.9, corr_method="pearson",
+#                                    random_state=0, save_csv=False, path='Results_FS_Distributed'):
+#     np.random.seed(random_state)
+#     random.seed(random_state)
+#
+#     # Filtro correlación
+#     if filter_corr:
+#         corr = X.corr(method=corr_method).abs()
+#         upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+#         to_drop = [col for col in upper.columns if any(upper[col] > corr_th)]
+#         X = X.drop(columns=to_drop)
+#
+#     variables = X.columns.tolist()
+#
+#     # Dicts para guardar
+#     importances = {m: pd.Series(0.0, index=variables) for m in measures}
+#     importances_norm = {m: pd.Series(0.0, index=variables) for m in measures}
+#     count_vars = pd.Series(0.0, index=variables)
+#     removed_vars = {m: pd.Series(0.0, index=variables) for m in measures} # las que quitamos por negativas
+#
+#     # Cada medida tiene su propio conjunto de variables activas
+#     active_vars = {m: set(variables) for m in measures}
+#     permanently_removed = {m: set() for m in measures}
+#
+#     # Main loop
+#     # rep=0
+#     for rep in range(n_replicas):
+#         # m_vars = int(m_vars)
+#
+#         # m = 'Hostility'
+#         for m in measures:
+#             print(m)
+#             # # Si ya se eliminaron todas las variables, saltamos
+#             # if len(active_vars[m]) < 2:
+#             #     continue
+#             available_vars = list(active_vars[m] - permanently_removed[m])
+#             print(available_vars)
+#             # p = len(available_vars)
+#             m_vars = int(np.floor(np.sqrt(p)))
+#             subset_vars = random.sample(available_vars, k=m_vars) # sin remplazamiento
+#             Xsub = X[subset_vars]
+#
+#             datos = pd.DataFrame(Xsub)
+#             datos['y'] = y
+#             _, df_classes, _ = all_measures_FS(datos, save_csv=False, path_to_save=None, name_data=None)
+#             base_complexity = df_classes.loc['dataset', m]
+#
+#             current_vars = subset_vars.copy()
+#             while len(current_vars) > 1:
+#                 # print('Current vars')
+#                 # print(current_vars)
+#                 count_vars[current_vars] += 1
+#                 to_remove = random.choice(current_vars)
+#                 current_vars.remove(to_remove)
+#
+#                 Xtemp = X[current_vars]
+#                 datos_temp = pd.DataFrame(Xtemp)
+#                 datos_temp['y'] = y
+#                 _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+#                 new_complexity = df_classes_temp.loc['dataset', m]
+#
+#                 # cambio de complejidad
+#                 delta = new_complexity - base_complexity
+#
+#                 importances[m][to_remove] += delta
+#                 # print(delta)
+#
+#                 # Si la complejidad baja (delta < 0), eliminamos la variable de las opciones de esta medida
+#                 if delta < -1e-3: # le ponemos un margen de tolerancia
+#                     active_vars[m].remove(to_remove)
+#                     permanently_removed[m].add(to_remove)
+#                     removed_vars[m][to_remove] += 1
+#                     # print(delta)
+#                     # print(to_remove)
+#
+#
+#                 base_complexity = new_complexity
+#                 count_vars[current_vars] += 1
+#
+#     # Normalizamos aparición variables (POR PENSAR SERIAMNTE)
+#     count_vars = count_vars.replace(0, np.nan)
+#     for m in measures:
+#         importances_norm[m] = importances[m] / count_vars
+#         importances_norm[m].sort_values(ascending=False, inplace=True)
+#
+#     # Formato resultados
+#     results_norm = pd.DataFrame.from_dict(importances_norm)
+#     results_norm = results_norm.add_suffix('_importances_norm')
+#
+#     results = pd.DataFrame.from_dict(importances)
+#     results = results.add_suffix('_importances')
+#
+#     results_count = pd.DataFrame(count_vars, columns=['count_vars'])
+#
+#     removed_df = pd.DataFrame.from_dict(removed_vars)
+#     removed_df = removed_df.add_suffix('_removed_count')
+#
+#     results_complete = pd.concat([results, results_norm, results_count, removed_df], axis=1)
+#
+#     if filter_corr: # aclaramos las que se hayan quitado por correlación
+#         results_complete = results_complete.reindex(results_complete.index.union(to_drop))
+#         results_complete.loc[to_drop, :] = np.nan
+#
+#     if save_csv:
+#         name_csv = f"{path}/{dataset_name}_ComplexityRandomDistributed_NegOut.csv"
+#         results_complete.to_csv(name_csv, index=True)
+#
+#     return importances_norm, importances, count_vars, removed_vars, results_complete
 
 #
 #
