@@ -1788,6 +1788,128 @@ models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset21_OutHigh_EvolutivePerformance.csv',index=False)
 
 
+
+
+# # Distintas versiones de los mismos datos para ver si, donde fallamos, fallamos porque los datos son difíciles o por otra cosa
+
+#### Dataset 18a
+dataset_name = 'ArtificialDataset18a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=50,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18a_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18a_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+#### Dataset 18b
+dataset_name = 'ArtificialDataset18b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=40,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18b_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18b_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+
+#### Dataset 18c
+dataset_name = 'ArtificialDataset18c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18c_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18c_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+
+#### Dataset 20a
+dataset_name = 'ArtificialDataset20a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20a_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20a_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 20b
+dataset_name = 'ArtificialDataset20b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=60,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20b_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20b_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 20c
+dataset_name = 'ArtificialDataset20c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
+                                         n_redundant_linear=15,n_redundant_nonlinear=15,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20c_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+importances_dict = load_importances_per_fold(path_csv)
+
+perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20c_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+#
+# #### Dataset 12a
+# dataset_name = 'ArtificialDataset12a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=50,n_noise=45,
+#                                          n_redundant_linear=45,n_redundant_nonlinear=45,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
+#
+
+#
+#
+# #### Dataset 14a
+# dataset_name = 'ArtificialDataset14a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=70,n_noise=60,
+#                                          n_redundant_linear=50,n_redundant_nonlinear=60,
+#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+#                                                      random_state=95,noise_std=0.5)
+#
+
+
+
+
+
+
+
+
+
 ###3 Plot de performance evolutiva
 def plot_incremental_performance(performance_df, importances_df, dataset, measure="acc_test"):
     """
