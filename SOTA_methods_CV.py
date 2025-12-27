@@ -945,4 +945,19 @@ performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_me
 performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_EvolutivePerformance.csv',index=False)
 
 
+#### ESTO FALTA POR PONER
+# #### Dataset 12a
+# dataset_name = 'ArtificialDataset12a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=50,n_noise=45,
+#                                          n_redundant_linear=45,n_redundant_nonlinear=45,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
+#
+#
+# #### Dataset 14a
+# dataset_name = 'ArtificialDataset14a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=70,n_noise=60,
+#                                          n_redundant_linear=50,n_redundant_nonlinear=60,
+#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+#                                                      random_state=95,noise_std=0.5)
 
