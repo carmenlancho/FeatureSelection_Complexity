@@ -694,22 +694,22 @@ rankings = load_all_filter_rankings_from_csv(
     methods=methods,filter_corr=True)
 
 
-
-#### Dataset 20c
-dataset_name = 'ArtificialDataset20c'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
-                                         n_redundant_linear=15,n_redundant_nonlinear=15,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=4556,noise_std=0.5)
-
-rankings = load_all_filter_rankings_from_csv(
-    csv_path="Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_CV_FeatureImportance_Folds.csv",
-    methods=methods,filter_corr=True)
-
-performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
-                                                        models=models,dataset_name="ArtificialDataset20c",cv_splits=5)
-performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_EvolutivePerformance.csv',index=False)
-
+#
+# #### Dataset 20c
+# dataset_name = 'ArtificialDataset20c'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
+#                                          n_redundant_linear=15,n_redundant_nonlinear=15,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+#
+# rankings = load_all_filter_rankings_from_csv(
+#     csv_path="Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_CV_FeatureImportance_Folds.csv",
+#     methods=methods,filter_corr=True)
+#
+# performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+#                                                         models=models,dataset_name="ArtificialDataset20c",cv_splits=5)
+# performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_EvolutivePerformance.csv',index=False)
+#
 
 
 
