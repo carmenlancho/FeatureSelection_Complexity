@@ -499,30 +499,30 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 
 # # Distintas versiones de los mismos datos para ver si, donde fallamos, fallamos porque los datos son difíciles o por otra cosa
 
+####################################################################################################################################
+# #### Dataset 12a
+# dataset_name = 'ArtificialDataset12a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=50,n_noise=45,
+#                                          n_redundant_linear=45,n_redundant_nonlinear=45,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
+#
+# k = len(dict_info_feature["informative"])  # nº de variables informativas
+# run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
+#
+#
+#
+# #### Dataset 14a
+# dataset_name = 'ArtificialDataset14a'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=70,n_noise=60,
+#                                          n_redundant_linear=50,n_redundant_nonlinear=60,
+#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+#                                                      random_state=95,noise_std=0.5)
+#
+# k = len(dict_info_feature["informative"])  # nº de variables informativas
+# run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
 
-#### Dataset 12a
-dataset_name = 'ArtificialDataset12a'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=50,n_noise=45,
-                                         n_redundant_linear=45,n_redundant_nonlinear=45,
-                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-                                                     random_state=987,noise_std=0.5)
-
-k = len(dict_info_feature["informative"])  # nº de variables informativas
-run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
-
-
-
-#### Dataset 14a
-dataset_name = 'ArtificialDataset14a'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=70,n_noise=60,
-                                         n_redundant_linear=50,n_redundant_nonlinear=60,
-                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
-                                                     random_state=95,noise_std=0.5)
-
-k = len(dict_info_feature["informative"])  # nº de variables informativas
-run_evaluate_sota_fs_multiple_models(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
-
-
+####################################################################################################################################
 
 #
 #
@@ -683,16 +683,16 @@ def evaluate_incremental_k_all_methods(X, y,rankings_all_methods,models,dataset_
 
 methods = ["mutual_info", "f_classif", "rf", "relief", "xgboost"]
 
-rankings = load_all_filter_rankings_from_csv(
-    csv_path="Results_FS_SOTA_CV/ArtificialDataset2_SOTA_CV_FeatureImportance_Folds.csv",
-    methods=methods,
-    filter_corr=True
-)
-
 models = {
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
     "KNN": KNeighborsClassifier()
 }
+
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset2_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
 
 
 #### Dataset 20c
@@ -702,18 +702,247 @@ X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative
                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
                                                      random_state=4556,noise_std=0.5)
 
-k = len(dict_info_feature["informative"])  # nº de variables informativas
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
 
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset20c",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+
+
+
+### Dataset 2
+dataset_name = 'ArtificialDataset2'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+                                         n_redundant_linear=4,n_redundant_nonlinear=2,
+                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+                                                     random_state=0,noise_std=0.01)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset2_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset2",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset2_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+
+
+
+#### Dataset 7
+dataset_name = 'ArtificialDataset7'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+                                                     random_state=589,noise_std=0.05)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset7_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset7",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset7_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+
+#### Dataset 12
+dataset_name = 'ArtificialDataset12'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+                                                     random_state=987,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset12_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset12",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset12_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+
+
+#### Dataset 14
+dataset_name = 'ArtificialDataset14'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+                                         n_redundant_linear=30,n_redundant_nonlinear=40,
+                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+                                                     random_state=95,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset14_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset14",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset14_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+
+#### Dataset 18
+dataset_name = 'ArtificialDataset18'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset18_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset18",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset18_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+
+#### Dataset 20
+dataset_name = 'ArtificialDataset20'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+                                         n_redundant_linear=60,n_redundant_nonlinear=60,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset20_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset20",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 21
+dataset_name = 'ArtificialDataset21'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
+                                         n_redundant_linear=100,n_redundant_nonlinear=100,
+                                        flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
+                                                     random_state=996,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset21_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
 
 performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
                                                         models=models,dataset_name="ArtificialDataset21",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset21_SOTA_EvolutivePerformance.csv',index=False)
 
 
 
+#### Dataset 18a
+dataset_name = 'ArtificialDataset18a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=50,n_noise=30,
+                                         n_redundant_linear=30,n_redundant_nonlinear=30,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset18a_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset18a",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset18a_SOTA_EvolutivePerformance.csv',index=False)
 
 
 
+#### Dataset 18b
+dataset_name = 'ArtificialDataset18b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=40,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
 
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset18b_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset18b",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset18b_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 18c
+dataset_name = 'ArtificialDataset18c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=20,n_noise=10,
+                                         n_redundant_linear=10,n_redundant_nonlinear=10,
+                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+                                                     random_state=9462,noise_std=0.5)
+
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset18c_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset18c",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset18c_SOTA_EvolutivePerformance.csv',index=False)
+
+
+#### Dataset 20a
+dataset_name = 'ArtificialDataset20a'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=40,
+                                         n_redundant_linear=40,n_redundant_nonlinear=40,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset20a_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset20a",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20a_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 20b
+dataset_name = 'ArtificialDataset20b'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=60,n_noise=20,
+                                         n_redundant_linear=20,n_redundant_nonlinear=20,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset20b_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset20b",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20b_SOTA_EvolutivePerformance.csv',index=False)
+
+
+
+#### Dataset 20c
+dataset_name = 'ArtificialDataset20c'
+X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
+                                         n_redundant_linear=15,n_redundant_nonlinear=15,
+                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+                                                     random_state=4556,noise_std=0.5)
+
+
+rankings = load_all_filter_rankings_from_csv(
+    csv_path="Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_CV_FeatureImportance_Folds.csv",
+    methods=methods,filter_corr=True)
+
+performance_filters = evaluate_incremental_k_all_methods(X=X,y=y,rankings_all_methods=rankings,
+                                                        models=models,dataset_name="ArtificialDataset20c",cv_splits=5)
+performance_filters.to_csv('Results_FS_SOTA_CV/ArtificialDataset20c_SOTA_EvolutivePerformance.csv',index=False)
 
 
 
