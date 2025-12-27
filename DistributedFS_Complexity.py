@@ -1584,7 +1584,7 @@ def load_importances_per_fold(path_csv, measures=["kDN_importances_norm"]):
     """
     df = pd.read_csv(path_csv)
 
-    df = df.loc[df.model == 'KNN',:]
+    df = df.loc[df.model == 'KNN',:] # aquí los modelos no interactuan, realmente esa columna sobra en los csvs
 
     result = {}
 
