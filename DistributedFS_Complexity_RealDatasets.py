@@ -585,6 +585,7 @@ def format_labels(y):
     return y.to_numpy()
 
 for file in list_datasets:
+    os.chdir("datasets")
     df = pd.read_csv(file)
     y = format_labels(df['y'])
     cols = df.drop('y', axis=1).columns
@@ -594,6 +595,7 @@ for file in list_datasets:
     X = pd.DataFrame(X)
     X.columns = cols
     dataset_name = file.split(".")[0]
+    print(dataset_name)
     n_replicas = 250
 
     run_distributed_cv_multiple_models2_real(X, y, dataset_name, models_dict,
