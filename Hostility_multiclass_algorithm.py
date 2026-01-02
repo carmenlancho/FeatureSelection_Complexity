@@ -135,7 +135,7 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
             else:  # all except first k-means (which points are in new clusters)
                 data2 = pd.DataFrame(X_aux)
                 data2[col_now] = labels_bomb1
-                data_clusters[col_now] = np.zeros(n)
+                data_clusters[col_now] = np.zeros(n, dtype=int)
 
                 for j in range(k):
                     values_together = data2.index[data2[col_now] == j].tolist()
