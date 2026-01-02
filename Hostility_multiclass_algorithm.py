@@ -112,8 +112,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
         for k in k_list:
 
             kmeds = KMeans(n_clusters=k, n_init=15, random_state=seed).fit(X_aux)
-            print(k)
-            print(X_aux.shape)
+            # print(k)
+            # print(X_aux.shape)
             labels_bomb1 = kmeds.labels_
 
             col_now = 'cluster_' + str(h) # for the data_clusters dataframe
