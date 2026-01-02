@@ -128,6 +128,9 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
                     for t in list_classes:
                         prob_bomb1[((y == t) & (labels_bomb1 == i))] = table_percen_df.loc[t, i]
                         df_bomb1[(labels_bomb1 == i)] = table_percen_df.loc[:, i]
+                        print("Clusters en labels:", np.unique(labels_bomb1))
+                        print("Columnas tabla:", table_percen_df.columns.tolist())
+
 
             else:  # all except first k-means (which points are in new clusters)
                 data2 = pd.DataFrame(X_aux)
@@ -147,6 +150,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
                     for t in list_classes:
                         prob_bomb1[((y == t) & (data_clusters[col_now] == i))] = table_percen_df.loc[t, i]
                         df_bomb1[(data_clusters[col_now] == i)] = table_percen_df.loc[:, i]
+                        print("Clusters en labels:", np.unique(labels_bomb1))
+                        print("Columnas tabla:", table_percen_df.columns.tolist())
 
             # For all cases
             df_bomb += df_bomb1
