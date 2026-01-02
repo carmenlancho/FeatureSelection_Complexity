@@ -104,7 +104,10 @@ def all_measures_FS(data,save_csv,path_to_save, name_data):
     host_instance, data_clusters, results, results_per_class, probs_per_layer, k_auto = hostility_measure_multiclass(
         sigma, X, y, k_min, seed=0)
     host_instances = np.array(host_instance[k_auto])
-    class_data_host = results.loc[k_auto]['Host_0':'Dataset_Host']
+    # class_data_host = results.loc[k_auto]['Host_0':'Dataset_Host']
+    host_cols = [c for c in results.columns if c.startswith('Host_')]
+    class_data_host = results.loc[k_auto, host_cols + ['Dataset_Host']]
+
     df_class_data_host = pd.DataFrame(class_data_host)
     df_class_data_host.columns = [name_data]
     extra_results_host = {'results_per_class':results_per_class, 'probs_per_layer':probs_per_layer, 'k_auto':k_auto.item()}
