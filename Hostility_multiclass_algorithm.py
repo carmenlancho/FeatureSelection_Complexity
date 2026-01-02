@@ -126,7 +126,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
 
                 prob_bomb1 = np.zeros(len(X))
                 df_bomb1 = pd.DataFrame(columns = list_classes, index = data_clusters.index)
-                for i in np.unique(labels_bomb1):
+                # for i in np.unique(labels_bomb1): # para cuando dice Number of distinct clusters (373) found smaller than n_clusters (1055). Possibly due to duplicate points in X
+                for i in table_percen_df.columns:
                     for t in list_classes:
                         prob_bomb1[((y == t) & (labels_bomb1 == i))] = table_percen_df.loc[t, i]
                         df_bomb1[(labels_bomb1 == i)] = table_percen_df.loc[:, i]
@@ -148,7 +149,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
                 table_percen_df = pd.DataFrame(table_percen)
                 prob_bomb1 = np.zeros(len(X))
                 df_bomb1 = pd.DataFrame(columns=list_classes, index=data_clusters.index)
-                for i in np.unique(labels_bomb1):
+                # for i in np.unique(labels_bomb1):
+                for i in table_percen_df.columns:
                     for t in list_classes:
                         prob_bomb1[((y == t) & (data_clusters[col_now] == i))] = table_percen_df.loc[t, i]
                         df_bomb1[(data_clusters[col_now] == i)] = table_percen_df.loc[:, i]
