@@ -206,8 +206,8 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
                 datos_temp = pd.DataFrame(Xtemp)
                 datos_temp['y'] = y
                 _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
-                print(df_classes_temp)
-                print(current_vars)
+                # print(df_classes_temp)
+                # print(current_vars)
                 new_complexity = df_classes_temp.loc['dataset', m]
 
                 # cambio de complejidad
@@ -560,7 +560,8 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # for file in glob.glob("*.csv"):
 #     print(file)
 # file = 'ionosphere.csv'
-list_datasets = ['ionosphere.csv','wdbc.csv','musk2.csv','parkinsons.csv',
+list_datasets = [#'ionosphere.csv','wdbc.csv',
+                 'musk2.csv','parkinsons.csv',
                  'ozone.csv','sonar.csv','spambase.csv',
                  'Colon.csv','arcene_train.csv','gisette_train.csv']
 
