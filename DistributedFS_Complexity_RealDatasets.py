@@ -168,7 +168,7 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
     # Bucle principal
     for rep in range(n_replicas):
         for m in measures:
-            # print(f"[{m}] Réplica {rep + 1}/{n_replicas}")
+            print(f"[{m}] Réplica {rep + 1}/{n_replicas}")
 
 
             # Variables disponibles (ni eliminadas ni fijadas)
@@ -206,6 +206,8 @@ def distributed_complexity_random_neg_out_high_fixed(X, y, dataset_name, n_repli
                 datos_temp = pd.DataFrame(Xtemp)
                 datos_temp['y'] = y
                 _, df_classes_temp, _ = all_measures_FS(datos_temp, save_csv=False, path_to_save=None, name_data=None)
+                print(df_classes_temp)
+                print(current_vars)
                 new_complexity = df_classes_temp.loc['dataset', m]
 
                 # cambio de complejidad
@@ -540,10 +542,10 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # n_replicas = 100
 # ### Dataset 2
 # dataset_name = 'ArtificialDataset2'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
 #
 # run_distributed_cv_multiple_models2(X, y, dict_info_feature, dataset_name, models_dict,
 #     measures=["kDN"],cv_splits=5, n_replicas=200, random_state=0,
@@ -584,9 +586,13 @@ def format_labels(y):
 
     return y.to_numpy()
 
+path2 = "datasets"
 for file in list_datasets:
-    os.chdir("datasets")
-    df = pd.read_csv(file)
+    # os.makedirs(path2, exist_ok=True)
+    read_csv = f"{path2}/{file}"
+    df = pd.read_csv(read_csv)
+    # print(df)
+    print(read_csv)
     y = format_labels(df['y'])
     cols = df.drop('y', axis=1).columns
     X = df.drop('y', axis=1)
