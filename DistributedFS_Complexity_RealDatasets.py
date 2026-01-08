@@ -560,10 +560,12 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # for file in glob.glob("*.csv"):
 #     print(file)
 # file = 'ionosphere.csv'
-list_datasets = [#'ionosphere.csv','wdbc.csv',
-                 'musk2.csv','parkinsons.csv',
-                 'ozone.csv','sonar.csv','spambase.csv',
-                 'Colon.csv','arcene_train.csv','gisette_train.csv']
+list_datasets = ['spambase.csv']#,'ionosphere.csv', 'sonar.csv',
+                # 'parkinsons.csv']
+                # 'wdbc.csv',
+                #  'musk2.csv','parkinsons.csv',
+                #  'ozone.csv','sonar.csv','spambase.csv',
+                #  'Colon.csv','arcene_train.csv','gisette_train.csv']
 
 def format_labels(y):
     """
