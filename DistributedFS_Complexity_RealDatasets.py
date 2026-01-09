@@ -589,27 +589,27 @@ def format_labels(y):
 
     return y.to_numpy()
 
-path2 = "datasets"
-for file in list_datasets:
-    # os.makedirs(path2, exist_ok=True)
-    read_csv = f"{path2}/{file}"
-    df = pd.read_csv(read_csv)
-    # print(df)
-    print(read_csv)
-    y = format_labels(df['y'])
-    cols = df.drop('y', axis=1).columns
-    X = df.drop('y', axis=1)
-    X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
-    # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
-    X = pd.DataFrame(X)
-    X.columns = cols
-    dataset_name = file.split(".")[0]
-    print(dataset_name)
-    n_replicas = 250
-
-    run_distributed_cv_multiple_models2_real(X, y, dataset_name, models_dict,
-        measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
-        tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+# path2 = "datasets"
+# for file in list_datasets:
+#     # os.makedirs(path2, exist_ok=True)
+#     read_csv = f"{path2}/{file}"
+#     df = pd.read_csv(read_csv)
+#     # print(df)
+#     print(read_csv)
+#     y = format_labels(df['y'])
+#     cols = df.drop('y', axis=1).columns
+#     X = df.drop('y', axis=1)
+#     X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
+#     # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
+#     X = pd.DataFrame(X)
+#     X.columns = cols
+#     dataset_name = file.split(".")[0]
+#     print(dataset_name)
+#     n_replicas = 250
+#
+#     run_distributed_cv_multiple_models2_real(X, y, dataset_name, models_dict,
+#         measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+#         tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
 
@@ -725,228 +725,48 @@ models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
     }
 
 
-#
-# ### Dataset 2
-# dataset_name = 'ArtificialDataset2'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-#                                                      random_state=0,noise_std=0.01)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# # perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset2_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-# #### Dataset 7
-# dataset_name = 'ArtificialDataset7'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
-#                                          n_redundant_linear=10,n_redundant_nonlinear=10,
-#                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
-#                                                      random_state=589,noise_std=0.05)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset7_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset7_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-#
-#
-#
-# #### Dataset 12
-# dataset_name = 'ArtificialDataset12'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
-#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
-#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-#                                                      random_state=987,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset12_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset12_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-#
-# #### Dataset 14
-# dataset_name = 'ArtificialDataset14'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
-#                                          n_redundant_linear=30,n_redundant_nonlinear=40,
-#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
-#                                                      random_state=95,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset14_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset14_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-# #### Dataset 18
-# dataset_name = 'ArtificialDataset18'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
-#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
-#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-#                                                      random_state=9462,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-# #### Dataset 20
-# dataset_name = 'ArtificialDataset20'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
-#                                          n_redundant_linear=60,n_redundant_nonlinear=60,
-#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-#                                                      random_state=4556,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20_OutHigh_EvolutivePerformance.csv',index=False)
-#
 
-## ESTEE FALTA
-# #### Dataset 21
-# dataset_name = 'ArtificialDataset21'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=300,n_noise=100,
-#                                          n_redundant_linear=100,n_redundant_nonlinear=100,
-#                                         flip_y=0.1, class_sep=0.7, n_clusters_per_class=2, weights=[0.4],
-#                                         random_state=996,noise_std=0.5)
-#
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset21_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset21_OutHigh_EvolutivePerformance.csv',index=False)
+
+
+# os.chdir("datasets")
+# for file in glob.glob("*.csv"):
+#     print(file)
+# file = 'ionosphere.csv'
+list_datasets = ['spambase.csv']#,'ionosphere.csv', 'sonar.csv', 'spambase.csv'
+                # 'parkinsons.csv']
+                # 'wdbc.csv',
+                #  'musk2.csv','parkinsons.csv',
+                #  'ozone.csv','sonar.csv','spambase.csv',
+                #  'Colon.csv','arcene_train.csv','gisette_train.csv']
 
 
 
 
-# # Distintas versiones de los mismos datos para ver si, donde fallamos, fallamos porque los datos son difíciles o por otra cosa
-#
-# #### Dataset 18a
-# dataset_name = 'ArtificialDataset18a'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=50,n_noise=30,
-#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
-#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-#                                                      random_state=9462,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18a_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18a_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-# #### Dataset 18b
-# dataset_name = 'ArtificialDataset18b'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=40,n_noise=20,
-#                                          n_redundant_linear=20,n_redundant_nonlinear=20,
-#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-#                                                      random_state=9462,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18b_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18b_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-#
-# #### Dataset 18c
-# dataset_name = 'ArtificialDataset18c'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=20,n_noise=10,
-#                                          n_redundant_linear=10,n_redundant_nonlinear=10,
-#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-#                                                      random_state=9462,noise_std=0.5)
-#
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset18c_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset18c_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-#
-# #### Dataset 20a
-# dataset_name = 'ArtificialDataset20a'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=150,n_noise=40,
-#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
-#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-#                                                      random_state=4556,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20a_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20a_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-# #### Dataset 20b
-# dataset_name = 'ArtificialDataset20b'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=60,n_noise=20,
-#                                          n_redundant_linear=20,n_redundant_nonlinear=20,
-#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-#                                                      random_state=4556,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20b_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20b_OutHigh_EvolutivePerformance.csv',index=False)
-#
-#
-#
-# #### Dataset 20c
-# dataset_name = 'ArtificialDataset20c'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=30,n_noise=15,
-#                                          n_redundant_linear=15,n_redundant_nonlinear=15,
-#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-#                                                      random_state=4556,noise_std=0.5)
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset20c_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-# perf_final.to_csv('Results_FS_Distributed_CV/ArtificialDataset20c_OutHigh_EvolutivePerformance.csv',index=False)
+
+path2 = "datasets"
+for file in list_datasets:
+    # os.makedirs(path2, exist_ok=True)
+    read_csv = f"{path2}/{file}"
+    df = pd.read_csv(read_csv)
+    # print(df)
+    print(read_csv)
+    y = format_labels(df['y'])
+    cols = df.drop('y', axis=1).columns
+    X = df.drop('y', axis=1)
+    X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
+    # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
+    X = pd.DataFrame(X)
+    X.columns = cols
+    dataset_name = file.split(".")[0]
+    print(dataset_name)
+    path_csv = 'Results_FS_Distributed_CV/'+str(dataset_name)+'_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+    importances_dict = load_importances_per_fold(path_csv)
+
+    name_csv = 'Results_FS_Distributed_CV/'+str(dataset_name)+'_OutHigh_EvolutivePerformance.csv'
+    perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+    perf_final.to_csv(name_csv,index=False)
 
 
-#
-# #### Dataset 12a
-# dataset_name = 'ArtificialDataset12a'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=50,n_noise=45,
-#                                          n_redundant_linear=45,n_redundant_nonlinear=45,
-#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-#                                                      random_state=987,noise_std=0.5)
-#
-
-#
-#
-# #### Dataset 14a
-# dataset_name = 'ArtificialDataset14a'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=70,n_noise=60,
-#                                          n_redundant_linear=50,n_redundant_nonlinear=60,
-#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
-#                                                      random_state=95,noise_std=0.5)
-#
 
 
 
@@ -1054,291 +874,3 @@ def plot_incremental_performance(performance_df, importances_df, dataset, measur
 
 
 
-
-###########################################################################################
-####                   ESTUDIO CARACTERÍSTICAS DE LAS VARIABLES                        ####
-###########################################################################################
-# Hacemos un script que caracterice el tipo de variable para ver cómo nos va quedando el ranking
-
-
-# Función para extraer dependencias entre variables
-def extract_dependencies(formula):
-    """
-    Extrae todas las variables f### que aparecen en la fórmula.
-    """
-    return re.findall(r"f\d+", formula)
-
-# Diccionario  de dependeencias
-def build_dependencies(dict_info_feature):
-    deps = {}
-
-    # Fórmulas lineales
-    for var, formula in dict_info_feature["formulas_linear"].items():
-        deps[var] = extract_dependencies(formula)
-
-    # Fórmulas no lineales
-    for var, formula in dict_info_feature["formulas_nonlinear"].items():
-        deps[var] = extract_dependencies(formula)
-
-    return deps
-
-# ### Dataset 2
-# dataset_name = 'ArtificialDataset2'
-# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
-#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-#                                                      random_state=0,noise_std=0.01)
-#
-# dep2 = build_dependencies(dict_info_feature)
-
-
-# poner tipo de cada variable en formato diccionario
-def build_type_dict(dict_info_feature):
-    type_dict = {}
-
-    for v in dict_info_feature["informative"]:
-        type_dict[v] = "informative"
-
-    for v in dict_info_feature["noise"]:
-        type_dict[v] = "noise"
-
-    for v in dict_info_feature["redundant_linear"]:
-        type_dict[v] = "redundant_linear"
-
-    for v in dict_info_feature["redundant_nonlinear"]:
-        type_dict[v] = "redundant_nonlinear"
-
-    return type_dict
-
-# type_dict2 = build_type_dict(dict_info_feature)
-
-
-
-def caracterize_features_ranking(ranking, type_dict, dependencies):
-    """
-    ranking: lista ordenada de variables según importancia
-    """
-    selected = set()
-    results = []
-
-    for var in ranking:
-        t = type_dict.get(var, "unknown")
-        deps = dependencies.get(var, [])
-
-        # Variable ruidosa
-        if t == "noise":
-            label = "noise"
-        # lineal o no lineal
-        elif t in ["redundant_linear", "redundant_nonlinear"]:
-            if all(d in selected for d in deps) and len(deps) > 0:
-                # Totalmente redundante
-                label = t  # redundant_linear o redundant_nonlinear
-            else:
-                # Aún aporta algo
-                label = "informative_derived"
-
-        # Informativa original
-        elif t == "informative":
-            # PERO puede ser redundante
-            # Si ya tenemos sus dependientes en selected
-            redundant_now = False
-            redundant_type = None
-            for dep_var, dep_sources in dependencies.items(): # dep_var es la que depende de la informativa
-                # si var participa en la formula
-                if var in dep_sources and dep_var in selected: # la dependiente se ha seleccionado
-
-                    # todas las otras fuentes necesarias para reconstruir var
-                    other_sources = set(dep_sources) - {var}
-
-                    # si TODAS ya están seleccionadas, la info de var está cubierta
-                    if other_sources.issubset(selected):
-                        redundant_now = True
-                        redundant_type = type_dict.get(dep_var, None)
-                        break
-
-            if redundant_now:
-                # convertimos informativa en redundante
-                if redundant_type == "redundant_linear":
-                    label = "informative_redundant_linear"
-                else:
-                    label = "informative_redundant_nonlinear"
-            else:
-                label = "informative"
-        # no sabemos
-        else:
-            label = "unknown"
-
-        results.append((var, label))
-        selected.add(var)
-
-    return results
-
-
-
-
-# Con esta función contestamos a la pregunta: Cuál es la distribución de la tipología de variable
-# de las k primeras variables siguiendo elranking?
-
-def analyze_topk_with_labels(df_rankings, type_dict, dependencies, k_real, dataset_name="dataset"):
-    """
-    df_rankings: dataframe con columnas:
-        - feature
-        - kDN_importances_norm
-        - fold
-
-    type_dict: {feature: tipo_base}
-    dependencies: {feature: [sources]}
-    k_real: nº real de variables informativas
-    """
-
-    all_folds = sorted(df_rankings["fold"].unique())
-    fold_results = []   # filas por fold
-    all_labels = []     # para saber qué etiquetas existen
-
-    for fold in all_folds:
-        df_fold = df_rankings[df_rankings["fold"] == fold]
-        df_sorted = df_fold.sort_values("kDN_importances_norm", ascending=False)
-
-        ranking = df_sorted["feature"].tolist()
-        labelled = caracterize_features_ranking(ranking, type_dict, dependencies)
-
-        # guardar todas las labels para conocer el universo
-        all_labels.extend([lab for _, lab in labelled])
-
-        # LIMITAR AL TOP-k
-        topk = labelled[:k_real]
-
-        # contaje
-        counts = {}
-        for _, lab in topk:
-            counts[lab] = counts.get(lab, 0) + 1
-
-        # normalizar a porcentajes
-        counts_pct = {f"pct_{lab}": counts.get(lab, 0) / k_real for lab in counts}
-
-        counts_pct["fold"] = fold
-        fold_results.append(counts_pct)
-
-    # dataframe por fold
-    df_folds = pd.DataFrame(fold_results).fillna(0)
-
-    # labels globales
-    unique_labels = sorted(set(all_labels))
-    pct_cols = [c for c in df_folds.columns if c.startswith("pct_")]
-
-    # resumen promedio por dataset
-    summary = df_folds[pct_cols].mean().to_frame().T
-    summary["dataset"] = dataset_name
-    summary["k_real"] = k_real
-
-
-    return summary, df_folds, unique_labels
-
-#
-# summary, df_folds, labels = analyze_topk_with_labels(
-#     df_rankings=importances_all,
-#     type_dict=type_dict2,
-#     dependencies=dep2,
-#     k_real=10)
-#
-#
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-#
-# importances_all = pd.concat(dfs, ignore_index=True)
-# ranking = importances_all.loc[importances_all.fold==1]
-# dep2 = build_dependencies(dict_info_feature)
-# type_dict2 = build_type_dict(dict_info_feature)
-# results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
-#
-
-
-# path_csv = 'Results_FS_Distributed_CV/ArtificialDataset2_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
-# importances_dict = load_importances_per_fold(path_csv)
-#
-# dfs = []
-# for fold, v in importances_dict.items():
-#     df = v["kDN_importances_norm"].copy()
-#     df["fold"] = fold
-#     dfs.append(df)
-#
-# importances_all = pd.concat(dfs, ignore_index=True)
-#
-#
-# ranking = importances_all.loc[importances_all.fold==1]
-# dep2 = build_dependencies(dict_info_feature)
-# type_dict2 = build_type_dict(dict_info_feature)
-# results = caracterize_features_ranking(ranking['feature'], type_dict2, dep2)
-#
-#
-# summary, df_folds, labels = analyze_topk_with_labels(
-#     df_rankings=importances_all,
-#     type_dict=type_dict2,
-#     dependencies=dep2,
-#     k_real=10)
-#
-#
-
-
-def analyze_position_distribution(df_rankings, type_dict, dependencies):
-    """
-    Devuelve:
-      - df_positions: DataFrame largo con columnas [feature, label, pos, fold]
-      - pos_by_type: diccionario con listas de posiciones por tipo, agregando todos los folds
-      - unique_labels: todas las etiquetas generadas por caracterize_features_ranking
-
-    df_rankings: DataFrame con columnas:
-        - feature
-        - kDN_importances_norm
-        - fold
-    """
-
-    all_folds = sorted(df_rankings["fold"].unique())
-    records = []
-    all_labels = []
-    pos_by_type = {}
-
-    for fold in all_folds:
-        df_fold = df_rankings[df_rankings["fold"] == fold]
-        df_sorted = df_fold.sort_values("kDN_importances_norm", ascending=False)
-
-        ranking = df_sorted["feature"].tolist()
-
-        # Clasificar usando tu función
-        labelled = caracterize_features_ranking(ranking, type_dict, dependencies)
-
-        for pos, (feat, label) in enumerate(labelled, start=1):
-            records.append({
-                "feature": feat,
-                "label": label,
-                "pos": pos,
-                "fold": fold
-            })
-            all_labels.append(label)
-
-            # Guardar posición por tipo
-            if label not in pos_by_type:
-                pos_by_type[label] = []
-            pos_by_type[label].append(pos)
-
-    df_positions = pd.DataFrame(records)
-    unique_labels = sorted(set(all_labels))
-
-    return df_positions, pos_by_type, unique_labels
-
-
-# df_positions, pos_by_type, labels = analyze_position_distribution(
-#     df_rankings=importances_all,
-#     type_dict=type_dict2,
-#     dependencies=dep2
-# )
-#
-#
-# plt.figure(figsize=(10,5))
-# sns.boxplot(data=df_positions, x="label", y="pos", width=0.2, boxprops={'facecolor':'none'})
-# plt.title("Distribución de posiciones por tipo de variable")
-# plt.ylabel("Posición en el ranking (menor = mejor)")
-# plt.xticks(rotation=25)
-# plt.tight_layout()
-# plt.show()
