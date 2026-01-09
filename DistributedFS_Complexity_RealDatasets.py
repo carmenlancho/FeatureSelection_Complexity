@@ -767,16 +767,6 @@ for file in list_datasets:
     # perf_final.to_csv(name_csv,index=False)
 
 
-
-
-
-
-
-
-
-
-
-###3 Plot de performance evolutiva
 def plot_incremental_performance(performance_df, importances_df, dataset, measure="acc_test"):
     """
     measure = 'acc_test' o 'gps_test'
@@ -853,6 +843,28 @@ def plot_incremental_performance(performance_df, importances_df, dataset, measur
     plt.tight_layout()
     plt.legend()
     plt.show()
+
+
+
+
+# path_csv = 'Results_FS_Distributed_CV/ionosphere_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
+# importances_dict = load_importances_per_fold(path_csv)
+# importances_all = pd.concat([v["kDN_importances_norm"] for v in importances_dict.values()],ignore_index=True)
+#
+# dfs = []
+# for fold, v in importances_dict.items():
+#     df = v["kDN_importances_norm"].copy()
+#     df["fold"] = fold
+#     dfs.append(df)
+#
+# importances_all = pd.concat(dfs, ignore_index=True)
+# perf = pd.read_csv('Results_FS_Distributed_CV/ionosphere_OutHigh_EvolutivePerformance.csv')
+#
+# plot_incremental_performance(perf, importances_all,dataset="ionosphere",measure="acc_test")
+#
+
+
+
 
 
 # importances_dict = load_importances_per_fold(path_csv)
