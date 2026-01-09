@@ -762,9 +762,9 @@ for file in list_datasets:
     path_csv = 'Results_FS_Distributed_CV/'+str(dataset_name)+'_DistributedCVRandom_OutHigh_FeatureImportance_Folds.csv'
     importances_dict = load_importances_per_fold(path_csv)
 
-    name_csv = 'Results_FS_Distributed_CV/'+str(dataset_name)+'_OutHigh_EvolutivePerformance.csv'
-    perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
-    perf_final.to_csv(name_csv,index=False)
+    # name_csv = 'Results_FS_Distributed_CV/'+str(dataset_name)+'_OutHigh_EvolutivePerformance.csv'
+    # perf_final = evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_splits=5, random_state=0)
+    # perf_final.to_csv(name_csv,index=False)
 
 
 
