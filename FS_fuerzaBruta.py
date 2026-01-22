@@ -1,14 +1,15 @@
 import numpy as np
 import pandas as pd
+import os
 from itertools import combinations
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.base import clone
-from tqdm import tqdm  # Barra de progreso
+from tqdm import tqdm # barra de progreso
 from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
+from joblib import Parallel, delayed
 
 
 
@@ -142,47 +143,142 @@ def brute_force_evaluation(X, y, models_dict, k_folds=5, verbose=True):
 
 
 
-list_datasets = ['parkinsons2.csv']#,'ionosphere.csv', 'sonar.csv', 'spambase.csv'
-                # 'spambase.csv']
-                # 'wdbc.csv',
-                #  'musk2.csv','parkinsons.csv',
-                #  'ozone.csv','sonar.csv','spambase.csv',
-                #  'Colon.csv','arcene_train.csv','gisette_train.csv']
+############################ VERSION PARALELIZADA ##########################################3
+
+def evaluate_single_combination(features_subset, X_values, y, models_dict, skf):
+    """
+    Función que será ejecutada por cada núcleo para una combinación específica.
+    """
+    local_results = []
+    # Bucle por Modelo
+    for model_name, model_instance in models_dict.items():
+        fold_idx = 1
+        # Bucle por Folds
+        for train_index, test_index in skf.split(X_values, y):
+            X_train, X_test = X_values[train_index], X_values[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+
+            clf = clone(model_instance)
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test)
+
+            local_results.append({
+                'model': model_name,
+                'n_features': len(features_subset),
+                'feature_set': str(tuple(features_subset)),
+                'fold': fold_idx,
+                'accuracy': accuracy_score(y_test, y_pred),
+                'gps': compute_gps(y_test, y_pred)
+            })
+            fold_idx += 1
+    return local_results
+
+def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
+    features = X.columns.tolist()
+    n_features = len(features)
+    skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=42)
+
+    # --- Configuración de núcleos ---
+    total_cores = os.cpu_count()
+    use_cores = max(1, total_cores // 2)  # Usar la mitad
+    if verbose:
+        print(f"Servidor detectado: {total_cores} núcleos. Usando: {use_cores}")
+
+    # Generar todas las combinaciones primero
+    all_combos = []
+    for r in range(1, n_features + 1):
+        for combo in combinations(features, r):
+            all_combos.append(list(combo))
+
+    # Ejecución paralela
+    # delayed envuelve la función para que no se ejecute inmediatamente
+    results_nested = Parallel(n_jobs=use_cores)(
+        delayed(evaluate_single_combination)(
+            combo, X[combo].values, y, models_dict, skf
+        ) for combo in tqdm(all_combos, disable=not verbose, desc="Evaluando combinaciones")
+    )
+
+    # Aplanar la lista de listas de resultados
+    flattened_results = [item for sublist in results_nested for item in sublist]
+    return pd.DataFrame(flattened_results)
 
 
-# Modelos a probar
-models = {  # "LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
-    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    # "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier()
-    # "NaiveBayes": GaussianNB(),
-    # "DecisionTree": DecisionTreeClassifier(random_state=0),
-    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
-}
+# --- Bloque de ejecución principal ---
+if __name__ == "__main__":
+    list_datasets = ['parkinsons2.csv']
+    models = {
+        "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+        "KNN": KNeighborsClassifier()
+    }
 
-path2 = "datasets"
-for file in list_datasets:
-    # os.makedirs(path2, exist_ok=True)
-    read_csv = f"{path2}/{file}"
-    df = pd.read_csv(read_csv)
-    # print(df)
-    print(read_csv)
-    y = format_labels(df['y'])
-    cols = df.drop('y', axis=1).columns
-    X = df.drop('y', axis=1)
-    X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
-    # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
-    X = pd.DataFrame(X)
-    X.columns = cols
-    dataset_name = file.split(".")[0]
-    print(dataset_name)
-    feature_names = X.columns
-    df_resultados_raw = brute_force_evaluation(X, y, models, k_folds=5)
-    name_csv = 'Results_FS_bruto/Results_FS_bruto_'+str(dataset_name)+'.csv'
-    df_resultados_raw.to_csv(name_csv,index=False)
+    path2 = "datasets"
+    # os.makedirs('Results_FS_bruto', exist_ok=True)
+
+    for file in list_datasets:
+        read_csv = f"{path2}/{file}"
+
+        df = pd.read_csv(read_csv)
+        y = format_labels(df['y'])
+        X_raw = df.drop('y', axis=1)
+        cols = X_raw.columns
+
+        # Escalado
+        X_scaled = StandardScaler().fit_transform(X_raw)
+        X = pd.DataFrame(X_scaled, columns=cols)
+
+        dataset_name = file.split(".")[0]
+        print(f"\nProcesando: {dataset_name}")
+
+        df_resultados_raw = brute_force_evaluation_parallel(X, y, models, k_folds=5)
+
+        name_csv = f'Results_FS_bruto/Results_FS_bruto_{dataset_name}.csv'
+        df_resultados_raw.to_csv(name_csv, index=False)
+        print(f"Guardado en: {name_csv}")
 
 
+###################### ESTO ES TOTALMENTE SECUENCIAL #######################################
+
+# list_datasets = ['parkinsons2.csv']#,'ionosphere.csv', 'sonar.csv', 'spambase.csv'
+#                 # 'spambase.csv']
+#                 # 'wdbc.csv',
+#                 #  'musk2.csv','parkinsons.csv',
+#                 #  'ozone.csv','sonar.csv','spambase.csv',
+#                 #  'Colon.csv','arcene_train.csv','gisette_train.csv']
+#
+#
+# # Modelos a probar
+# models = {  # "LogReg": LogisticRegression(max_iter=1000, random_state=0),
+#     # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+#     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+#     # "RandomForest": RandomForestClassifier(random_state=0),
+#     "KNN": KNeighborsClassifier()
+#     # "NaiveBayes": GaussianNB(),
+#     # "DecisionTree": DecisionTreeClassifier(random_state=0),
+#     # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+# }
+#
+# path2 = "datasets"
+# for file in list_datasets:
+#     # os.makedirs(path2, exist_ok=True)
+#     read_csv = f"{path2}/{file}"
+#     df = pd.read_csv(read_csv)
+#     # print(df)
+#     print(read_csv)
+#     y = format_labels(df['y'])
+#     cols = df.drop('y', axis=1).columns
+#     X = df.drop('y', axis=1)
+#     X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
+#     # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
+#     X = pd.DataFrame(X)
+#     X.columns = cols
+#     dataset_name = file.split(".")[0]
+#     print(dataset_name)
+#     feature_names = X.columns
+#     df_resultados_raw = brute_force_evaluation(X, y, models, k_folds=5)
+#     name_csv = 'Results_FS_bruto/Results_FS_bruto_'+str(dataset_name)+'.csv'
+#     df_resultados_raw.to_csv(name_csv,index=False)
+#
+#
 
 
 
