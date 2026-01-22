@@ -1,3 +1,8 @@
+## 22/01/2026
+## Con los datasets artificiales ya hemos visto que las medidas de complejidad detectan cuáles son las variables
+## realmente informativas. Ahora vamos a hacer una pequeña evaluación con datos reales.
+## Para ello, hacemos FS por fuerza bruta, es decir, calculamos la performance con todos los subocnjuntos posibles de variables
+
 import numpy as np
 import pandas as pd
 import os
