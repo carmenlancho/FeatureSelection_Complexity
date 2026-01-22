@@ -205,7 +205,7 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 
 # --- Bloque de ejecución principal ---
 if __name__ == "__main__":
-    list_datasets = ['parkinsons2.csv']
+    list_datasets = ['parkinsons.csv','ionosphere.csv','spambase.csv','wdbc.csv','sonar.csv']
     models = {
         "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
         "KNN": KNeighborsClassifier()
