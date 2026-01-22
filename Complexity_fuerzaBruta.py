@@ -75,7 +75,7 @@ def complexity_brute_force_parallel(X, y, verbose=True):
 if __name__ == "__main__":
     list_datasets = ['parkinsons2.csv']
     path2 = "datasets"
-    output_folder = 'Results_Complexity_Bruto'
+    output_folder = 'Results_FS_Bruto'
     os.makedirs(output_folder, exist_ok=True)
 
     for file in list_datasets:
