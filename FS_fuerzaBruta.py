@@ -185,7 +185,7 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 
     # --- Configuración de núcleos ---
     total_cores = os.cpu_count()
-    use_cores = max(1, (total_cores // 2)-3)
+    use_cores = max(1, (total_cores -1))
     if verbose:
         print(f"Servidor detectado: {total_cores} núcleos. Usando: {use_cores}")
 
