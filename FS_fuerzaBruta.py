@@ -185,7 +185,7 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 
     # --- Configuración de núcleos ---
     total_cores = os.cpu_count()
-    use_cores = max(1, total_cores // 2)  # Usar la mitad
+    use_cores = max(1, 3*total_cores // 4)  # Usar 3/4
     if verbose:
         print(f"Servidor detectado: {total_cores} núcleos. Usando: {use_cores}")
 
@@ -210,7 +210,7 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 
 # --- Bloque de ejecución principal ---
 if __name__ == "__main__":
-    list_datasets = ['parkinsons.csv','ionosphere.csv','spambase.csv','wdbc.csv','sonar.csv']
+    list_datasets = ['ionosphere.csv','spambase.csv','wdbc.csv','sonar.csv'] # 'parkinsons.csv',
     models = {
         "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
         "KNN": KNeighborsClassifier()
