@@ -212,7 +212,7 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 if __name__ == "__main__":
     list_datasets = [#'Australian.csv','bands.csv','credit-g.csv',
                      'plasma_retinol.csv',
-                     'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv',
+                     'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
                      'sylvine.csv','ring.csv','pyrim.csv'] # 'parkinsons.csv', # 'wdbc.csv','ionosphere.csv','spambase.csv','sonar.csv'
     models = {
         "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
