@@ -76,34 +76,34 @@ def complexity_brute_force_parallel(X, y, verbose=True):
     return pd.DataFrame(results)
 
 
-if __name__ == "__main__":
-    list_datasets = ['parkinsons2.csv']
-    path2 = "datasets"
-    output_folder = 'Results_FS_bruto'
-    os.makedirs(output_folder, exist_ok=True)
-
-    for file in list_datasets:
-        read_csv = f"{path2}/{file}"
-
-        df = pd.read_csv(read_csv)
-        y = df['y'].values
-        X_raw = df.drop('y', axis=1)
-        cols = X_raw.columns
-
-        # Escalado estándar (recomendado para medidas como L1, F3, etc.)
-        X_scaled = StandardScaler().fit_transform(X_raw)
-        X = pd.DataFrame(X_scaled, columns=cols)
-
-        dataset_name = file.split(".")[0]
-        print(f"\nAnalizando dataset: {dataset_name}")
-
-        # Ejecutar proceso
-        df_final = complexity_brute_force_parallel(X, y)
-
-        # Guardar resultados
-        name_csv = f'{output_folder}/ComplexityBruto_{dataset_name}.csv'
-        df_final.to_csv(name_csv, index=False)
-        print(f"Resultados guardados en: {name_csv}")
+# if __name__ == "__main__":
+#     list_datasets = ['parkinsons2.csv']
+#     path2 = "datasets"
+#     output_folder = 'Results_FS_bruto'
+#     os.makedirs(output_folder, exist_ok=True)
+#
+#     for file in list_datasets:
+#         read_csv = f"{path2}/{file}"
+#
+#         df = pd.read_csv(read_csv)
+#         y = df['y'].values
+#         X_raw = df.drop('y', axis=1)
+#         cols = X_raw.columns
+#
+#         # Escalado estándar (recomendado para medidas como L1, F3, etc.)
+#         X_scaled = StandardScaler().fit_transform(X_raw)
+#         X = pd.DataFrame(X_scaled, columns=cols)
+#
+#         dataset_name = file.split(".")[0]
+#         print(f"\nAnalizando dataset: {dataset_name}")
+#
+#         # Ejecutar proceso
+#         df_final = complexity_brute_force_parallel(X, y)
+#
+#         # Guardar resultados
+#         name_csv = f'{output_folder}/ComplexityBruto_{dataset_name}.csv'
+#         df_final.to_csv(name_csv, index=False)
+#         print(f"Resultados guardados en: {name_csv}")
 
 
 ####################################################################################################
@@ -185,7 +185,10 @@ def complexity_brute_force_parallel(X, y, k_folds=5, verbose=True):
 
 if __name__ == "__main__":
 
-    list_datasets = ['parkinsons2.csv']
+    list_datasets = ['Australian.csv','bands.csv','credit-g.csv',
+                     'plasma_retinol.csv',
+                     'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
+                     'sylvine.csv','ring.csv','pyrim.csv']
     path2 = "datasets"
     output_folder = 'Results_FS_bruto'
     os.makedirs(output_folder, exist_ok=True)
