@@ -149,10 +149,10 @@ def univariate_instance_complexity(X, y, measure):
 
     return pd.concat(comp_matrix, axis=1)
 
-C_kdn = univariate_instance_complexity(X, y, "kDN")
-
-corr_spearman = C_kdn.corr(method="spearman")
-corr_pearson  = C_kdn.corr(method="pearson")
+# C_kdn = univariate_instance_complexity(X, y, "kDN")
+#
+# corr_spearman = C_kdn.corr(method="spearman")
+# corr_pearson  = C_kdn.corr(method="pearson")
 
 
 def filter_corr_matrix(C, method="spearman", th=0.9):
@@ -170,7 +170,7 @@ def filter_corr_matrix(C, method="spearman", th=0.9):
 
     return selected
 
-feats_kdn = filter_corr_matrix(univariate_instance_complexity(X, y, "kDN"),method="spearman", th=0.7)
+# feats_kdn = filter_corr_matrix(univariate_instance_complexity(X, y, "kDN"),method="spearman", th=0.7)
 
 
 
@@ -188,7 +188,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     }
 
 
-model = KNeighborsClassifier()
+# model = KNeighborsClassifier()
 
 def evaluate_complexity_corr_cv(X, y, model,measures=["kDN", "N1", "Hostility"],
                                 cv_splits=5,random_state=0,corr_th=0.7):
@@ -272,15 +272,7 @@ def evaluate_complexity_corr_cv(X, y, model,measures=["kDN", "N1", "Hostility"],
 
     return df_folds, agg
 
-models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
-    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    # "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier()
-    # "NaiveBayes": GaussianNB(),
-    # "DecisionTree": DecisionTreeClassifier(random_state=0),
-    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
-    }
+
 
 def evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
                                        cv_splits=5,random_state=0,corr_th=0.7,
@@ -381,6 +373,15 @@ def evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Host
 
     return df_folds, agg
 
+models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+    # "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier()
+    # "NaiveBayes": GaussianNB(),
+    # "DecisionTree": DecisionTreeClassifier(random_state=0),
+    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    }
 
 
 ### Dataset 2
