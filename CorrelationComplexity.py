@@ -458,9 +458,10 @@ evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostilit
 ##################                              DATOS REALES                              ##################
 ############################################################################################################
 
-list_datasets = ['Australian.csv', 'bands.csv', 'credit-g.csv',
-                 'plasma_retinol.csv',
-                 'pollution.csv', 'vehicle2.csv', 'diabetic_retinopathy.csv', 'parkinsons.csv']
+list_datasets = [#'Australian.csv', 'bands.csv', 'credit-g.csv',
+                 #'plasma_retinol.csv',
+                # 'pollution.csv', 'vehicle2.csv', 'diabetic_retinopathy.csv', 'parkinsons.csv',
+                 'sylvine.csv','ring.csv','pyrim.csv']
 
 path2 = "datasets"
 
