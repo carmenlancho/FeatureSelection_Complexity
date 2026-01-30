@@ -77,7 +77,8 @@ def complexity_brute_force_parallel(X, y, verbose=True):
 
 
 if __name__ == "__main__":
-    list_datasets = ['Australian.csv','bands.csv','credit-g.csv',
+    list_datasets = [#'Australian.csv',
+        'bands.csv','credit-g.csv',
                      'plasma_retinol.csv',
                      'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
                      'sylvine.csv','ring.csv','pyrim.csv']
