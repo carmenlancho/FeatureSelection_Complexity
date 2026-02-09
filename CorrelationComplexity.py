@@ -373,113 +373,287 @@ def evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Host
 
     return df_folds, agg
 
-models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
-    "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    # "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier()
-    # "NaiveBayes": GaussianNB(),
-    # "DecisionTree": DecisionTreeClassifier(random_state=0),
-    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
-    }
-
-
-### Dataset 2
-dataset_name = 'ArtificialDataset2'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
-                                         n_redundant_linear=4,n_redundant_nonlinear=2,
-                                    flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
-                                                     random_state=0,noise_std=0.01)
-
-
-evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5,random_state=0,corr_th=0.65,
-                                        name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
-
-
-#### Dataset 7
-dataset_name = 'ArtificialDataset7'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
-                                         n_redundant_linear=10,n_redundant_nonlinear=10,
-                                        flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
-                                                     random_state=589,noise_std=0.05)
-
-evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5,random_state=0,corr_th=0.65,
-                                        name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
-
-
-
-#### Dataset 12
-dataset_name = 'ArtificialDataset12'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
-                                         n_redundant_linear=30,n_redundant_nonlinear=30,
-                                        flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
-                                                     random_state=987,noise_std=0.5)
-
-
-evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5,random_state=0,corr_th=0.65,
-                                        name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
-
-
-#### Dataset 14
-dataset_name = 'ArtificialDataset14'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
-                                         n_redundant_linear=30,n_redundant_nonlinear=40,
-                                        flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
-                                                     random_state=95,noise_std=0.5)
-evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5,random_state=0,corr_th=0.65,
-                                        name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
-
-
-#### Dataset 18
-dataset_name = 'ArtificialDataset18'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
-                                         n_redundant_linear=40,n_redundant_nonlinear=40,
-                                        flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
-                                                     random_state=9462,noise_std=0.5)
-evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5,random_state=0,corr_th=0.65,
-                                        name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
-
-#### Dataset 20
-dataset_name = 'ArtificialDataset20'
-X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
-                                         n_redundant_linear=60,n_redundant_nonlinear=60,
-                                        flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
-                                                     random_state=4556,noise_std=0.5)
-evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5,random_state=0,corr_th=0.65,
-                                        name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
+# models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+#     # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+#     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+#     # "RandomForest": RandomForestClassifier(random_state=0),
+#     "KNN": KNeighborsClassifier()
+#     # "NaiveBayes": GaussianNB(),
+#     # "DecisionTree": DecisionTreeClassifier(random_state=0),
+#     # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+#     }
+#
+#
+# ### Dataset 2
+# dataset_name = 'ArtificialDataset2'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=10,n_noise=2,
+#                                          n_redundant_linear=4,n_redundant_nonlinear=2,
+#                                     flip_y=0, class_sep = 0.6, n_clusters_per_class=1 , weights=[0.5],
+#                                                      random_state=0,noise_std=0.01)
+#
+#
+# evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5,random_state=0,corr_th=0.65,
+#                                         name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
+#
+#
+# #### Dataset 7
+# dataset_name = 'ArtificialDataset7'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=1000,n_informative=20,n_noise=10,
+#                                          n_redundant_linear=10,n_redundant_nonlinear=10,
+#                                         flip_y=0, class_sep=1, n_clusters_per_class=1, weights=[0.5],
+#                                                      random_state=589,noise_std=0.05)
+#
+# evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5,random_state=0,corr_th=0.65,
+#                                         name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
+#
+#
+#
+# #### Dataset 12
+# dataset_name = 'ArtificialDataset12'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=25,n_noise=30,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=30,
+#                                         flip_y=0.2, class_sep=0.9, n_clusters_per_class=1, weights=[0.4],
+#                                                      random_state=987,noise_std=0.5)
+#
+#
+# evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5,random_state=0,corr_th=0.65,
+#                                         name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
+#
+#
+# #### Dataset 14
+# dataset_name = 'ArtificialDataset14'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=3000,n_informative=30,n_noise=40,
+#                                          n_redundant_linear=30,n_redundant_nonlinear=40,
+#                                         flip_y=0.2, class_sep=0.6, n_clusters_per_class=2, weights=[0.3],
+#                                                      random_state=95,noise_std=0.5)
+# evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5,random_state=0,corr_th=0.65,
+#                                         name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
+#
+#
+# #### Dataset 18
+# dataset_name = 'ArtificialDataset18'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=70,n_noise=40,
+#                                          n_redundant_linear=40,n_redundant_nonlinear=40,
+#                                         flip_y=0.4, class_sep=0.8, n_clusters_per_class=2, weights=[0.2],
+#                                                      random_state=9462,noise_std=0.5)
+# evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5,random_state=0,corr_th=0.65,
+#                                         name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
+#
+# #### Dataset 20
+# dataset_name = 'ArtificialDataset20'
+# X, y, dict_info_feature = generate_synthetic_dataset(n_samples=500,n_informative=300,n_noise=60,
+#                                          n_redundant_linear=60,n_redundant_nonlinear=60,
+#                                         flip_y=0.1, class_sep=0.6, n_clusters_per_class=1, weights=[0.3],
+#                                                      random_state=4556,noise_std=0.5)
+# evaluate_complexity_corr_cv_models(X, y, models,measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5,random_state=0,corr_th=0.65,
+#                                         name_dataset=dataset_name,save_csv=True,path="Results_CorrelationComplexity")
 
 ############################################################################################################
 ##################                              DATOS REALES                              ##################
 ############################################################################################################
 
-list_datasets = [#'Australian.csv', 'bands.csv', 'credit-g.csv',
-                 #'plasma_retinol.csv',
-                # 'pollution.csv', 'vehicle2.csv', 'diabetic_retinopathy.csv', 'parkinsons.csv',
-                 'sylvine.csv','ring.csv','pyrim.csv']
+# list_datasets = [#'Australian.csv', 'bands.csv', 'credit-g.csv',
+#                  #'plasma_retinol.csv',
+#                 # 'pollution.csv', 'vehicle2.csv', 'diabetic_retinopathy.csv', 'parkinsons.csv',
+#                  'sylvine.csv','ring.csv','pyrim.csv']
 
+# path2 = "datasets"
+#
+# for file in list_datasets:
+#     read_csv = f"{path2}/{file}"
+#
+#     df = pd.read_csv(read_csv)
+#     y = format_labels(df['y'])
+#     X_raw = df.drop('y', axis=1)
+#     cols = X_raw.columns
+#
+#     # Escalado
+#     X_scaled = StandardScaler().fit_transform(X_raw)
+#     X = pd.DataFrame(X_scaled, columns=cols)
+#
+#     dataset_name = file.split(".")[0]
+#     print(f"\nProcesando: {dataset_name}")
+#     evaluate_complexity_corr_cv_models(X, y, models, measures=["kDN", "N1", "Hostility"],
+#                                        cv_splits=5, random_state=0, corr_th=0.7,
+#                                        name_dataset=dataset_name,
+#                                        save_csv=True, path="Results_CorrelationComplexity")
+#
+
+
+
+########################################################################################################################
+#############                                  VERSION CON MÁS DATOS REALES                                #############
+########################################################################################################################
+
+
+# Como han salido resultados interesantes pero faltan cosas por aclarar. Quiero plantear
+# el siguiente experimento: coger datos reales de diferente tamaño para feature selection,
+# poner una serie de umbrales de correelación con los que probar: corr_th={0.55,0.6,0.65,0.7,0.75,0.8} y
+# sacar los resultados para la svm y para knn y comparar con la opción de no hacer nada a ver si mejora.
+# Lo vamos a hacer solo con pearson porque sale mejor que spearman. tb quiero que probemos a quitar antes
+# las variables con correlación mayor que 0.8 (lo clásico que se hace) y a no quitarlas.
+
+
+
+
+# Filtrad clásico de correlación de pearson
+# Vamos a probar tanto filtrando antes la clásica correlación de Pearson como sin hacerlo
+def classical_corr_filter(X, th=0.8, method="pearson"):
+    corr = X.corr(method=method).abs()
+
+    selected, removed = [], set()
+
+    for i, col in enumerate(corr.columns):
+        if col in removed:
+            continue
+        selected.append(col)
+        for j in range(i + 1, len(corr.columns)):
+            if corr.iloc[i, j] > th:
+                removed.add(corr.columns[j])
+
+    return selected
+
+# Queremos testear en distintos valores del umbral
+def evaluate_complexity_corr_thresholds(X, y,models,corr_th_list=[0.55,0.6,0.65,0.7,0.75,0.8],
+                                        pre_corr_filter=True,pre_corr_th=0.8,measures=["kDN","N1","Hostility"],
+                                        cv_splits=5,random_state=0,
+                                        name_dataset="D",save_csv=False,path="Results_CorrelationComplexity"):
+
+    skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
+
+    records = []
+
+    for fold, (tr, te) in enumerate(skf.split(X, y), 1):
+        print(f"\n=== FOLD {fold}/{cv_splits} ===")
+
+        X_train, X_test = X.iloc[tr].copy(), X.iloc[te].copy()
+        y_train, y_test = y[tr], y[te]
+
+        # ===============================
+        # PREFILTRADO Corr pearson
+        # ===============================
+        if pre_corr_filter:
+            feats_base = classical_corr_filter(X_train, th=pre_corr_th, method="pearson")
+        else:
+            feats_base = X_train.columns.tolist()
+
+        Xtr_base = X_train[feats_base]
+        Xte_base = X_test[feats_base]
+
+        # ===============================
+        # COMPLEJIDAD BASE DATASET
+        # ===============================
+        datos_all = Xtr_base.copy()
+        datos_all["y"] = y_train
+        _, df_classes_all, _ = all_measures_FS(datos_all, save_csv=False, path_to_save=None, name_data=None)
+        comp_all = df_classes_all.loc["dataset", measures].to_dict()
+
+
+        # Resultados performance base sin hacer nada más
+        for model_name, model in models.items():
+            perf = evaluate_model(model, Xtr_base, y_train, Xte_base, y_test)
+
+            records.append({"fold": fold,"dataset": name_dataset,"model": model_name,
+                            "strategy": "NONE","pre_corr": pre_corr_filter,"corr_th": None,
+                            "measure": "NONE","n_features": len(feats_base),
+                            **perf,**{f"complexity_all_{m}": comp_all[m] for m in measures}})
+
+        # ===============================
+        # COMPLEJIDAD UNIVARIANTE
+        # ===============================
+        for m in measures:
+            C = univariate_instance_complexity(Xtr_base, y_train, m)
+
+            for th in corr_th_list:
+                feats_sel = filter_corr_matrix(C, method="pearson", th=th)
+
+                Xtr_sel = Xtr_base[feats_sel]
+                Xte_sel = Xte_base[feats_sel]
+
+                # complejidad dataset filtrado
+                datos_sel = Xtr_sel.copy()
+                datos_sel["y"] = y_train
+                _, df_classes_sel, _ = all_measures_FS(datos_sel, save_csv=False, path_to_save=None, name_data=None)
+                comp_sel = df_classes_sel.loc["dataset", measures].to_dict()
+
+                for model_name, model in models.items():
+                    perf = evaluate_model(model, Xtr_sel, y_train, Xte_sel, y_test)
+
+                    records.append({"fold": fold,"dataset": name_dataset,"model": model_name,
+                        "strategy": "COMPLEXITY_corr","pre_corr": pre_corr_filter,
+                        "corr_th": th,"measure": m,"n_features": len(feats_sel),
+                        **perf,**{f"complexity_sel_{mm}": comp_sel[mm] for mm in measures}})
+
+    df_folds = pd.DataFrame(records)
+
+    num_cols = df_folds.select_dtypes(include="number").columns
+    num_cols = num_cols.drop(["fold"], errors="ignore")
+
+    agg = (df_folds.groupby(["dataset","model","strategy","pre_corr","measure","corr_th"])[num_cols]
+                    .agg(["mean","median","std"]).reset_index())
+
+    if save_csv:
+        os.makedirs(path, exist_ok=True)
+        df_folds.to_csv(f"{path}/{name_dataset}_CorrComplexityUnivariateFilter_Thresholds_Folds.csv", index=False)
+        agg.to_csv(f"{path}/{name_dataset}_CorrComplexityUnivariateFilter_Thresholds_Folds_SummaryResults.csv", index=False)
+
+    return df_folds, agg
+
+
+
+models = {"KNN": KNeighborsClassifier(),"SVM": SVC(kernel="rbf", probability=False)}
+
+corr_ths = [0.55,0.6,0.65,0.7,0.75,0.8]
+
+
+list_datasets = ['Australian.csv','bands.csv','credit-g.csv',
+                     'plasma_retinol.csv',
+                     'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
+                     'sylvine.csv','ring.csv','pyrim.csv','ionosphere.csv','sonar.csv','musk2.csv',
+                        'Colon.csv','wdbc.csv','ozono.csv','spambase.csv','arcene_train.csv','gisette_train.csv']
 path2 = "datasets"
+output_folder = 'Results_CorrelationComplexity'
+os.makedirs(output_folder, exist_ok=True)
 
 for file in list_datasets:
     read_csv = f"{path2}/{file}"
+    if not os.path.exists(read_csv): continue
 
     df = pd.read_csv(read_csv)
-    y = format_labels(df['y'])
+    y = df['y'].values
     X_raw = df.drop('y', axis=1)
     cols = X_raw.columns
 
-    # Escalado
+    # Escalado estándar
     X_scaled = StandardScaler().fit_transform(X_raw)
     X = pd.DataFrame(X_scaled, columns=cols)
 
     dataset_name = file.split(".")[0]
-    print(f"\nProcesando: {dataset_name}")
-    evaluate_complexity_corr_cv_models(X, y, models, measures=["kDN", "N1", "Hostility"],
-                                       cv_splits=5, random_state=0, corr_th=0.7,
-                                       name_dataset=dataset_name,
-                                       save_csv=True, path="Results_CorrelationComplexity")
+    print(f"\nAnalizando dataset con CV: {dataset_name}")
+
+    dataset_name_no_pre = dataset_name + "_NoPreFilter"
+    dataset_name_pre = dataset_name + "_PreFilter"
+
+    # SIN prefiltrado clásico
+    df_no_pre, agg_no_pre = evaluate_complexity_corr_thresholds(X, y,models=models,corr_th_list=corr_ths,
+                                                            pre_corr_filter=False,
+                                                            name_dataset=dataset_name_no_pre,save_csv=False)
+
+    # CON prefiltrado clásico corr>0.8
+    df_pre, agg_pre = evaluate_complexity_corr_thresholds(X, y,models=models,corr_th_list=corr_ths,
+                                                      pre_corr_filter=True,pre_corr_th=0.8,
+                                                      name_dataset=dataset_name_pre,save_csv=False)
+
+    # ---------- unimos y guardamos ----------
+    df_all = pd.concat([df_no_pre, df_pre], ignore_index=True)
+    agg_all = pd.concat([agg_no_pre, agg_pre], ignore_index=True)
+    os.makedirs(output_folder, exist_ok=True)
+
+    df_all.to_csv(f"{output_folder}/{dataset_name}_CorrComplexityUnivariateFilter_Thresholds_Folds.csv", index=False)
+    agg_all.to_csv(f"{output_folder}/{dataset_name}_CorrComplexityUnivariateFilter_Thresholds_Folds_SummaryResults.csv", index=False)
