@@ -575,3 +575,228 @@ make_lineplot(
 )
 
 
+
+####################################################################################################
+############                    CON THRESHOLDS Y PARA MÁS DATASTS                       ############
+####################################################################################################
+
+
+path2 = 'Results_CorrelationComplexity'
+df = pd.read_csv(path2+'/Australian_CorrComplexityUnivariateFilter_Thresholds_Folds.csv')
+# Agregamos por folds y por parámetros de interés
+
+# Para que no se cargue los NONE que es el baseline de referencia
+df_fixed = df.copy()
+
+# strategy NONE
+df_fixed["corr_th"] = df_fixed["corr_th"].fillna("NONE")
+df_fixed["measure"] = df_fixed["measure"].fillna("NONE")
+# tipo categórico
+df_fixed["corr_th"] = df_fixed["corr_th"].astype(str)
+df_fixed["measure"] = df_fixed["measure"].astype(str)
+
+
+group_cols = ["dataset", "model", "strategy", "pre_corr", "corr_th", "measure"]
+
+agg_cols = ["n_features","acc_train", "gps_train","acc_test", "gps_test",
+            "complexity_all_kDN", "complexity_all_Hostility", "complexity_all_N1",
+            "complexity_sel_kDN", "complexity_sel_Hostility", "complexity_sel_N1"]
+
+df_agg = (df_fixed.groupby(group_cols)[agg_cols].agg(["mean", "std"]).reset_index())
+
+# Aplanar MultiIndex de columnas
+df_agg.columns = ["_".join(col).strip("_") if isinstance(col, tuple) else col for col in df_agg.columns]
+# Separamos dataset column en dataset y filter
+df_agg[['dataset', 'filtro']] = df_agg['dataset'].str.split('_', n=1, expand=True)
+
+
+### Función para agregar por folds los datos y darles el formato correcto
+# es decir, separar lo del filtro y arreglar lo de que entienda NONE comoc ategórico
+
+def aggregate_folds(df):
+
+    df_fixed = df.copy()
+
+    # Baseline (NONE)
+    df_fixed["corr_th"] = df_fixed["corr_th"].fillna("NONE")
+    df_fixed["measure"] = df_fixed["measure"].fillna("NONE")
+
+    df_fixed["corr_th"] = df_fixed["corr_th"].astype(str)
+    df_fixed["measure"] = df_fixed["measure"].astype(str)
+
+    group_cols = ["dataset", "model", "strategy", "pre_corr", "corr_th", "measure"]
+
+    agg_cols = ["n_features","acc_train", "gps_train","acc_test", "gps_test",
+                "complexity_all_kDN", "complexity_all_Hostility", "complexity_all_N1",
+                "complexity_sel_kDN", "complexity_sel_Hostility", "complexity_sel_N1"]
+
+    df_agg = (df_fixed.groupby(group_cols)[agg_cols].agg(["mean", "std"]).reset_index())
+
+    # Aplanar MultiIndex
+    df_agg.columns = ["_".join(col).strip("_") if isinstance(col, tuple) else col for col in df_agg.columns]
+
+    # Separar dataset y filtro
+    df_agg[['dataset', 'filtro']] = df_agg['dataset'].str.rsplit('_', n=1, expand=True) # por la derecha
+
+    return df_agg
+
+# Hacemos la carga global de todos los datasets a analizar
+files = glob.glob(f"{path2}/*_Thresholds_Folds.csv")
+dfs = []
+for f in files:
+    df = pd.read_csv(f)
+    df_agg = aggregate_folds(df)
+    dfs.append(df_agg)
+
+df_global = pd.concat(dfs, ignore_index=True) # todos leídos y con formato correcto
+
+# Identificamos el baseline (no hacer nada) para hacer las comparaciones
+baseline_mask = ((df_global["strategy"] == "NONE") &
+                 (df_global["measure"] == "NONE") &
+                 (df_global["corr_th"] == "NONE"))
+
+# Calculamos la diferencia entre el baseline y nuestra propuesta
+def add_baseline_deltas(df):
+
+    base = df[(df.strategy == "NONE") &(df.measure == "NONE") &(df.corr_th == "NONE")
+    ][["dataset","model","filtro","acc_test_mean","gps_test_mean","n_features_mean"]]
+
+    base = base.rename(columns={"acc_test_mean": "acc_test_mean_base",
+                               "gps_test_mean": "gps_test_mean_base",
+                                "n_features_mean": "n_feat_mean_base"})
+
+    df = df.merge(base, on=["dataset","model","filtro"], how="left")
+
+    # Deltas: incremento en performance con respecto al baseline
+    df["delta_acc_test"] = df["acc_test_mean"] - df["acc_test_mean_base"]
+    df["delta_gps_test"] = df["gps_test_mean"] - df["gps_test_mean_base"]
+    df["delta_n_feat"] = df["n_features_mean"] - df["n_feat_mean_base"]
+
+    return df
+
+df_baseline = add_baseline_deltas(df_global)
+
+# Elegimos medida para las comparaciones
+def get_measure_df(df, measure, filter_name):
+    df_m = df[((df.measure == measure) | ((df.measure == "NONE") & (df.strategy == "NONE"))) & (df.filtro == filter_name)].copy()
+    return df_m
+
+
+df_m = get_measure_df(df_baseline, 'kDN', 'PreFilter')
+print(df_m[['dataset','model','strategy','measure','corr_th','filtro']])
+
+
+def boxplot_performance_delta(df, measure, filter_name):
+    """
+    Boxplot de delta_acc_test y delta_gps_test para cada corr_th
+    lado a lado, mostrando encima la delta_n_feat como texto.
+    """
+    df_m = df[((df['measure'] == measure) | ((df['measure'] == "NONE") & (df['strategy'] == "NONE"))) &
+              (df['filtro'] == filter_name)].copy()
+
+    # Filtramos solo los que no son baseline para los boxplots
+    df_plot = df_m[df_m['strategy'] != "NONE"].copy()
+
+    order = sorted(df_plot['corr_th'].unique(), key=str)
+
+    # Creamos un DataFrame en formato largo para facilidad de boxplot lado a lado
+    df_long = df_plot.melt(id_vars=['corr_th'], value_vars=['delta_gps_test', 'delta_acc_test'],
+                           var_name='metric', value_name='delta')
+
+    plt.figure(figsize=(16, 6))
+    sns.boxplot(data=df_long, x='corr_th', y='delta', hue='metric', order=order, palette=['skyblue', 'salmon'])
+    sns.stripplot(data=df_long, x='corr_th', y='delta', hue='metric', dodge=True, alpha=0.5, size=4, order=order,
+                  palette=['blue', 'red'], jitter=True)
+
+    # delta_n_feat como texto horizontal arriba
+    feat_means = df_plot.groupby('corr_th')["delta_n_feat"].mean()
+    ymax = plt.ylim()[1]
+    for i, v in enumerate(order):
+        if v in feat_means:
+            plt.text(i, ymax + 0.01, f"Δ_feat={feat_means[v]:.1f}", ha='center', va='bottom', fontsize=10, rotation=0)
+
+    plt.title(f'Performance CorrCompl - baseline (Δ) ({measure}, {filter_name})')
+    plt.ylabel('Delta GPS / Delta Accuracy')
+    plt.xlabel('Correlation threshold')
+    plt.legend(title='Metric')
+    plt.ylim(top=ymax + 0.05)  # espacio para el texto arriba
+    # Línea horizontal en 0
+    plt.axhline(0, color='red', linestyle='--', linewidth=1)
+    plt.show()
+
+
+def add_delta_complexity(df, measure):
+    """
+    Añade delta de complejidad: cada fila con un método se compara con el baseline
+    correspondiente a su dataset y filter.
+    """
+    df = df.copy()
+
+    # Filas baseline
+    baseline = df[
+        (df.strategy == "NONE") & (df.measure == "NONE")
+    ][['dataset', 'filtro', f'complexity_all_{measure}_mean']]
+
+    # Renombramos para merge
+    baseline = baseline.rename(columns={f'complexity_all_{measure}_mean': f'complexity_all_{measure}_base'})
+
+    # Merge con todas las filas
+    df = df.merge(baseline, on=['dataset', 'filtro'], how='left')
+
+    # Calculamos delta
+    df[f'delta_complexity_{measure}'] = df[f'complexity_sel_{measure}_mean'] - df[f'complexity_all_{measure}_base']
+
+    return df
+
+
+def boxplot_complexity_delta(df, measure, filter_name):
+    """
+    Boxplot de las diferencias en complejidad entre el baseline y cada selección,
+    usando la columna delta_complexity_{measure}.
+    """
+    df_m = df[((df['measure'] == measure) | ((df['measure'] == "NONE") & (df['strategy'] == "NONE"))) &
+              (df['filtro'] == filter_name)].copy()
+
+    # Filtramos solo los que no son baseline
+    df_plot = df_m[df_m['strategy'] != "NONE"].copy()
+
+    order = sorted(df_plot['corr_th'].unique(), key=str)
+
+    plt.figure(figsize=(16, 6))
+    sns.boxplot(data=df_plot, x='corr_th', y=f'delta_complexity_{measure}', order=order, color='lightgreen')
+    sns.stripplot(data=df_plot, x='corr_th', y=f'delta_complexity_{measure}', color='green',
+                  alpha=0.5, size=4, order=order, jitter=True)
+
+
+    plt.title(f'Complexity - baseline ({measure}, {filter_name})')
+    plt.ylabel('Delta Complexity')
+    plt.xlabel('Correlation threshold')
+
+    # Línea horizontal en 0
+    plt.axhline(0, color='red', linestyle='--', linewidth=1)
+    plt.show()
+
+
+
+# df_m = get_measure_df(df_baseline, 'Hostility', 'PreFilter')
+# df_m = add_delta_complexity(df_m, 'Hostility')
+#
+#
+# boxplot_complexity_delta(df_m, measure, filter_name)
+#
+
+
+measures = ['kDN', 'N1', 'Hostility']
+filters = ['NoPreFilter', 'PreFilter']
+
+for measure in measures:
+    for f in filters:
+        print(f"Generating plots for {measure} - {f}")
+        boxplot_performance_delta(df_baseline, measure, f)
+        df_m = get_measure_df(df_baseline, measure, f)
+        df_m2 = add_delta_complexity(df_m, measure)
+        boxplot_complexity_delta(df_m2, measure, f)
+
+
+
+# df= df_baseline
