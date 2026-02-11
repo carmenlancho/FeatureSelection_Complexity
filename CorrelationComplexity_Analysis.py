@@ -703,7 +703,7 @@ def boxplot_performance_delta(df, measure, filter_name):
     df_long = df_plot.melt(id_vars=['corr_th'], value_vars=['delta_gps_test', 'delta_acc_test'],
                            var_name='metric', value_name='delta')
 
-    plt.figure(figsize=(16, 6))
+    plt.figure(figsize=(8, 5))
     sns.boxplot(data=df_long, x='corr_th', y='delta', hue='metric', order=order, palette=['skyblue', 'salmon'])
     sns.stripplot(data=df_long, x='corr_th', y='delta', hue='metric', dodge=True, alpha=0.5, size=4, order=order,
                   palette=['blue', 'red'], jitter=True)
@@ -722,6 +722,7 @@ def boxplot_performance_delta(df, measure, filter_name):
     plt.ylim(top=ymax + 0.05)  # espacio para el texto arriba
     # Línea horizontal en 0
     plt.axhline(0, color='red', linestyle='--', linewidth=1)
+    plt.tight_layout()
     plt.show()
 
 
@@ -762,7 +763,7 @@ def boxplot_complexity_delta(df, measure, filter_name):
 
     order = sorted(df_plot['corr_th'].unique(), key=str)
 
-    plt.figure(figsize=(16, 6))
+    plt.figure(figsize=(8, 5))
     sns.boxplot(data=df_plot, x='corr_th', y=f'delta_complexity_{measure}', order=order, color='lightgreen')
     sns.stripplot(data=df_plot, x='corr_th', y=f'delta_complexity_{measure}', color='green',
                   alpha=0.5, size=4, order=order, jitter=True)
@@ -774,6 +775,7 @@ def boxplot_complexity_delta(df, measure, filter_name):
 
     # Línea horizontal en 0
     plt.axhline(0, color='red', linestyle='--', linewidth=1)
+    plt.tight_layout()
     plt.show()
 
 
