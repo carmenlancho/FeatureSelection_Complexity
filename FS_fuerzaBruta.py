@@ -7,14 +7,30 @@ import numpy as np
 import pandas as pd
 import os
 from itertools import combinations
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.base import clone
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
 from tqdm import tqdm # barra de progreso
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from joblib import Parallel, delayed
+from xgboost import XGBClassifier
+
+import random
+
+RSEED = 42
+np.random.seed(RSEED)
+random.seed(RSEED)
+
+
+
+
 
 
 
@@ -210,14 +226,27 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 
 # --- Bloque de ejecución principal ---
 if __name__ == "__main__":
-    list_datasets = [#'Australian.csv','bands.csv','credit-g.csv',
+    list_datasets = ['Australian.csv','bands.csv','credit-g.csv',
                      'plasma_retinol.csv',
                      'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
-                     'sylvine.csv','ring.csv','pyrim.csv'] # 'parkinsons.csv', # 'wdbc.csv','ionosphere.csv','spambase.csv','sonar.csv'
+                     'bodyfat.csv', 'boston.csv', 'cleve.csv', 'heart-statlog.csv',
+                     'zoo.csv',
+                     'sylvine.csv','ring.csv','pyrim.csv']
+
+
+    RSEED = 42
+
     models = {
-        "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-        "KNN": KNeighborsClassifier()
+        "SVM-linear": LinearSVC(random_state=RSEED),
+        "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=RSEED),
+        "KNN": KNeighborsClassifier(),
+        "RL": LogisticRegression(random_state=RSEED, max_iter=1000),
+        "RF": RandomForestClassifier(random_state=RSEED),
+        "NB": GaussianNB(),
+        "NN": MLPClassifier(random_state=RSEED, max_iter=1000),
+        "XGB": XGBClassifier(random_state=RSEED)
     }
+
 
     path2 = "datasets"
     # os.makedirs('Results_FS_bruto', exist_ok=True)
