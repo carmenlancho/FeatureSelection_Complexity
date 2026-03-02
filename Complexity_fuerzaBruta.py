@@ -164,7 +164,7 @@ def complexity_brute_force_parallel(X, y, k_folds=5, verbose=True):
 
     # Configuración de núcleos para el servidor
     total_cores = os.cpu_count()
-    use_cores = max(1, 2 * total_cores // 3)
+    use_cores = max(1, total_cores -2)
 
     # Generar todas las combinaciones posibles
     all_combos = []
