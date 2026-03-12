@@ -226,9 +226,9 @@ def brute_force_evaluation_parallel(X, y, models_dict, k_folds=5, verbose=True):
 
 # --- Bloque de ejecución principal ---
 if __name__ == "__main__":
-    list_datasets = ['Australian.csv','bands.csv','credit-g.csv',
-                     'plasma_retinol.csv',
-                     'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
+    list_datasets = [#'Australian.csv','bands.csv','credit-g.csv',
+                     #'plasma_retinol.csv',
+                     #'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
                      'bodyfat.csv', 'boston.csv', 'cleve.csv', 'heart-statlog.csv',
                      'zoo.csv',
                      'sylvine.csv','ring.csv','pyrim.csv']
