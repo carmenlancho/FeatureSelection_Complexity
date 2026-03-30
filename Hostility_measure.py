@@ -169,4 +169,5 @@ delta = 0.5
 seed = 0
 k_min = 0
 host_instance, data_clusters, results, k_auto = hostility_measure(sigma, X, y, delta, k_min, seed=0)
-
+# host_0 = results.loc[k_auto,['Host_0']]
+# host_1 = results.loc[k_auto,['Host_1']]
