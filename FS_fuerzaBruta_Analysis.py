@@ -16,7 +16,7 @@ from scipy.stats import spearmanr
 
 
 
-path_csv = "Results_FS_bruto/Results_FS_bruto_bodyfat.csv"
+# path_csv = "Results_FS_bruto/Results_FS_bruto_bodyfat.csv"
 
 # Agregamos por folds
 def summarize_performance(path_csv):
@@ -61,7 +61,7 @@ def add_performance_ranking(df_best_model):
 
 
 # path_complexity_csv = 'Results_FS_bruto/ComplexityBruto_Australian.csv'
-path_complexity_csv = 'Results_FS_bruto/ComplexityCVBruto_bodyfat.csv'
+# path_complexity_csv = 'Results_FS_bruto/ComplexityCVBruto_bodyfat.csv'
 
 ## Agregamos resultados por folds
 def summarize_complexity(path_complexity_csv):
@@ -102,7 +102,7 @@ def merge_perf_complexity(df_perf, df_complex):
     df_merged = pd.merge(df_perf,df_complex,on=['n_features', 'feature_set'],how='inner')
     return df_merged
 
-df_merged = merge_perf_complexity(df_best_model, df_complex_summary)
+# df_merged = merge_perf_complexity(df_best_model, df_complex_summary)
 
 
 ## Calculamos correlación de Spearmaan entre los rankings
@@ -123,8 +123,8 @@ def compute_spearman(df_merged, perf_rank_col):
     return pd.DataFrame(results)
 
 
-df_spear_acc = compute_spearman(df_merged, 'rank_accuracy')
-df_spear_gps = compute_spearman(df_merged, 'rank_gps')
+# df_spear_acc = compute_spearman(df_merged, 'rank_accuracy')
+# df_spear_gps = compute_spearman(df_merged, 'rank_gps')
 
 # df = df_merged
 # Obtenemos tb corr de spearman dentro de cada número de features
@@ -158,9 +158,9 @@ def spearman_within_nfeatures(df, perf_metric='mean_accuracy'):
     return pd.DataFrame(results)
 
 
-df_spear_acc = spearman_within_nfeatures(df_merged, perf_metric='mean_accuracy')
-df_spear_gps = spearman_within_nfeatures(df_merged, perf_metric='mean_gps')
-#
+# df_spear_acc = spearman_within_nfeatures(df_merged, perf_metric='mean_accuracy')
+# df_spear_gps = spearman_within_nfeatures(df_merged, perf_metric='mean_gps')
+# #
 # df = df_merged
 
 
@@ -193,7 +193,7 @@ def plot_perf_vs_complexity(df, n_features,
 #                             complexity_measure,
 #                             perf_metric='mean_accuracy')
 
-# Mapa de correlaciones para poder visualizar todo
+# Mapa de correlaciones para poder visualizar tod
 def heatmap_correlations(df_spearman):
     model = df_spearman['model'][0]
 
@@ -225,13 +225,17 @@ def heatmap_correlations(df_spearman):
 
 # Generalizamos ahora para todos los datasets
 
-complexity_measures = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD',
-                       'N1', 'N2', 'LSC', 'F1', 'F2', 'F3', 'F4', 'L1']
+# complexity_measures = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD',
+#                        'N1', 'N2', 'LSC', 'F1', 'F2', 'F3', 'F4', 'L1']
+#
 
+#
 
 def compute_global_spearman(path_perf, path_complex):
+    complexity_measures = ['Hostility_mean', 'kDN_mean', 'DCP_mean', 'TD_U_mean', 'CLD_mean',
+                           'N1_mean', 'N2_mean', 'LSC_mean', 'F1_mean', 'F2_mean', 'F3_mean', 'F4_mean', 'L1_mean']
     # ---- Performance ----
-    df_perf = pd.read_csv(path_perf)
+    df_perf = pd.read_csv(path_perf, engine='python')
 
     df_perf_summary = (
         df_perf.groupby(['model', 'n_features', 'feature_set'])
@@ -240,48 +244,64 @@ def compute_global_spearman(path_perf, path_complex):
         .reset_index()
     )
 
+    # Selección del mejor modelo de forma global (mix de accuracy y gps)
+    df_best_model = selec_modelo_perf(df_perf_summary)
+    model = df_best_model['model'].unique()[0]
+    # ranking para cada una de las medidas de rendimiento empleadas
+    df_best_model['rank_accuracy'] = (df_best_model['mean_accuracy'].rank(ascending=False, method='average'))
+    df_best_model['rank_gps'] = (df_best_model['mean_gps'].rank(ascending=False, method='average'))
+
+
     # ---- Complexity ----
-    df_complex = pd.read_csv(path_complex)
+    df_complex_summary = summarize_complexity(path_complex) # agregamos por folds (solo tenemos la media)
+    df_complex_rank = add_complexity_ranking(df_complex_summary) # calculamos rankings por complexity measures
 
     # ---- Merge ----
-    df = pd.merge(
-        df_perf_summary,
-        df_complex,
-        on=['n_features', 'feature_set'],
-        how='inner'
-    )
+    # Unimos los dfs con los rankings de performance y de complejidad
+    df_merged =  merge_perf_complexity(df_best_model, df_complex_rank)
 
     results = []
 
-    for model in df['model'].unique():
-        df_model = df[df['model'] == model]
+    for perf_metric in ['mean_accuracy', 'mean_gps']:
+         for measure in complexity_measures:
+            rho, pval = spearmanr(df_merged[perf_metric],df_merged[measure])
 
-        for perf_metric in ['mean_accuracy', 'mean_gps']:
-
-            for measure in complexity_measures:
-                rho, pval = spearmanr(
-                    df_model[perf_metric],
-                    df_model[measure]
-                )
-
-                results.append({
-                    'model': model,
-                    'performance_metric': perf_metric,
-                    'complexity_measure': measure,
-                    'spearman_rho': rho,
-                    'p_value': pval
-                })
+            results.append({
+                'model': model,
+                'performance_metric': perf_metric,
+                'complexity_measure': measure,
+                'spearman_rho': rho,
+                'p_value': pval
+            })
 
     return pd.DataFrame(results)
 
-datasets = ['Australian','bands','credit-g','diabetic_retinopathy',
-            'plasma_retinol','pollution','vehicle2']
+path_perf = "Results_FS_bruto/Results_FS_bruto_vehicle2.csv"
+path_complex = 'Results_FS_bruto/ComplexityCVBruto_zoo.csv'
+df_res_corrs = compute_global_spearman(path_perf, path_complex)
+
+
+
+import csv
+
+# df_perf = pd.read_csv(
+#     path_perf,
+#     engine='python',      # parser en Python (más flexible)
+#     sep=',',              # cambia si NO es coma
+#     quoting=csv.QUOTE_NONE,  # no trata las comillas como delimitadores
+#     on_bad_lines='skip'      # salta las líneas mal formadas
+# ) # para el tocho
+
+datasets = ['bodyfat','boston','cleve',
+            'heart-statlog','zoo']
+# el resto no los tengo completos aun
+# parkinsons y 'diabetic_retinopathy' ,'vehicle2' lo quito porque peta el ordenador
 
 all_results = []
 
 for ds in datasets:
     path_perf = f'Results_FS_bruto/Results_FS_bruto_{ds}.csv'
-    path_complex = f'Results_FS_bruto/ComplexityBruto_{ds}.csv'
+    path_complex = f'Results_FS_bruto/ComplexityCVBruto_{ds}.csv'
 
     df_ds = compute_global_spearman(path_perf, path_complex)
     df_ds['dataset'] = ds
@@ -291,11 +311,8 @@ for ds in datasets:
 df_all = pd.concat(all_results, ignore_index=True)
 
 
-def build_table(df_all, model, perf_metric):
-    df_subset = df_all[
-        (df_all['model'] == model) &
-        (df_all['performance_metric'] == perf_metric)
-        ]
+def build_table(df_all, perf_metric):
+    df_subset = df_all[(df_all['performance_metric'] == perf_metric)]
 
     table = df_subset.pivot(
         index='dataset',
@@ -305,11 +322,11 @@ def build_table(df_all, model, perf_metric):
 
     return table
 
-table_svm_acc = build_table(df_all, 'SVM-rbf', 'mean_accuracy')
-table_svm_gps = build_table(df_all, 'SVM-rbf', 'mean_gps')
+table_acc = build_table(df_all, 'mean_accuracy')
+table_gps = build_table(df_all,'mean_gps')
 
-table_knn_acc = build_table(df_all, 'KNN', 'mean_accuracy')
-table_knn_gps = build_table(df_all, 'KNN', 'mean_gps')
+table_acc.to_csv("tabla_spearman_{}.csv".format('mean_accuracy'))
+table_gps.to_csv("tabla_spearman_{}.csv".format('mean_gps'))
 
 
 
@@ -320,8 +337,10 @@ complexity_measures = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD',
 
 
 def compute_within_nfeatures_dataset(path_perf, path_complex, dataset_name):
+    complexity_measures = ['Hostility_mean', 'kDN_mean', 'DCP_mean', 'TD_U_mean', 'CLD_mean',
+                           'N1_mean', 'N2_mean', 'LSC_mean', 'F1_mean', 'F2_mean', 'F3_mean', 'F4_mean', 'L1_mean']
     # ---- Performance ----
-    df_perf = pd.read_csv(path_perf)
+    df_perf = pd.read_csv(path_perf, engine='python')
 
     df_perf_summary = (
         df_perf.groupby(['model', 'n_features', 'feature_set'])
@@ -330,75 +349,71 @@ def compute_within_nfeatures_dataset(path_perf, path_complex, dataset_name):
         .reset_index()
     )
 
+    # Selección del mejor modelo de forma global (mix de accuracy y gps)
+    df_best_model = selec_modelo_perf(df_perf_summary)
+    model = df_best_model['model'].unique()[0]
+    # ranking para cada una de las medidas de rendimiento empleadas
+    df_best_model['rank_accuracy'] = (df_best_model['mean_accuracy'].rank(ascending=False, method='average'))
+    df_best_model['rank_gps'] = (df_best_model['mean_gps'].rank(ascending=False, method='average'))
+
     # ---- Complexity ----
-    df_complex = pd.read_csv(path_complex)
+    df_complex_summary = summarize_complexity(path_complex)  # agregamos por folds (solo tenemos la media)
+    df_complex_rank = add_complexity_ranking(df_complex_summary)  # calculamos rankings por complexity measures
 
     # ---- Merge ----
-    df = pd.merge(
-        df_perf_summary,
-        df_complex,
-        on=['n_features', 'feature_set'],
-        how='inner'
-    )
+    # Unimos los dfs con los rankings de performance y de complejidad
+    df_merged = merge_perf_complexity(df_best_model, df_complex_rank)
+
 
     results = []
 
-    for model in df['model'].unique():
+    for perf_metric in ['mean_accuracy', 'mean_gps']:
+        for n in sorted(df_merged['n_features'].unique()):
 
-        df_model = df[df['model'] == model]
+            df_n = df_merged[df_merged['n_features'] == n]
+            # Evitamos casos con pocos subconjuntos
+            if len(df_n) < 5:
+                 continue
 
-        for perf_metric in ['mean_accuracy', 'mean_gps']:
+            for measure in complexity_measures:
+                rho, pval = spearmanr(
+                    df_n[perf_metric],
+                    df_n[measure]
+                )
 
-            for n in sorted(df_model['n_features'].unique()):
-
-                df_n = df_model[df_model['n_features'] == n]
-
-                # Evitamos casos con pocos subconjuntos
-                if len(df_n) < 3:
-                    continue
-
-                for measure in complexity_measures:
-                    rho, pval = spearmanr(
-                        df_n[perf_metric],
-                        df_n[measure]
-                    )
-
-                    results.append({
-                        'dataset': dataset_name,
-                        'model': model,
-                        'performance_metric': perf_metric,
-                        'n_features': n,
-                        'complexity_measure': measure,
-                        'spearman_rho': rho,
-                        'p_value': pval,
-                        'n_subsets': len(df_n)
-                    })
+                results.append({
+                    'dataset': dataset_name,
+                    'model': model,
+                    'performance_metric': perf_metric,
+                    'n_features': n,
+                    'complexity_measure': measure,
+                    'spearman_rho': rho,
+                    'p_value': pval,
+                    'n_subsets': len(df_n)
+                })
 
     return pd.DataFrame(results)
 
 # Ejecutamos para todos los datasets
-datasets = ['Australian','bands','credit-g','diabetic_retinopathy',
-            'plasma_retinol','pollution','vehicle2']
+datasets = ['bodyfat','boston','cleve',
+            'heart-statlog','zoo']
 
 all_results = []
 
 for ds in datasets:
     path_perf = f'Results_FS_bruto/Results_FS_bruto_{ds}.csv'
-    path_complex = f'Results_FS_bruto/ComplexityBruto_{ds}.csv'
+    path_complex = f'Results_FS_bruto/ComplexityCVBruto_{ds}.csv'
 
     df_ds = compute_within_nfeatures_dataset(path_perf, path_complex, ds)
 
     all_results.append(df_ds)
 
-df_within_all = pd.concat(all_results, ignore_index=True) # tiene todo el estudio
+df_within_all = pd.concat(all_results, ignore_index=True) # tiene tod el estudio
 
 # Ahora lo resumimos
 # Hacemos media de rho por dataset y medida
-def build_within_summary(df, model, perf_metric):
-    df_sub = df[
-        (df['model'] == model) &
-        (df['performance_metric'] == perf_metric)
-        ]
+def build_within_summary(df, perf_metric):
+    df_sub = df[(df['performance_metric'] == perf_metric)]
 
     summary = (
         df_sub.groupby(['dataset', 'complexity_measure'])
@@ -415,16 +430,16 @@ def build_within_summary(df, model, perf_metric):
     return table
 
 # Estas tablas contienen la media de las correlaciones a través de todos los n_features
-table_svm_acc_within = build_within_summary(df_within_all, 'SVM-rbf', 'mean_accuracy')
-table_svm_gps_within = build_within_summary(df_within_all, 'SVM-rbf', 'mean_gps')
+table_acc_within = build_within_summary(df_within_all,'mean_accuracy')
+table_gps_within = build_within_summary(df_within_all, 'mean_gps')
 
-table_knn_acc_within = build_within_summary(df_within_all, 'KNN', 'mean_accuracy')
-table_knn_gps_within = build_within_summary(df_within_all, 'KNN', 'mean_gps')
+table_acc_within.to_csv("tabla_spearman_within_{}.csv".format('mean_accuracy'))
+table_gps_within.to_csv("tabla_spearman_within_{}.csv".format('mean_gps'))
 
 
-def summarize_measure_behavior(df, model, perf_metric):
+
+def summarize_measure_behavior(df, perf_metric):
     df_sub = df[
-        (df['model'] == model) &
         (df['performance_metric'] == perf_metric)
         ]
 
@@ -439,4 +454,5 @@ def summarize_measure_behavior(df, model, perf_metric):
     return summary
 
 
-summarize_measure_behavior(df_within_all, 'KNN', 'mean_accuracy')
+summarize_measure_behavior(df_within_all, 'mean_accuracy')
+summarize_measure_behavior(df_within_all, 'mean_gps')
