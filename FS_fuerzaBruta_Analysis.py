@@ -16,7 +16,7 @@ from scipy.stats import spearmanr
 
 
 
-path_csv = "Results_FS_bruto/Results_FS_bruto_Australian.csv"
+path_csv = "Results_FS_bruto/Results_FS_bruto_bodyfat.csv"
 
 # Agregamos por folds
 def summarize_performance(path_csv):
@@ -30,27 +30,71 @@ def summarize_performance(path_csv):
 
     return df_summary
 
+# Elegimos mejor modelo global para cada dataset
+
+def selec_modelo_perf(df_summary):
+    # media de mean_accuracy por modelo (promediando sobre todos los feature_set)
+    model_perf_acc = (df_summary.groupby('model')['mean_accuracy'].mean().reset_index())
+    best_model_acc = model_perf_acc.loc[model_perf_acc['mean_accuracy'].idxmax(), 'model']
+    # igual para GPS
+    model_perf_gps = (df_summary.groupby('model')['mean_gps'].mean().reset_index())
+    best_model_gps = model_perf_gps.loc[model_perf_gps['mean_gps'].idxmax(), 'model']
+
+    # mejor modelo global
+    model_perf_global = (df_summary.groupby('model')[['mean_accuracy', 'mean_gps']].mean().reset_index())
+    model_perf_global['score_global'] = (model_perf_global['mean_accuracy'] + model_perf_global['mean_gps']) / 2
+    best_model_global = model_perf_global.loc[model_perf_global['score_global'].idxmax(), 'model']
+
+    # Seleccionamos mejor modelo (por ahora global)
+    best_model = best_model_global  # best_model_acc, best_model_gps o best_model_global
+    df_best_model = df_summary[df_summary['model'] == best_model].copy()
+
+    return df_best_model
+
 
 # Ranking de performance por modelo y dataset
-def add_performance_ranking(df_summary):
-    df_summary['rank_accuracy'] = (df_summary['mean_accuracy'].rank(ascending=False, method='average'))
-    df_summary['rank_gps'] = (df_summary['mean_gps'].rank(ascending=False, method='average'))
+def add_performance_ranking(df_best_model):
+    df_best_model['rank_accuracy'] = (df_best_model['mean_accuracy'].rank(ascending=False, method='average'))
+    df_best_model['rank_gps'] = (df_best_model['mean_gps'].rank(ascending=False, method='average'))
 
-    return df_summary
+    return df_best_model
 
 
-path_complexity_csv = 'Results_FS_bruto/ComplexityBruto_Australian.csv'
-# Leemos complejidad y hacemos el ranking por medida de complejidad
-def add_complexity_ranking(path_complexity_csv):
-    df_c = pd.read_csv(path_complexity_csv)
+# path_complexity_csv = 'Results_FS_bruto/ComplexityBruto_Australian.csv'
+path_complexity_csv = 'Results_FS_bruto/ComplexityCVBruto_bodyfat.csv'
 
-    complexity_measures = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD',
-                           'N1', 'N2', 'LSC', 'F1', 'F2', 'F3', 'F4', 'L1']
+## Agregamos resultados por folds
+def summarize_complexity(path_complexity_csv):
+    complexity_cols = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD','N1', 'N2', 'LSC',
+        'F1', 'F2', 'F3', 'F4','L1']
+    df_complex = pd.read_csv(path_complexity_csv)
+
+    group_cols = ['n_features', 'feature_set', 'k_folds']
+
+    # estos resultados contienen directamentee la media, fallo mío que no he sacado la std
+    df_complex_summary = (df_complex.groupby(group_cols)[complexity_cols].agg(['mean']).reset_index())
+
+    # Nombres de columnas: (Hostility, mean) -> Hostility_mean
+    df_complex_summary.columns = ['_'.join(col).strip('_') if isinstance(col, tuple) else col
+        for col in df_complex_summary.columns.values]
+
+    # quitamos k_folds porque ya no aporta nada
+    df_complex_summary.drop(['k_folds'],axis=1,inplace=True)
+
+    return df_complex_summary
+
+
+
+# Hacemos el ranking por medida de complejidad
+def add_complexity_ranking(df_complex_summary):
+
+    complexity_measures = ['Hostility_mean', 'kDN_mean', 'DCP_mean', 'TD_U_mean', 'CLD_mean',
+                           'N1_mean', 'N2_mean', 'LSC_mean', 'F1_mean', 'F2_mean', 'F3_mean', 'F4_mean', 'L1_mean']
 
     for measure in complexity_measures:
-        df_c[f'rank_{measure}'] = (df_c[measure].rank(ascending=True, method='average'))
+        df_complex_summary[f'rank_{measure}'] = (df_complex_summary[measure].rank(ascending=True, method='average'))
 
-    return df_c
+    return df_complex_summary
 
 
 # Unimos los dfs con los rankings de performance y de complejidad
@@ -58,14 +102,14 @@ def merge_perf_complexity(df_perf, df_complex):
     df_merged = pd.merge(df_perf,df_complex,on=['n_features', 'feature_set'],how='inner')
     return df_merged
 
-df_merged = merge_perf_complexity(df_summary, df_c)
+df_merged = merge_perf_complexity(df_best_model, df_complex_summary)
 
 
 ## Calculamos correlación de Spearmaan entre los rankings
 # Queremos altas y positivas
 def compute_spearman(df_merged, perf_rank_col):
-    complexity_measures = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD',
-                           'N1', 'N2', 'LSC', 'F1', 'F2', 'F3', 'F4', 'L1']
+    complexity_measures = ['Hostility_mean', 'kDN_mean', 'DCP_mean', 'TD_U_mean', 'CLD_mean',
+                           'N1_mean', 'N2_mean', 'LSC_mean', 'F1_mean', 'F2_mean', 'F3_mean', 'F4_mean', 'L1_mean']
 
     results = []
 
@@ -82,52 +126,51 @@ def compute_spearman(df_merged, perf_rank_col):
 df_spear_acc = compute_spearman(df_merged, 'rank_accuracy')
 df_spear_gps = compute_spearman(df_merged, 'rank_gps')
 
-
+# df = df_merged
 # Obtenemos tb corr de spearman dentro de cada número de features
 # por si hay una reelación de cuántas menos variables más simple o algo raro
 
 def spearman_within_nfeatures(df, perf_metric='mean_accuracy'):
-    complexity_measures = ['Hostility', 'kDN', 'DCP', 'TD_U', 'CLD',
-                           'N1', 'N2', 'LSC', 'F1', 'F2', 'F3', 'F4', 'L1']
+    complexity_measures = ['Hostility_mean', 'kDN_mean', 'DCP_mean', 'TD_U_mean', 'CLD_mean',
+                           'N1_mean', 'N2_mean', 'LSC_mean', 'F1_mean', 'F2_mean', 'F3_mean', 'F4_mean', 'L1_mean']
 
     results = []
+    model = df['model'][0]
 
-    for model in df['model'].unique():
-        df_model = df[df['model'] == model]
-        for n in sorted(df_model['n_features'].unique()):
-            df_n = df_model[df_model['n_features'] == n]
-            # si hay pocos subconjuntos no tiene sentido calcular correlación
-            if len(df_n) < 3:
-                continue
-            for measure in complexity_measures:
-                rho, pval = spearmanr(df_n[perf_metric],df_n[measure])
+    # for model in df['model'].unique():
+    #     df_model = df[df['model'] == model]
+    for n in sorted(df['n_features'].unique()):
+        df_n = df[df['n_features'] == n]
+        # si hay pocos subconjuntos no tiene sentido calcular correlación
+        if len(df_n) < 3:
+            continue
+        for measure in complexity_measures:
+            rho, pval = spearmanr(df_n[perf_metric],df_n[measure])
 
-                results.append({
-                    'model': model,
-                    'n_features': n,
-                    'complexity_measure': measure,
-                    'spearman_rho': rho,
-                    'p_value': pval,
-                    'n_subsets': len(df_n)})
+            results.append({
+                'model': model,
+                'n_features': n,
+                'complexity_measure': measure,
+                'spearman_rho': rho,
+                'p_value': pval,
+                'n_subsets': len(df_n)})
 
     return pd.DataFrame(results)
 
 
 df_spear_acc = spearman_within_nfeatures(df_merged, perf_metric='mean_accuracy')
 df_spear_gps = spearman_within_nfeatures(df_merged, perf_metric='mean_gps')
+#
+# df = df_merged
 
-df = df_merged
-model = 'KNN'
-n_features = 13
-complexity_measure = 'Hostility'
 
 # Dentro del número de variables consideradas (k) estudiamos el comportamiento
 # Queremos que sea lineal decreciente
-def plot_perf_vs_complexity(df, model, n_features,
+def plot_perf_vs_complexity(df, n_features,
                             complexity_measure,
                             perf_metric='mean_accuracy'):
-    df_plot = df[(df['model'] == model) &
-                 (df['n_features'] == n_features)]
+    model = df['model'][0]
+    df_plot = df[(df['n_features'] == n_features)]
 
     plt.figure(figsize=(6, 4))
 
@@ -143,11 +186,18 @@ def plot_perf_vs_complexity(df, model, n_features,
     plt.tight_layout()
     plt.show()
 
-# Mapa de correlaciones para poder visualizar todo
-def heatmap_correlations(df_spearman, model):
-    df_model = df_spearman[df_spearman['model'] == model]
+# n_features = 13
+# complexity_measure = 'Hostility_mean'
+#
+# plot_perf_vs_complexity(df_merged, n_features,
+#                             complexity_measure,
+#                             perf_metric='mean_accuracy')
 
-    pivot = df_model.pivot_table(
+# Mapa de correlaciones para poder visualizar todo
+def heatmap_correlations(df_spearman):
+    model = df_spearman['model'][0]
+
+    pivot = df_spearman.pivot_table(
         index='complexity_measure',
         columns='n_features',
         values='spearman_rho'
@@ -159,7 +209,7 @@ def heatmap_correlations(df_spearman, model):
     plt.tight_layout()
     plt.show()
 
-heatmap_correlations(df_spear_acc, model='SVM-rbf')
+# heatmap_correlations(df_spear_acc)
 
 
 
