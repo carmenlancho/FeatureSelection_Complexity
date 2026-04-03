@@ -147,13 +147,16 @@ def evaluate_complexity_single_combination(features_subset, X, y, k_folds=5):
     # Promediar resultados de todos los folds
     df_folds = pd.DataFrame(fold_results)
     mean_complexity = df_folds.mean().to_dict()
+    #   FALLO MIO QUE SOLO HE GUARDADO MEAN Y NO STD
+    std_complexity = df_folds.std().to_dict()
 
     # Formato de salida
     res = {
         'n_features': len(features_subset),
         'feature_set': str(tuple(features_subset)),
         'k_folds': k_folds,
-        **mean_complexity
+        **mean_complexity,
+        **std_complexity
     }
     return res
 
