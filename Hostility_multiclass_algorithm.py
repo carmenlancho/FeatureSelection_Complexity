@@ -123,6 +123,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
                 # Probability of being correctly identified derived from first k-means
                 table_percen = pd.crosstab(y, labels_bomb1, normalize='columns')
                 table_percen_df = pd.DataFrame(table_percen) # ESTO ES LO QUE QUIERO, TENGO QUE ENLAZARLO
+                table_percen_df = table_percen_df.reindex(index=list_classes, fill_value=0) # Si no hay instancias de la clase t en el cluster i → probabilidad = 0
+                table_percen_df.columns = table_percen_df.columns.astype(int)
 
                 prob_bomb1 = np.zeros(len(X))
                 df_bomb1 = pd.DataFrame(columns = list_classes, index = data_clusters.index)
@@ -147,6 +149,8 @@ def hostility_measure_multiclass(sigma, X, y, k_min, seed=0):
                 # Proportion of each class in each cluster of the current partition
                 table_percen = pd.crosstab(y, data_clusters[col_now], normalize='columns')
                 table_percen_df = pd.DataFrame(table_percen)
+                table_percen_df = table_percen_df.reindex(index=list_classes, fill_value=0) # Si no hay instancias de la clase t en el cluster i → probabilidad = 0
+                table_percen_df.columns = table_percen_df.columns.astype(int)
                 prob_bomb1 = np.zeros(len(X))
                 df_bomb1 = pd.DataFrame(columns=list_classes, index=data_clusters.index)
                 # for i in np.unique(labels_bomb1):
