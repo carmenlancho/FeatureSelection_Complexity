@@ -193,11 +193,11 @@ def complexity_brute_force_parallel(X, y, k_folds=5, verbose=True):
 
 if __name__ == "__main__":
 
-    list_datasets = ['Australian.csv','bands.csv','credit-g.csv',
-                     'plasma_retinol.csv',
-                     'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
-                     'bodyfat.csv', 'boston.csv', 'cleve.csv', 'heart-statlog.csv',
-                     'zoo.csv',
+    list_datasets = [#'Australian.csv','bands.csv','credit-g.csv',
+                    # 'plasma_retinol.csv',
+                     #'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
+                     #'bodyfat.csv', 'boston.csv', 'cleve.csv', 'heart-statlog.csv',
+                     #'zoo.csv',
                      'sylvine.csv','ring.csv','pyrim.csv']
     path2 = "datasets"
     output_folder = 'Results_FS_bruto'

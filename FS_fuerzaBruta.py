@@ -229,9 +229,10 @@ if __name__ == "__main__":
     list_datasets = [#'Australian.csv','bands.csv','credit-g.csv',
                      #'plasma_retinol.csv',
                      #'pollution.csv','vehicle2.csv','diabetic_retinopathy.csv', 'parkinsons.csv',
-                     'bodyfat.csv', 'boston.csv', 'cleve.csv', 'heart-statlog.csv',
-                     'zoo.csv',
-                     'sylvine.csv','ring.csv','pyrim.csv']
+                     #'bodyfat.csv', 'boston.csv', 'cleve.csv', 'heart-statlog.csv',
+                     #'zoo.csv',
+                     #'sylvine.csv','ring.csv',
+                   'pyrim.csv']
 
 
     RSEED = 42
@@ -271,6 +272,8 @@ if __name__ == "__main__":
         name_csv = f'Results_FS_bruto/Results_FS_bruto_{dataset_name}.csv'
         df_resultados_raw.to_csv(name_csv, index=False)
         print(f"Guardado en: {name_csv}")
+
+
 
 
 ###################### ESTO ES TOTALMENTE SECUENCIAL #######################################
