@@ -499,9 +499,9 @@ sns.boxplot(
     data=d, x="Complexity", y="rho", hue="Performance",
     order=order, palette=palette_box,
     width=0.62, fliersize=0, linewidth=1,
-    boxprops=dict(alpha=0.25),
-    whiskerprops=dict(alpha=0.7),
-    capprops=dict(alpha=0.7),
+    #boxprops=dict(alpha=0.25),
+    #whiskerprops=dict(alpha=0.7),
+    #capprops=dict(alpha=0.7),
     medianprops=dict(color="black", linewidth=1.2),
     ax=ax
 )
@@ -509,7 +509,7 @@ sns.boxplot(
 sns.stripplot(
     data=d, x="Complexity", y="rho", hue="Performance",
     order=order, palette=palette_pts,
-    dodge=True, jitter=0.20, alpha=0.75, size=3.1,
+    dodge=True, jitter=0.20, alpha=0.7, size=3.1,
     linewidth=0, zorder=3, ax=ax
 )
 
