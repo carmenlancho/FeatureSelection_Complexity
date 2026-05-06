@@ -485,7 +485,7 @@ d["Complexity"] = (d["complexity_measure"]
                    .replace({"Hostility":"Host", "TD_U":"TDU"}))
 
 # orden x (el que tú quieras)
-order = ["CLD","DCP","F1","F2","F3","F4","Host","L1","LSC","N1","N2","TDU","kDN"]
+order = ["F1","L1","kDN","N1","Host","N2","LSC","DCP","TD","CLD"]
 order = [x for x in order if x in d["Complexity"].unique()]
 
 # paletas: cajas suaves, puntos con GPS azul oscuro
@@ -493,7 +493,7 @@ palette_box = {"Acc": "#D9FDFF", "GPS": "#A8BFFF"}   # suaves
 palette_pts = {"Acc": "#1f77b4", "GPS": "#031573"}   # azul / azul oscuro
 
 
-fig, ax = plt.subplots(figsize=(9, 4))
+fig, ax = plt.subplots(figsize=(8, 4))
 
 sns.boxplot(
     data=d, x="Complexity", y="rho", hue="Performance",
@@ -514,13 +514,14 @@ sns.stripplot(
 )
 
 # Leyenda limpia (evitar duplicados)
-handles, labels = ax.get_legend_handles_labels()
-ax.legend(handles[:2], labels[:2], title="", loc="lower right", frameon=True)
+h, l = ax.get_legend_handles_labels()
+ax.legend(h[:2], l[:2], title="", loc="lower left", bbox_to_anchor=(1.01, 0))
 
 ax.axhline(0, color="black", lw=1)
-ax.set_ylabel("Spearman ρ")
+ax.set_ylabel("Spearman correlation")
 ax.set_xlabel("")
-ax.set_title("Real datasets: Spearman correlation (complexity vs performance ranking)")
+ax.set_title(" ")
+ax.set_ylim([-.8, 1])
 
 plt.tight_layout()
 plt.show()
