@@ -262,19 +262,23 @@ def compute_global_spearman(path_perf, path_complex):
 
     results = []
 
-    for perf_metric in ['mean_accuracy', 'mean_gps']:
-         for measure in complexity_measures:
-            rho, pval = spearmanr(df_merged[perf_metric],df_merged[measure])
 
+    results = []
+    for perf_rank_col, perf_name in [('rank_accuracy', 'mean_accuracy'),('rank_gps', 'mean_gps')]:
+        for measure in complexity_measures:
+            rho, pval = spearmanr(df_merged[perf_rank_col], df_merged[f'rank_{measure}'], nan_policy='omit')
             results.append({
                 'model': model,
-                'performance_metric': perf_metric,
+                'performance_metric': perf_name,
                 'complexity_measure': measure,
                 'spearman_rho': rho,
-                'p_value': pval
+                'p_value': pval,
+                'n_pairs': df_merged[[perf_rank_col, f'rank_{measure}']].dropna().shape[0]
             })
 
+
     return pd.DataFrame(results)
+
 
 path_perf = "Results_FS_bruto/Results_FS_bruto_vehicle2.csv"
 path_complex = 'Results_FS_bruto/ComplexityCVBruto_zoo.csv'
@@ -293,9 +297,9 @@ import csv
 # ) # para el tocho
 
 datasets = ['bodyfat','boston','cleve',
-            'heart-statlog','zoo']
+            'heart-statlog','zoo','vehicle2']
 # el resto no los tengo completos aun
-# parkinsons y 'diabetic_retinopathy' ,'vehicle2' lo quito porque peta el ordenador
+# parkinsons y 'diabetic_retinopathy'  lo quito porque peta el ordenador
 
 all_results = []
 
@@ -456,3 +460,68 @@ def summarize_measure_behavior(df, perf_metric):
 
 summarize_measure_behavior(df_within_all, 'mean_accuracy')
 summarize_measure_behavior(df_within_all, 'mean_gps')
+
+
+
+### Visualización para el congreso IDEAL 2026
+# boxplot
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# --- prepara data ---
+d = df_all.copy()
+d = d.rename(columns={"dataset":"Dataset", "spearman_rho":"rho"})
+
+# nombres bonitos
+d["Performance"] = d["performance_metric"].replace({
+    "mean_accuracy": "Acc",
+    "mean_gps": "GPS"
+})
+
+# acorta nombres de complejidad (quita _mean y deja label corto)
+d["Complexity"] = (d["complexity_measure"]
+                   .str.replace("_mean","", regex=False)
+                   .replace({"Hostility":"Host", "TD_U":"TDU"}))
+
+# orden x (el que tú quieras)
+order = ["CLD","DCP","F1","F2","F3","F4","Host","L1","LSC","N1","N2","TDU","kDN"]
+order = [x for x in order if x in d["Complexity"].unique()]
+
+# paletas: cajas suaves, puntos con GPS azul oscuro
+palette_box = {"Acc": "#D9FDFF", "GPS": "#A8BFFF"}   # suaves
+palette_pts = {"Acc": "#1f77b4", "GPS": "#031573"}   # azul / azul oscuro
+
+
+fig, ax = plt.subplots(figsize=(9, 4))
+
+sns.boxplot(
+    data=d, x="Complexity", y="rho", hue="Performance",
+    order=order, palette=palette_box,
+    width=0.62, fliersize=0, linewidth=1,
+    boxprops=dict(alpha=0.25),
+    whiskerprops=dict(alpha=0.7),
+    capprops=dict(alpha=0.7),
+    medianprops=dict(color="black", linewidth=1.2),
+    ax=ax
+)
+
+sns.stripplot(
+    data=d, x="Complexity", y="rho", hue="Performance",
+    order=order, palette=palette_pts,
+    dodge=True, jitter=0.20, alpha=0.75, size=3.1,
+    linewidth=0, zorder=3, ax=ax
+)
+
+# Leyenda limpia (evitar duplicados)
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles[:2], labels[:2], title="", loc="lower right", frameon=True)
+
+ax.axhline(0, color="black", lw=1)
+ax.set_ylabel("Spearman ρ")
+ax.set_xlabel("")
+ax.set_title("Real datasets: Spearman correlation (complexity vs performance ranking)")
+
+plt.tight_layout()
+plt.show()
+
