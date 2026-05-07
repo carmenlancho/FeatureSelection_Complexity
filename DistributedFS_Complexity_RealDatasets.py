@@ -528,14 +528,14 @@ def plot_complexity_importances_by_model(df, dataset_name="Dataset", save_path=N
 
 
 
-models_dict = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    #"SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    "RandomForest": RandomForestClassifier(random_state=0),
+   # "RandomForest": RandomForestClassifier(random_state=0),
     "KNN": KNeighborsClassifier(),
-    "NaiveBayes": GaussianNB(),
-    "DecisionTree": DecisionTreeClassifier(random_state=0),
-    "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+   # "NaiveBayes": GaussianNB(),
+   # "DecisionTree": DecisionTreeClassifier(random_state=0),
+    #"XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
     }
 
 
@@ -717,14 +717,14 @@ def evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_spli
 
     return perf_final
 
-models = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-     "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+     #"SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-     "RandomForest": RandomForestClassifier(random_state=0),
+     #"RandomForest": RandomForestClassifier(random_state=0),
     "KNN": KNeighborsClassifier(),
-    "NaiveBayes": GaussianNB(),
-     "DecisionTree": DecisionTreeClassifier(random_state=0),
-     "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    #"NaiveBayes": GaussianNB(),
+    # "DecisionTree": DecisionTreeClassifier(random_state=0),
+     #"XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
     }
 
 
