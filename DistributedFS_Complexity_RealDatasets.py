@@ -528,14 +528,14 @@ def plot_complexity_importances_by_model(df, dataset_name="Dataset", save_path=N
 
 
 
-models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+models_dict = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    # "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier()
-    # "NaiveBayes": GaussianNB(),
-    # "DecisionTree": DecisionTreeClassifier(random_state=0),
-    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier(),
+    "NaiveBayes": GaussianNB(),
+    "DecisionTree": DecisionTreeClassifier(random_state=0),
+    "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
     }
 
 
@@ -560,12 +560,15 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # for file in glob.glob("*.csv"):
 #     print(file)
 # file = 'ionosphere.csv'
-list_datasets = ['spambase.csv']#,'ionosphere.csv', 'sonar.csv',
+#list_datasets = ['spambase.csv']#,'ionosphere.csv', 'sonar.csv',
                 # 'parkinsons.csv']
                 # 'wdbc.csv',
                 #  'musk2.csv','parkinsons.csv',
                 #  'ozone.csv','sonar.csv','spambase.csv',
                 #  'Colon.csv','arcene_train.csv','gisette_train.csv']
+
+list_datasets = ['bodyfat.csv','boston.csv','cleve.csv',
+            'heart-statlog.csv','zoo.csv','vehicle2.csv']
 
 def format_labels(y):
     """
@@ -589,27 +592,27 @@ def format_labels(y):
 
     return y.to_numpy()
 
-# path2 = "datasets"
-# for file in list_datasets:
-#     # os.makedirs(path2, exist_ok=True)
-#     read_csv = f"{path2}/{file}"
-#     df = pd.read_csv(read_csv)
-#     # print(df)
-#     print(read_csv)
-#     y = format_labels(df['y'])
-#     cols = df.drop('y', axis=1).columns
-#     X = df.drop('y', axis=1)
-#     X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
-#     # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
-#     X = pd.DataFrame(X)
-#     X.columns = cols
-#     dataset_name = file.split(".")[0]
-#     print(dataset_name)
-#     n_replicas = 250
-#
-#     run_distributed_cv_multiple_models2_real(X, y, dataset_name, models_dict,
-#         measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
-#         tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
+path2 = "datasets"
+for file in list_datasets:
+    # os.makedirs(path2, exist_ok=True)
+    read_csv = f"{path2}/{file}"
+    df = pd.read_csv(read_csv)
+    # print(df)
+    print(read_csv)
+    y = format_labels(df['y'])
+    cols = df.drop('y', axis=1).columns
+    X = df.drop('y', axis=1)
+    X = StandardScaler(with_mean=True, with_std=True).fit_transform(X)
+    # df[cols] = StandardScaler(with_mean=True, with_std=True).fit_transform(df)
+    X = pd.DataFrame(X)
+    X.columns = cols
+    dataset_name = file.split(".")[0]
+    print(dataset_name)
+    n_replicas = 250
+
+    run_distributed_cv_multiple_models2_real(X, y, dataset_name, models_dict,
+        measures=["kDN"],cv_splits=5, n_replicas=n_replicas, random_state=0,
+        tau=0.01,path="Results_FS_Distributed_CV", save_csv=True)
 
 
 
@@ -714,14 +717,14 @@ def evaluate_incremental_k(X, y, importances_dict, models, dataset_name, cv_spli
 
     return perf_final
 
-models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+models = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+     "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    # "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier()
-    # "NaiveBayes": GaussianNB(),
-    # "DecisionTree": DecisionTreeClassifier(random_state=0),
-    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+     "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier(),
+    "NaiveBayes": GaussianNB(),
+     "DecisionTree": DecisionTreeClassifier(random_state=0),
+     "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
     }
 
 
@@ -732,12 +735,15 @@ models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # for file in glob.glob("*.csv"):
 #     print(file)
 # file = 'ionosphere.csv'
-list_datasets = ['spambase.csv']#,'ionosphere.csv', 'sonar.csv', 'spambase.csv'
+#list_datasets = ['spambase.csv']#,'ionosphere.csv', 'sonar.csv', 'spambase.csv'
                 # 'parkinsons.csv']
                 # 'wdbc.csv',
                 #  'musk2.csv','parkinsons.csv',
                 #  'ozone.csv','sonar.csv','spambase.csv',
                 #  'Colon.csv','arcene_train.csv','gisette_train.csv']
+
+list_datasets = ['bodyfat.csv','boston.csv','cleve.csv',
+            'heart-statlog.csv','zoo.csv','vehicle2.csv']
 
 
 
