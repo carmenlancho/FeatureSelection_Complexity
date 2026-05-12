@@ -567,8 +567,8 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
                 #  'ozone.csv','sonar.csv','spambase.csv',
                 #  'Colon.csv','arcene_train.csv','gisette_train.csv']
 
-list_datasets = ['bodyfat.csv','boston.csv','cleve.csv',
-            'heart-statlog.csv','zoo.csv','vehicle2.csv']
+# list_datasets = ['bodyfat.csv','boston.csv','cleve.csv',
+#             'heart-statlog.csv','zoo.csv','vehicle2.csv']
 
 def format_labels(y):
     """
@@ -742,8 +742,8 @@ models = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
                 #  'ozone.csv','sonar.csv','spambase.csv',
                 #  'Colon.csv','arcene_train.csv','gisette_train.csv']
 
-list_datasets = ['bodyfat.csv','boston.csv','cleve.csv',
-            'heart-statlog.csv','zoo.csv','vehicle2.csv']
+# list_datasets = ['bodyfat.csv','boston.csv','cleve.csv',
+#             'heart-statlog.csv','zoo.csv','vehicle2.csv']
 
 
 
