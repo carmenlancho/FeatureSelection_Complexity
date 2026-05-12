@@ -404,14 +404,25 @@ def run_evaluate_sota_fs_multiple_models_real(X, y, models_dict,dataset_name,
 # k = len(dict_info_feature["informative"])  # nº de variables informativas
 # run_evaluate_sota_fs_multiple_models_real(X, y, k=k, models_dict=models_dict,cv_splits=5, random_state=0,save_csv=True)
 
-models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
-    # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+# models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+#     # "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
+#     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+#     # "RandomForest": RandomForestClassifier(random_state=0),
+#     "KNN": KNeighborsClassifier()
+#     # "NaiveBayes": GaussianNB(),
+#     # "DecisionTree": DecisionTreeClassifier(random_state=0),
+#     # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+#     }
+
+
+models_dict = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    # "RandomForest": RandomForestClassifier(random_state=0),
-    "KNN": KNeighborsClassifier()
-    # "NaiveBayes": GaussianNB(),
-    # "DecisionTree": DecisionTreeClassifier(random_state=0),
-    # "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier(),
+    "NaiveBayes": GaussianNB(),
+    "DecisionTree": DecisionTreeClassifier(random_state=0),
+    "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
     }
 
 
@@ -419,7 +430,9 @@ models_dict = {#"LogReg": LogisticRegression(max_iter=1000, random_state=0),
 # for file in glob.glob("*.csv"):
 #     print(file)
 # file = 'ionosphere.csv'
-list_datasets = ['spambase.csv','ionosphere.csv', 'sonar.csv','wdbc.csv']
+list_datasets = [ #'bodyfat.csv',
+    'boston.csv','cleve.csv',
+            'heart-statlog.csv','zoo.csv','vehicle2.csv']#['spambase.csv','ionosphere.csv', 'sonar.csv','wdbc.csv']
                 # 'parkinsons.csv']
                 # 'wdbc.csv',
                 #  'musk2.csv','parkinsons.csv',
@@ -558,16 +571,27 @@ def evaluate_incremental_k_all_methods(X, y,rankings_all_methods,models,dataset_
 
 methods = ["mutual_info", "f_classif", "rf", "relief", "xgboost"]
 
-models = {
+# models = {
+#     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
+#     "KNN": KNeighborsClassifier()
+# }
+
+
+models = {"LogReg": LogisticRegression(max_iter=1000, random_state=0),
+    "SVM-linear": SVC(kernel="linear", probability=True, random_state=0),
     "SVM-rbf": SVC(kernel="rbf", probability=True, random_state=0),
-    "KNN": KNeighborsClassifier()
-}
+    "RandomForest": RandomForestClassifier(random_state=0),
+    "KNN": KNeighborsClassifier(),
+    "NaiveBayes": GaussianNB(),
+    "DecisionTree": DecisionTreeClassifier(random_state=0),
+    "XGBoost": xgb.XGBClassifier(eval_metric="logloss", random_state=0)
+    }
 
 
 
 
 path2 = "datasets"
-list_datasets =['ionosphere.csv']
+list_datasets =['bodyfat.csv']
 for file in list_datasets:
     # os.makedirs(path2, exist_ok=True)
     read_csv = f"{path2}/{file}"
