@@ -485,7 +485,7 @@ d["Complexity"] = (d["complexity_measure"]
                    .replace({"Hostility":"Host", "TD_U":"TDU"}))
 
 # orden x (el que tú quieras)
-order = ["F1","L1","kDN","N1","Host","N2","LSC","DCP","TD","CLD"]
+order = ["F1","L1","kDN","N1","Host","N2","LSC","DCP","TDU","CLD"]
 order = [x for x in order if x in d["Complexity"].unique()]
 
 # paletas: cajas suaves, puntos con GPS azul oscuro
@@ -493,16 +493,16 @@ palette_box = {"Acc": "#D9FDFF", "GPS": "#A8BFFF"}   # suaves
 palette_pts = {"Acc": "#1f77b4", "GPS": "#031573"}   # azul / azul oscuro
 
 
-fig, ax = plt.subplots(figsize=(8, 4))
+fig, ax = plt.subplots(figsize=(9,5.2))
 
 sns.boxplot(
     data=d, x="Complexity", y="rho", hue="Performance",
     order=order, palette=palette_box,
-    width=0.62, fliersize=0, linewidth=1,
+    width=0.6, fliersize=0,
     #boxprops=dict(alpha=0.25),
     #whiskerprops=dict(alpha=0.7),
     #capprops=dict(alpha=0.7),
-    medianprops=dict(color="black", linewidth=1.2),
+    #medianprops=dict(color="black", linewidth=1.2),
     ax=ax
 )
 
@@ -521,7 +521,7 @@ ax.axhline(0, color="black", lw=1)
 ax.set_ylabel("Spearman correlation")
 ax.set_xlabel("")
 ax.set_title(" ")
-ax.set_ylim([-.8, 1])
+ax.set_ylim([-.9, 1])
 
 plt.tight_layout()
 plt.show()
